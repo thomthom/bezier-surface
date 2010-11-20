@@ -147,7 +147,75 @@ module TT::Plugins::BPatch
       # ...
     end
     
+    def mesh_points( subdivs, transformation )
+      pts = []
+      @patches.each { |patch|
+        pts.concat( patch.mesh_points( subdivs, transformation ).to_a )
+      }
+      pts.uniq! # (!) custom uniq to only return uniqe 3d positions.
+      pts
+    end
+    
+    # Returns vertices in the same order as mesh_points.
+    def mesh_vertices( subdivs, transformation )
+      d = TT::Instance.definition( @instance )
+      pts = mesh_points( subdivs, transformation )
+      vs = raw_mesh_vertices()
+      
+      #pts.each { |pt| p pt }
+      #puts '--'
+      #vs.each { |v| p v.position }
+      #p pts.length
+      #p pts
+      #p vs.length
+      #p vs
+      
+      patch_vertices = []
+      pts.each { |pt|
+        vertex = vs.find { |v| v.position == pt }
+        patch_vertices << vertex
+        vs.delete( vertex )
+      }
+      patch_vertices
+    end
+    
+    def set_vertex_positions( vertices, positions )
+      #TT::debug 'set_vertex_positions'
+      #TT::debug '> vertices'
+      #TT::debug vertices
+      #TT::debug '> position'
+      #TT::debug positions
+      entities = []
+      vectors = []
+      vertices.each_with_index { |v,i|
+        #TT::debug v.position
+        #TT::debug positions[i]
+        vector = v.position.vector_to( positions[i] )
+        #vectors << vector if vector.valid?
+        if vector.valid?
+          entities << v
+          vectors << vector
+        end
+      }
+      #TT::debug vectors
+      #TT::debug "Vertices: #{entities.length} - Vectors: #{vectors.length}"
+      # (!) ensure entities has same length as vectors
+      d = TT::Instance.definition( @instance )
+      d.entities.transform_by_vectors( entities, vectors )
+    end
+    
     private
+    
+    def raw_mesh_vertices
+      vs = []
+      d = TT::Instance.definition( @instance )
+      d.entities.each { |e|
+        next unless e.is_a?( Sketchup::Edge )
+        vs.concat( e.vertices )
+      }
+      vs.uniq!
+      vs
+    end
     
     def update_attributes
       d = TT::Instance.definition( @instance )

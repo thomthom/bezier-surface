@@ -76,6 +76,10 @@ module TT::Plugins::BPatch
         #@surface.subdivs = 4
         @preview = 4
         @surface.preview( @editor.model.edit_transform, @preview )
+        
+        @vertex_cache = @surface.mesh_vertices( @preview, @editor.model.edit_transform )
+        #p @vertex_cache.length
+        #p @vertex_cache
       }
       @gizmo.on_transform { |t_step, t_total|
         et = @editor.model.edit_transform
@@ -85,7 +89,11 @@ module TT::Plugins::BPatch
           #pt.transform!( t_step )
           pt.transform!( local_transform )
         }
-        @surface.preview( @editor.model.edit_transform )
+        #@surface.preview( @editor.model.edit_transform )
+        
+        # ---
+        positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
+        @surface.set_vertex_positions( @vertex_cache, positions )
       }
       @gizmo.on_transform_end {
         #@surface.subdivs = @subdivs

@@ -51,6 +51,7 @@ module TT::Plugins::BPatch
         # Create Patch
         TT::Model.start_operation('Create Bezier Surface')
         g = view.model.active_entities.add_group
+        g.name = 'Bezier Surface'
         g.transform!( Geom::Transformation.new(@ip_start.position) )
         points = control_points()
         patch = QuadPatch.new( points )

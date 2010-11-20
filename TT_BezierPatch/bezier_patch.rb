@@ -28,7 +28,7 @@ module TT::Plugins::BPatch
     def control_points
       @points
     end
-    
+
     def pick_control_points(x, y, view)
       picked = []
       t = view.model.edit_transform
