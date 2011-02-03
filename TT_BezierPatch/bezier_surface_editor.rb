@@ -18,6 +18,7 @@ module TT::Plugins::BPatch
     
     def edit( instance )
       TT.debug( 'BezierSurfaceEditor.edit' )
+      @model.selection.clear
       @model.tools.push_tool( self )
       @surface = BezierSurface.load( instance )
       tool = VertexSelectionTool.new( self )
@@ -125,8 +126,34 @@ module TT::Plugins::BPatch
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
-        @toolbar.add_script( File.join(path, 'js', 'wnd_toolbar.js') )
+        #@toolbar.add_script( File.join(path, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(path, 'css', 'wnd_toolbar.css') )
+        
+        # Select
+        button = TT::GUI::Button.new('Select') {
+          puts 'Tool: Select'
+          tool = VertexSelectionTool.new( self )
+          select_tool( tool )
+        }
+        button.icon = File.join( path, 'Icons', 'Select_24.png' )
+        @toolbar.add_control( button )
+        
+        # Move
+        button = TT::GUI::Button.new('Move') {
+          puts 'Tool: Move'
+          tool = MoveTool.new( self )
+          select_tool( tool )
+        }
+        button.icon = File.join( path, 'Icons', 'Move_24.png' )
+        @toolbar.add_control( button )
+        
+        # Move
+        list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
+        list.label = ' Axis:'
+        list.on_change { |value|
+          puts "Axis: #{value}"
+        }
+        @toolbar.add_control( list )
       end
       @toolbar.show_window
     end

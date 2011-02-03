@@ -115,8 +115,8 @@ module TT::Plugins::BPatch
   # OSX.
   def self.editor( model )
     TT.debug( 'Editor' )
-    TT.debug( "> #{model.inspect}" )
-    TT.debug( "> #{model.guid}" )
+    #TT.debug( "> #{model.inspect}" )
+    #TT.debug( "> #{model.guid}" )
     #@editors[model]
     
     @editors.each { |m,e|

@@ -6,12 +6,12 @@ module TT::Plugins::BPatch
   class BP_AppObserver < Sketchup::AppObserver
   
     def onNewModel(model)
-      TT.debug( 'BP_onNewModel' )
+      #TT.debug( 'BP_onNewModel' )
       TT::Plugins::BPatch.observe_model( model )
     end
     
     def onOpenModel(model)
-      TT.debug( 'BP_onOpenModel' )
+      #TT.debug( 'BP_onOpenModel' )
       TT::Plugins::BPatch.observe_model( model )
     end
 
@@ -26,18 +26,22 @@ module TT::Plugins::BPatch
   class BP_ModelObserver < Sketchup::ModelObserver
   
     def onActivePathChanged(model)
-      TT.debug( 'BP_onActivePathChanged' )
+      # (!) This appear to trigger on occations when not expected. Errors can
+      # appear reporting reference to missing entity. The model? Or maybe
+      # the instance - get_attribute might have been a trigger point...
+      
+      #TT.debug( 'BP_onActivePathChanged' )
       instance = (model.active_path.nil?) ? nil : model.active_path.last
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
-        TT.debug( '> New Session...' )
-        BezierSurfaceEditor.new( instance )
+        #TT.debug( '> New Session...' )
+        #BezierSurfaceEditor.new( instance ) # ???
         editor = TT::Plugins::BPatch.editor( model )
         editor.edit( instance )
-        model.selection.clear
+        #model.selection.clear
       else
-        TT.debug( '> Ending Session...' )
+        #TT.debug( '> Ending Session...' )
         editor = TT::Plugins::BPatch.editor( model )
-        TT.debug( editor )
+        #TT.debug( editor )
         editor.end_session unless editor.nil?
       end
     end
@@ -55,13 +59,13 @@ module TT::Plugins::BPatch
   class BP_Editor_ModelObserver < Sketchup::ModelObserver
   
     def onTransactionUndo(model)
-      TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
+      #TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
       editor = TT::Plugins::BPatch.editor( model )
       editor.undo_redo
     end
     
     def onTransactionRedo(model)
-      TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
+      #TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
       editor = TT::Plugins::BPatch.editor( model )
       editor.undo_redo
     end

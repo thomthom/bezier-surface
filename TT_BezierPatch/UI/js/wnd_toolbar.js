@@ -28,3 +28,14 @@ function build_UI()
 }
 
 //alert(document.documentMode);
+
+
+function add_button(options)
+{
+
+}
+
+function add_list(options)
+{
+
+}

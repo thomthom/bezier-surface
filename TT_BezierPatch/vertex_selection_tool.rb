@@ -55,12 +55,14 @@ module TT::Plugins::BPatch
       Sketchup.vcb_value = @surface.subdivs
     end
     
-    # (!) On transformation start:
+    # On transformation start:
     # * Generate low poly mesh
     # * Collect vertices
     # * Map vertices to Patch points
     # On transformation - move vertices
-    
+    # On transformation end:
+    # * Regenerate full mesh
+    # * Update UI
     def activate
       t = @editor.model.edit_transform
  
@@ -72,34 +74,25 @@ module TT::Plugins::BPatch
       @gizmo = TT::Gizmo::Manipulator.new( pt, xaxis, yaxis, zaxis )
       @gizmo.on_transform_start {
         @editor.model.start_operation('Edit Control Points')
-        #@subdivs = @surface.subdivs
-        #@surface.subdivs = 4
         @preview = 4
         @surface.preview( @editor.model.edit_transform, @preview )
-        
+        # Cache the vertices for use in the on_transform event.
         @vertex_cache = @surface.mesh_vertices( @preview, @editor.model.edit_transform )
-        #p @vertex_cache.length
-        #p @vertex_cache
       }
       @gizmo.on_transform { |t_step, t_total|
         et = @editor.model.edit_transform
-        #local_transform = (et * t_step) * et.inverse
         local_transform = (et.inverse * t_step) * et
         @editor.selection.each { |pt|
-          #pt.transform!( t_step )
           pt.transform!( local_transform )
         }
-        #@surface.preview( @editor.model.edit_transform )
-        
-        # ---
         positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
         @surface.set_vertex_positions( @vertex_cache, positions )
       }
       @gizmo.on_transform_end {
-        #@surface.subdivs = @subdivs
         @surface.update( @editor.model.edit_transform )
         @editor.model.commit_operation
         @preview = false
+        update_ui()
       }
       
       @state = S_NORMAL
