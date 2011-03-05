@@ -1,40 +1,25 @@
-#-----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Compatible: SketchUp 7 (PC)
 #             (other versions untested)
-#-----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #
 # Thomas Thomassen
 # thomas[at]thomthom[dot]net
 #
-#-----------------------------------------------------------------------------
-
-# Create Tool
-# Edit Tool
-# Extrude Tool
-# Merge/Join Tool
-# Modifiers (Noise,Shell)
+#-------------------------------------------------------------------------------
 
 require 'sketchup.rb'
 require 'TT_Lib2/core.rb'
 
 TT::Lib.compatible?('2.5.0', 'Bezier Surface')
 
-#require 'TT_BezierPatch/bezier_surface_editor.rb'
-#require 'TT_BezierPatch/tool_create_patch.rb'
-#require 'TT_BezierPatch/tool_edit_patch.rb'
-#require 'TT_BezierPatch/bezier_patch.rb'
-#require 'TT_BezierPatch/bezier_surface.rb'
-#require 'TT_BezierPatch/quad_patch.rb'
-#require 'TT_BezierPatch/observers.rb'
-
-
-#-----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 
 module TT::Plugins::BPatch
   
   
-  ### CONSTANTS ### --------------------------------------------------------
+  ### CONSTANTS ### ------------------------------------------------------------
   
   ID        = 'TT_BezierSurface'.freeze
   VERSION   = '1.0.0'.freeze
@@ -58,19 +43,19 @@ module TT::Plugins::BPatch
   CLR_SELECTION = Sketchup::Color.new(  64,  64,  64 )
   
   
-  ### MODULES ### ----------------------------------------------------------
+  ### MODULES ### --------------------------------------------------------------
   Dir.glob( File.join(PATH, '*.{rb,rbs}') ).each { |file|
     require( file )
   }
   
   
-  ### VARIABLES ### --------------------------------------------------------
+  ### VARIABLES ### ------------------------------------------------------------
   
   # Key is model.guid
   @editors = {}
   
   
-  ### MENU & TOOLBARS ### --------------------------------------------------
+  ### MENU & TOOLBARS ### ------------------------------------------------------
   
   # This method must be here as it needs to be availible when the script loads
   # so it can attach the model observer to the current model.
@@ -108,7 +93,7 @@ module TT::Plugins::BPatch
   end 
   
   
-  ### MAIN SCRIPT ### ------------------------------------------------------
+  ### MAIN SCRIPT ### ----------------------------------------------------------
   
   # Returns the BezierSurfaceEditor for the current model. This ensures the 
   # tool can be used for multiple models simultaniously - as is possible under
@@ -133,7 +118,7 @@ module TT::Plugins::BPatch
   end
 
   
-  ### DEBUG ### ------------------------------------------------------------
+  ### DEBUG ### ----------------------------------------------------------------
   
   def self.reload
     TT::Lib.reload
@@ -148,8 +133,8 @@ module TT::Plugins::BPatch
 
 end # module
 
-#-----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 file_loaded( File.basename(__FILE__) )
 
-#-----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
