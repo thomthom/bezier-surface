@@ -132,6 +132,7 @@ module TT::Plugins::BPatch
   # This quick exist in all current SketchUp versions.
   # Current: SketchUp 8 M1
   def self.get_instructor_path( path )
+    path = File.expand_path( path )
     origin = Sketchup.get_resource_path( 'helpcontent' )
     # Check if drive matches
     origin_drive = origin.match( /^(\w):/ )
