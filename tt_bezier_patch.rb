@@ -133,9 +133,7 @@ module TT::Plugins::BPatch
   # Current: SketchUp 8 M1
   def self.get_instructor_path( path )
     origin = Sketchup.get_resource_path( 'helpcontent' )
-    #p path
-    #p origin
-    # heck if drive matches
+    # Check if drive matches
     origin_drive = origin.match( /^(\w):/ )
     if origin_drive
       origin_drive = origin_drive[1].downcase
@@ -146,16 +144,12 @@ module TT::Plugins::BPatch
       path = path[2...path.size] # Trim drive letter
     end
     if path_drive && origin_drive
-      #puts 'Drive not matching!'
       return nil unless origin_drive == path_drive
     end
     # Build relative path
     parts = origin.split( File::SEPARATOR ).size
     path_to_root = "..#{File::SEPARATOR}" * parts
     relative_path = File.join( path_to_root, path )
-    #full_path = File.join( origin, path_to_root, path )
-    #p full_path
-    #puts File.exist?( full_path )
     return relative_path
   end
 
@@ -163,8 +157,8 @@ module TT::Plugins::BPatch
   ### DEBUG ### ----------------------------------------------------------------
   
   # TT::Plugins::BPatch.reload
-  def self.reload
-    TT::Lib.reload
+  def self.reload( tt_lib = false )
+    TT::Lib.reload if tt_lib
     # Core file (this)
     load __FILE__
     # Supporting files

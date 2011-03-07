@@ -16,6 +16,13 @@ module TT::Plugins::BPatch
       @subdivs = 6
     end
     
+    def getInstructorContentDirectory
+      real_path = File.join( TT::Plugins::BPatch::PATH, 'InstructorContent', 'Test' )
+      adjusted_path = TT::Plugins::BPatch.get_instructor_path( real_path )
+      TT::debug( adjusted_path )
+      adjusted_path
+    end
+    
     def update_ui
       if @ip_start.valid?
         Sketchup.status_text = 'Pick Opposite Corner.'
