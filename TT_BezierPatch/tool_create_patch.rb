@@ -114,12 +114,20 @@ module TT::Plugins::BPatch
       t = Geom::Transformation.new( @ip_start.position ).inverse
       p2 = @ip_mouse.position.transform( t )
       if p1.z == p2.z
+        # Mesh is drawn planar to the ground.
         p3 = p1.project_to_line( [ p2, Y_AXIS ] )
         p4 = p1.project_to_line( [ p2, X_AXIS ] )
       else
+        # Mesh is drawn vertically.
         p3 = p1.project_to_line( [ p2, Z_AXIS ] )
         v = p1.vector_to( p3 )
-        p4 = p1.project_to_line( [ p2, v ] )
+        if v.valid?
+          p4 = p1.project_to_line( [ p2, v ] )
+        else
+          # In case the picked point is directly above the startpoint.
+          # This scenario is not valid for creating a mesh.
+          p4 = p3.clone
+        end
       end
       # Y axis
       y1 = TT::Geom3d.interpolate_linear( p1, p4, 3 )
