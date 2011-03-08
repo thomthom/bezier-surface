@@ -55,12 +55,13 @@ module TT::Plugins::BPatch
     
     def onLButtonUp(flags, x, y, view)
       if @ip_start.valid?
+        points = control_points()
+        return if points.nil?
         # Create Patch
         TT::Model.start_operation('Create Bezier Surface')
         g = view.model.active_entities.add_group
         g.name = 'Bezier Surface'
         g.transform!( Geom::Transformation.new(@ip_start.position) )
-        points = control_points()
         patch = QuadPatch.new( points )
         surface = BezierSurface.new( g )
         surface.add_patch( patch )
@@ -87,7 +88,9 @@ module TT::Plugins::BPatch
       # Mesh Control Points
       return unless @ip_start.valid? && @ip_mouse.valid?
       o = @ip_start.position
-      pts = control_points().map { |pt|
+      pts = control_points()
+      return unless pts
+      pts.map! { |pt|
         pt.transform( o )
       }
       # ...
@@ -107,6 +110,7 @@ module TT::Plugins::BPatch
       ] )
     end
     
+    # Returns nil when input points are invalid.
     def control_points
       # Get corner points. Make points origin in @ip_start
       p1 = ORIGIN
@@ -126,7 +130,8 @@ module TT::Plugins::BPatch
         else
           # In case the picked point is directly above the startpoint.
           # This scenario is not valid for creating a mesh.
-          p4 = p3.clone
+          #p4 = p3.clone
+          return nil
         end
       end
       # Y axis
