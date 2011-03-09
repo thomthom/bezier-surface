@@ -1,4 +1,4 @@
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
 
   
   # Detect new models and attach a model observer to monitor when the user
@@ -7,12 +7,12 @@ module TT::Plugins::BPatch
   
     def onNewModel(model)
       #TT.debug( 'BP_onNewModel' )
-      TT::Plugins::BPatch.observe_model( model )
+      PLUGIN.observe_model( model )
     end
     
     def onOpenModel(model)
       #TT.debug( 'BP_onOpenModel' )
-      TT::Plugins::BPatch.observe_model( model )
+      PLUGIN.observe_model( model )
     end
 
   end # class BP_AppObserver
@@ -35,12 +35,12 @@ module TT::Plugins::BPatch
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
         #TT.debug( '> New Session...' )
         #BezierSurfaceEditor.new( instance ) # ???
-        editor = TT::Plugins::BPatch.editor( model )
+        editor = PLUGIN.editor( model )
         editor.edit( instance )
         #model.selection.clear
       else
         #TT.debug( '> Ending Session...' )
-        editor = TT::Plugins::BPatch.editor( model )
+        editor = PLUGIN.editor( model )
         #TT.debug( editor )
         editor.end_session unless editor.nil?
       end
@@ -60,17 +60,17 @@ module TT::Plugins::BPatch
   
     def onTransactionUndo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
-      editor = TT::Plugins::BPatch.editor( model )
+      editor = PLUGIN.editor( model )
       editor.undo_redo
     end
     
     def onTransactionRedo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
-      editor = TT::Plugins::BPatch.editor( model )
+      editor = PLUGIN.editor( model )
       editor.undo_redo
     end
     
   end # class BP_ModelObserver
 
   
-end # TT::Plugins::BPatch
+end # TT::Plugins::BezierSurfaceTools

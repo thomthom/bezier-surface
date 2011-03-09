@@ -6,10 +6,10 @@
 #-----------------------------------------------------------------------------
 
 #require 'TT_BezierPatch/bezier_patch.rb'
-require File.join( TT::Plugins::BPatch::PATH, 'bezier_patch.rb' )
+require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_patch.rb' )
 
 
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
   
   class QuadPatch
     include BezierPatch

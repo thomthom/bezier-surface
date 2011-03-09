@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------------
 
 
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
   
   class CreatePatchTool
     
@@ -17,8 +17,8 @@ module TT::Plugins::BPatch
     end
     
     def getInstructorContentDirectory
-      real_path = File.join( TT::Plugins::BPatch::PATH, 'InstructorContent', 'Test' )
-      adjusted_path = TT::Plugins::BPatch.get_instructor_path( real_path )
+      real_path = File.join( PLUGIN::PATH, 'InstructorContent', 'Test' )
+      adjusted_path = PLUGIN.get_instructor_path( real_path )
       TT::debug( adjusted_path )
       adjusted_path
     end

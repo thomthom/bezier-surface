@@ -1,5 +1,5 @@
 
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
 
   class BezierSurfaceEditor    
     
@@ -114,10 +114,10 @@ module TT::Plugins::BPatch
     
     def show_toolbar
       if @toolbar.nil?
-        path = File.join( TT::Plugins::BPatch::PATH, 'UI')
+        path = File.join( PLUGIN::PATH, 'UI')
         options = {
           :title => 'Bezier Surface',
-          :pref_key => "#{TT::Plugins::BPatch::ID}_Toolbar",
+          :pref_key => "#{PLUGIN::ID}_Toolbar",
           :left => 200,
           :top => 200,
           :width => 250,
@@ -195,4 +195,4 @@ module TT::Plugins::BPatch
     
   end # class BezierSurfaceEditor
   
-end # module TT::Plugins::BPatch
+end # module TT::Plugins::BezierSurfaceTools

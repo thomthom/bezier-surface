@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------------
 
 
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
   
   class BezierSurface
     

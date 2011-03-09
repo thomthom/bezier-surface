@@ -16,11 +16,12 @@ TT::Lib.compatible?('2.5.0', 'Bezier Surface')
 #-------------------------------------------------------------------------------
 
 
-module TT::Plugins::BPatch
+module TT::Plugins::BezierSurfaceTools
   
   
   ### CONSTANTS ### ------------------------------------------------------------
   
+  PLUGIN      = self
   ID          = 'TT_BezierSurface'.freeze
   VERSION     = '1.0.0'.freeze
   PLUGIN_NAME = 'Bezier Surface'.freeze
@@ -158,7 +159,7 @@ module TT::Plugins::BPatch
   
   ### DEBUG ### ----------------------------------------------------------------
   
-  # TT::Plugins::BPatch.reload
+  # TT::Plugins::BezierSurfaceTools.reload
   def self.reload( tt_lib = false )
     TT::Lib.reload if tt_lib
     # Core file (this)
