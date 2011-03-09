@@ -21,8 +21,9 @@ module TT::Plugins::BPatch
   
   ### CONSTANTS ### ------------------------------------------------------------
   
-  ID        = 'TT_BezierSurface'.freeze
-  VERSION   = '1.0.0'.freeze
+  ID          = 'TT_BezierSurface'.freeze
+  VERSION     = '1.0.0'.freeze
+  PLUGIN_NAME = 'Bezier Surface'.freeze
   
   ATTR_ID   = 'TT_Mesh'.freeze
   MESH_TYPE = 'BezierSurface'.freeze
@@ -68,7 +69,7 @@ module TT::Plugins::BPatch
   end
   
   unless file_loaded?( File.basename(__FILE__) )
-    m = TT.menu('Draw').add_submenu('Bezier Surface')
+    m = TT.menu('Draw').add_submenu( PLUGIN_NAME )
     m.add_item('Create Quadpatch')   { self.draw_quadpatch }
     menu = m.add_item('Create Tripatch')    { self.draw_quadpatch }
     m.set_validation_proc(menu) { MF_DISABLED | MF_GRAYED }
