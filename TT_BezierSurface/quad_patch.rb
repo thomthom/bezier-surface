@@ -5,7 +5,8 @@
 #
 #-----------------------------------------------------------------------------
 
-require 'TT_BezierPatch/bezier_patch.rb'
+#require 'TT_BezierPatch/bezier_patch.rb'
+require File.join( TT::Plugins::BPatch::PATH, 'bezier_patch.rb' )
 
 
 module TT::Plugins::BPatch
