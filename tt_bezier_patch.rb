@@ -28,7 +28,7 @@ module TT::Plugins::BPatch
   ATTR_ID   = 'TT_Mesh'.freeze
   MESH_TYPE = 'BezierSurface'.freeze
   
-  PATH = File.join( File.dirname( __FILE__ ), 'TT_BezierPatch' ).freeze
+  PATH = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
   
   # UI Constants
   
