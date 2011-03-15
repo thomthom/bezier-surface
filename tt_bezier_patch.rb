@@ -44,6 +44,9 @@ module TT::Plugins::BezierSurfaceTools
   CLR_CTRL_GRID = Sketchup::Color.new( 255, 165,   0 )
   CLR_SELECTION = Sketchup::Color.new(  64,  64,  64 )
   
+  CLR_PREVIEW_FILL    = Sketchup::Color.new( 128, 0, 255, 32 )
+  CLR_PREVIEW_BORDER  = Sketchup::Color.new( 128, 0, 255 )
+  
   
   ### MODULES ### --------------------------------------------------------------
   Dir.glob( File.join(PATH, '*.{rb,rbs}') ).each { |file|

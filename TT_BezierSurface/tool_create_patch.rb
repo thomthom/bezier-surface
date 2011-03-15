@@ -101,15 +101,20 @@ module TT::Plugins::BezierSurfaceTools
       pts.map! { |pt|
         pt.transform( o )
       }
-      # ...
-      view.drawing_color = 'purple'
+      # Fill
+      if TT::SketchUp.support?( TT::SketchUp::COLOR_GL_POLYGON )
+        view.drawing_color = CLR_PREVIEW_FILL
+        view.draw( GL_QUADS, [ pts[0], pts[3], pts[15], pts[12] ] )
+      end
+      # Grid
+      view.drawing_color = CLR_PREVIEW_BORDER
       # Border
       view.line_width = 2
       view.line_stipple = ''
       view.draw( GL_LINE_LOOP, [ pts[0], pts[3], pts[15], pts[12] ] )
       # Gridlines
       view.line_width = 1
-      view.line_stipple = '.'
+      view.line_stipple = '-'
       view.draw( GL_LINES, [
         pts[1], pts[13],
         pts[2], pts[14],
