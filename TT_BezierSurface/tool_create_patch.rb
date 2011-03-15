@@ -44,6 +44,14 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
     end
     
+    def getExtents
+      bb = Geom::BoundingBox.new
+      # (!) Optimize: don't need all the points control_points() generates.
+      points = control_points()
+      bb.add( points ) if points
+      bb
+    end
+    
     def onUserText(text, view)
       subd = text.to_i
       @subdivs = subd
