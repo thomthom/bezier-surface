@@ -98,17 +98,25 @@ module TT::Plugins::BezierSurfaceTools
   ### MAIN SCRIPT ### ----------------------------------------------------------
   
   # Returns the BezierSurfaceEditor for the current model. This ensures the 
-  # tool can be used for multiple models simultaniously - as is possible under
+  # tool can be used for multiple models simultaneously - as is possible under
   # OSX.
-  def self.editor( model )
+  def self.editor( current_model )
     TT.debug( 'Editor' )
-    #TT.debug( "> #{model.inspect}" )
-    #TT.debug( "> #{model.guid}" )
-    #@editors[model]
+    TT.debug( "> #{current_model.inspect}" )
+    TT.debug( "> #{current_model.guid}" )
     
-    @editors.each { |m,e|
-      return e if m == model
-      return e if m.guid == model.guid
+    # (i) model.guid isn't always reliable - it can change so the model object
+    # is also compared. Model is also not 100% reliable, which might be why
+    # setting an instance variable doesn't seem to work. Combination of the
+    # two appear to work - where one fails, the other works.
+    #
+    # This is far from an ideal thing to do and it's considered a hack until
+    # a better reliable method is found.
+    
+    #@editors[current_model]
+    @editors.each { |model, editor|
+      return editor if model == current_model
+      return editor if model.guid == model.guid
     }
     
     #model.instance_variable_get(:@tt_bezier_surface_editor)
