@@ -63,10 +63,15 @@ module TT::Plugins::BezierSurfaceTools
   # so it can attach the model observer to the current model.
   def self.observe_model( model )
     model.add_observer( BP_ModelObserver.new )
-    @editors[model] = BezierSurfaceEditor.new( model )
+    editor = BezierSurfaceEditor.new( model )
+    @editors[model] = editor
     
-    #editor = BezierSurfaceEditor.new( model )
-    #model.instance_variable_set(:@tt_bezier_surface_editor, editor)
+    TT.debug( "Observe Model" )
+    TT.debug( "> Instance Variable:" )
+    e = model.instance_variable_set( :@tt_bezier_surface_editor, editor )
+    TT.debug( "> #{e}" )
+    
+    nil
   end
   
   unless file_loaded?( File.basename(__FILE__) )
@@ -105,6 +110,11 @@ module TT::Plugins::BezierSurfaceTools
     TT.debug( "> #{current_model.inspect}" )
     TT.debug( "> #{current_model.guid}" )
     
+    # Monitor if this work.
+    TT.debug( "> Instance Variable:" )
+    e = current_model.instance_variable_get( :@tt_bezier_surface_editor )
+    TT.debug( "> #{e}" )
+    
     # (i) model.guid isn't always reliable - it can change so the model object
     # is also compared. Model is also not 100% reliable, which might be why
     # setting an instance variable doesn't seem to work. Combination of the
@@ -119,7 +129,7 @@ module TT::Plugins::BezierSurfaceTools
       return editor if model.guid == model.guid
     }
     
-    #model.instance_variable_get(:@tt_bezier_surface_editor)
+    return nil
   end
 
   # Initates the tool to draw a new QuadPatch.
