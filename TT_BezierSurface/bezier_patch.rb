@@ -67,20 +67,20 @@ module TT::Plugins::BezierSurfaceTools
         fill.alpha = 32
         view.drawing_color = fill
         
-        pts3d = @points.map { |pt| pt.transform(t) }
-        quads = []
-        
-        quads.concat( [ pts3d[0], pts3d[1], pts3d[5], pts3d[4] ] )
-        quads.concat( [ pts3d[1], pts3d[2], pts3d[6], pts3d[5] ] )
-        quads.concat( [ pts3d[2], pts3d[3], pts3d[7], pts3d[6] ] )
-        
-        quads.concat( [ pts3d[4], pts3d[5], pts3d[9], pts3d[8] ] )
-        quads.concat( [ pts3d[5], pts3d[6], pts3d[10], pts3d[9] ] )
-        quads.concat( [ pts3d[6], pts3d[7], pts3d[11], pts3d[10] ] )
-        
-        quads.concat( [ pts3d[8], pts3d[9], pts3d[13], pts3d[12] ] )
-        quads.concat( [ pts3d[9], pts3d[10], pts3d[14], pts3d[13] ] )
-        quads.concat( [ pts3d[10], pts3d[11], pts3d[15], pts3d[14] ] )
+        pts3d = @points.map { |pt| pt.transform(t) }       
+        quads = pts3d.to_a.values_at(
+           0, 1, 5, 4,
+           1, 2, 6, 5,
+           2, 3, 7, 6,
+           
+           4, 5, 9, 8,
+           5, 6,10, 9,
+           6, 7,11,10,
+           
+           8, 9,13,12,
+           9,10,14,13,
+          10,11,15,14
+        )
         
         view.draw( GL_QUADS, quads )
       end
