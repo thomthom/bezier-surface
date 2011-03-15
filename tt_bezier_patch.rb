@@ -105,7 +105,7 @@ module TT::Plugins::BezierSurfaceTools
   # Returns the BezierSurfaceEditor for the current model. This ensures the 
   # tool can be used for multiple models simultaneously - as is possible under
   # OSX.
-  def self.editor( current_model )
+  def self.get_editor( current_model )
     TT.debug( 'Editor' )
     TT.debug( "> #{current_model.inspect}" )
     TT.debug( "> #{current_model.guid}" )

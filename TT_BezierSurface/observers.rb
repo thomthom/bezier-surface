@@ -35,12 +35,12 @@ module TT::Plugins::BezierSurfaceTools
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
         #TT.debug( '> New Session...' )
         #BezierSurfaceEditor.new( instance ) # ???
-        editor = PLUGIN.editor( model )
+        editor = PLUGIN.get_editor( model )
         editor.edit( instance )
         #model.selection.clear
       else
         #TT.debug( '> Ending Session...' )
-        editor = PLUGIN.editor( model )
+        editor = PLUGIN.get_editor( model )
         #TT.debug( editor )
         editor.end_session unless editor.nil?
       end
@@ -60,13 +60,13 @@ module TT::Plugins::BezierSurfaceTools
   
     def onTransactionUndo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
-      editor = PLUGIN.editor( model )
+      editor = PLUGIN.get_editor( model )
       editor.undo_redo
     end
     
     def onTransactionRedo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
-      editor = PLUGIN.editor( model )
+      editor = PLUGIN.get_editor( model )
       editor.undo_redo
     end
     
