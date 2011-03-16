@@ -51,6 +51,8 @@ module TT::Plugins::BezierSurfaceTools
       self
     end
     
+    # (i) Remember to wrap in start_operation and commit_operation to ensure
+    # that undo works as expected.
     def update( transformation )
       TT.debug( 'Updating Bezier Surface...' )
       Sketchup.status_text = 'Updating Bezier Surface...'

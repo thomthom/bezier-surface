@@ -76,6 +76,7 @@ module TT::Plugins::BezierSurfaceTools
         @start_over_vertex = false
         #@state = S_NORMAL
         view.invalidate
+        #@surface.update( @editor.model.edit_transform )
       end
     end
     
@@ -110,6 +111,37 @@ module TT::Plugins::BezierSurfaceTools
       # Using standard SketchUp selection modifier keys.
       key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
       key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
+      
+      if @ip_start.valid? && @ip_mouse.valid?
+        pt_start = @ip_start.position
+        pt_end = @ip_mouse.position
+        offset_vector = pt_start.vector_to( pt_end )
+        if offset_vector.valid?
+          # Get local transformation.
+          # (!) Move into reusable mehod.
+          tr = Geom::Transformation.new( offset_vector )
+          et = @editor.model.edit_transform
+          local_transform = (et.inverse * tr) * et
+          
+          # Transform selected vertices, or if there is no selection move the
+          # vertices the user initially clicked on.
+          if @editor.selection.empty?
+            vertices = ( @start_over_vertex ) ? @start_over_vertex : []
+          else
+            vertices = @editor.selection
+          end
+          
+          vertices.each { |pt|
+            pt.transform!( local_transform )
+          }
+          
+          @editor.model.start_operation('Move Control Points')
+          @surface.update( @editor.model.edit_transform )
+          @editor.model.commit_operation
+          #positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
+          #@surface.set_vertex_positions( @vertex_cache, positions )
+        end
+      end
       
       # Reset variables for next mouse action.
       @ip_start.clear			
