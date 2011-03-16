@@ -19,6 +19,12 @@ module TT::Plugins::BezierSurfaceTools
       @subdivs = 6
     end
     
+    # Checks if a given instance (group or component) is a bezier patch.
+    #
+    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def self.is?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
@@ -26,6 +32,12 @@ module TT::Plugins::BezierSurfaceTools
       mesh_type == MESH_TYPE
     end
     
+    # Loads the bezier patch data from the given instance (group or component).
+    #
+    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    #
+    # @return [BezierSurface|Nil]
+    # @since 1.0.0
     def self.load( instance )
       TT.debug( 'BezierSurface.load' )
       return nil unless self.is?( instance )
@@ -33,6 +45,13 @@ module TT::Plugins::BezierSurfaceTools
       surface.reload
     end
     
+    # Reloads the bezier patch data from the attribute dictionary of the
+    # assosiated instance.
+    #
+    # Use after undo is detected to corrently rebuild the geometry.
+    #
+    # @return [BezierSurface|Nil]
+    # @since 1.0.0
     def reload
       TT.debug( 'BezierSurface.reload' )
       d = TT::Instance.definition( @instance )
@@ -51,27 +70,60 @@ module TT::Plugins::BezierSurfaceTools
       self
     end
     
+    # Updates the mesh and writes the patch data to the attribute dictionary.
+    #
+    # +transformation+ is usually +model.edit_transform+.
+    #
     # (i) Remember to wrap in start_operation and commit_operation to ensure
     # that undo works as expected.
+    #
+    # @param [Geom::Transformation] transformation
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def update( transformation )
       TT.debug( 'Updating Bezier Surface...' )
       Sketchup.status_text = 'Updating Bezier Surface...'
       update_mesh( @subdivs, transformation )
       update_attributes()
+      nil
     end
     
+    # Updates the mesh with the given sub-division without writing the data to
+    # the attribute dictionary. Use this for live transformation previews.
+    #
+    # @param [Geom::Transformation] transformation
+    # @param [Integer] subdivs
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def preview( transformation, subdivs = 4 )
       #TT.debug( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
       update_mesh( subdivs, transformation )
+      nil
     end
     
+    # Adds a +BezierPatch+ to the +BezierSurface+.
+    #
+    # @param [BezierPatch] patch
+    #
+    # @return [BezierPatch]
+    # @since 1.0.0
     def add_patch( patch )
       raise ArgumentError, 'Not a BezierPatch.' unless patch.is_a?(BezierPatch)
       @patches << patch
+      patch
     end
     
-    # Is not accurate - does not take into account patches that share points.
+    # Estimates the number of vertices in the BezierSurface.
+    #
+    # (!) Is not accurate - does not take into account patches that share points.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Integer]
+    # @since 1.0.0
     def count_mesh_points( subdivs )
       count = 0
       @patches.each { |patch|
@@ -80,9 +132,16 @@ module TT::Plugins::BezierSurfaceTools
       count
     end
     
-    # Is not accurate - does not take into account patches that share polygon
+    # Estimates the number of polygons (triangles) in the BezierSurface.
+    #
+    # (!) Is not accurate - does not take into account patches that share polygon
     # edges. Also - if the mesh is not always triangulated there might be less
     # polygons.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Integer]
+    # @since 1.0.0
     def count_mesh_polygons( subdivs )
       count = 0
       @patches.each { |patch|
