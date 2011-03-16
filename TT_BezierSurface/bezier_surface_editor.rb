@@ -62,6 +62,15 @@ module TT::Plugins::BezierSurfaceTools
       @model.commit_operation
     end
     
+    def local_transformation( transformation )
+      # Cast Vector3d into Transformation.
+      if transformation.is_a?( Geom::Vector3d )
+        transformation = Geom::Transformation.new( transformation )
+      end
+      et = @model.edit_transform
+      local_transform = (et.inverse * transformation) * et
+    end
+    
     def move_selection( vector )
       if vector.valid? && @selection.size > 0
         t = Geom::Transformation.new( vector )

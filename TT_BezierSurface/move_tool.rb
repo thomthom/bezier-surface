@@ -117,12 +117,6 @@ module TT::Plugins::BezierSurfaceTools
         pt_end = @ip_mouse.position
         offset_vector = pt_start.vector_to( pt_end )
         if offset_vector.valid?
-          # Get local transformation.
-          # (!) Move into reusable mehod.
-          tr = Geom::Transformation.new( offset_vector )
-          et = @editor.model.edit_transform
-          local_transform = (et.inverse * tr) * et
-          
           # Transform selected vertices, or if there is no selection move the
           # vertices the user initially clicked on.
           if @editor.selection.empty?
@@ -131,6 +125,7 @@ module TT::Plugins::BezierSurfaceTools
             vertices = @editor.selection
           end
           
+          local_transform = @editor.local_transformation( offset_vector )
           vertices.each { |pt|
             pt.transform!( local_transform )
           }
