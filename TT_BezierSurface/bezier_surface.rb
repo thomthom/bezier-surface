@@ -43,10 +43,11 @@ module TT::Plugins::BezierSurfaceTools
       d = TT::Instance.definition( instance )
       return false if d.nil?
       version = d.get_attribute( ATTR_ID, 'Version' )
-      return true if MESH_VERSION[0] > version[0]
-      return true if MESH_VERSION[0] == version[0] && MESH_VERSION[1] > version[1]
-      return true if MESH_VERSION[1] == version[1] && MESH_VERSION[2] >= version[2]
-      false
+      return false unless version
+      return false if MESH_VERSION[0] < version[0]
+      return false if MESH_VERSION[0] == version[0] && MESH_VERSION[1] < version[1]
+      return false if MESH_VERSION[1] == version[1] && MESH_VERSION[2] < version[2]
+      true
     end
     
     # Loads the bezier patch data from the given instance (group or component).
@@ -102,8 +103,8 @@ module TT::Plugins::BezierSurfaceTools
     #
     # +transformation+ is usually +model.edit_transform+.
     #
-    # (i) Remember to wrap in start_operation and commit_operation to ensure
-    # that undo works as expected.
+    # @note Remember to wrap in start_operation and commit_operation to ensure
+    #       that undo works as expected.
     #
     # @param [Geom::Transformation] transformation
     #
@@ -179,6 +180,9 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # Returns the control points for all the paches in the surface.
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def control_points
       pts = []
       @patches.each { |patch|
@@ -188,6 +192,18 @@ module TT::Plugins::BezierSurfaceTools
       pts
     end
     
+    # Returns the picked control points for the given x, y screen co-ordinates.
+    #
+    # (!) Currently returns an array - might be multiple points returned if they
+    # occupy similar screen co-ordinates. This should perhaps return only one
+    # point.
+    #
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def pick_control_points(x, y, view)
       picked = []
       @patches.each { |patch|
@@ -198,6 +214,14 @@ module TT::Plugins::BezierSurfaceTools
       picked.uniq
     end
     
+    # (!) Placeholder method. BezierEdges not implemented.
+    #
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
     def pick_edges(subdivs, x, y, view)
       picked = []
       @patches.each { |patch|
@@ -208,12 +232,26 @@ module TT::Plugins::BezierSurfaceTools
       picked.uniq
     end
     
+    # Draws the control grid structure for all the paches in the surface.
+    #
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def draw_control_grid(view)
       @patches.each { |patch|
         patch.draw_control_grid( view )
       }
+      nil
     end
     
+    # Draws the internal subdivided structure for all the paches in the surface.
+    #
+    # @param [Sketchup::View] view
+    # @param [Boolean] preview
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def draw_grid(view, preview = false)
       @patches.each { |patch|
         if preview
@@ -222,8 +260,13 @@ module TT::Plugins::BezierSurfaceTools
           patch.draw_grid( @subdivs, view )
         end
       }
+      nil
     end
     
+    # Returns all the +BezierEdge+ entities for the surface.
+    #
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
     def edges
       edges = []
       @patches.each { |patch|
@@ -236,6 +279,13 @@ module TT::Plugins::BezierSurfaceTools
       # ...
     end
     
+    # Returns all the 3d points for the surface mesh.
+    #
+    # @param [Integer] subdivs
+    # @param [Geom::Transformation] tranformation
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def mesh_points( subdivs, transformation )
       pts = []
       @patches.each { |patch|
@@ -245,29 +295,34 @@ module TT::Plugins::BezierSurfaceTools
       pts
     end
     
-    # Returns vertices in the same order as mesh_points.
+    # Returns all the vertices for the surface mesh in the same order as
+    # #mesh_points.
+    #
+    # @param [Integer] subdivs
+    # @param [Geom::Transformation] tranformation
+    #
+    # @return [Array<Sketchup::Vertex>]
+    # @since 1.0.0
     def mesh_vertices( subdivs, transformation )
       d = TT::Instance.definition( @instance )
       pts = mesh_points( subdivs, transformation )
-      vs = raw_mesh_vertices()
-      
-      #pts.each { |pt| p pt }
-      #puts '--'
-      #vs.each { |v| p v.position }
-      #p pts.length
-      #p pts
-      #p vs.length
-      #p vs
-      
+      vertices = raw_mesh_vertices()      
       patch_vertices = []
-      pts.each { |pt|
-        vertex = vs.find { |v| v.position == pt }
+      for pt in pts
+        vertex = vertices.find { |v| v.position == pt } # (!) Optimize
         patch_vertices << vertex
-        vs.delete( vertex )
-      }
+        vertices.delete( vertex )
+      end
       patch_vertices
     end
     
+    # Moves the given set of vertices to new positions.
+    #
+    # @param [Array<Sketchup::Vertex>] vertices
+    # @param [Array<Geom::Point3d>] positions
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def set_vertex_positions( vertices, positions )
       #TT::debug 'set_vertex_positions'
       #TT::debug '> vertices'
@@ -291,10 +346,15 @@ module TT::Plugins::BezierSurfaceTools
       # (!) ensure entities has same length as vectors
       d = TT::Instance.definition( @instance )
       d.entities.transform_by_vectors( entities, vectors )
+      true
     end
     
     private
     
+    # Returns all vertices for the surface unordered.
+    #
+    # @return [Array<Sketchup::Vertex>]
+    # @since 1.0.0
     def raw_mesh_vertices
       vs = []
       d = TT::Instance.definition( @instance )
@@ -306,6 +366,10 @@ module TT::Plugins::BezierSurfaceTools
       vs
     end
     
+    # Updates the attribute dictionary with the BezierSurface data.
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def update_attributes
       d = TT::Instance.definition( @instance )
       # Write Surface data
@@ -320,8 +384,16 @@ module TT::Plugins::BezierSurfaceTools
         }
         d.set_attribute( ATTR_ID, section, data.inspect )
       }
+      true
     end
     
+    # Regenerates the mesh from the BezierSurface data.
+    #
+    # @param [Integer] subdivs
+    # @param [Geom::Transformation] tranformation
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def update_mesh( subdivs, transformation )
       d = TT::Instance.definition( @instance )
       points = count_mesh_points( subdivs )
