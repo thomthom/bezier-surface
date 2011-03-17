@@ -123,7 +123,6 @@ module TT::Plugins::BezierSurfaceTools
     
     def show_toolbar
       if @toolbar.nil?
-        path = File.join( PLUGIN::PATH, 'UI')
         options = {
           :title => 'Bezier Surface',
           :pref_key => "#{PLUGIN::ID}_Toolbar",
@@ -135,8 +134,8 @@ module TT::Plugins::BezierSurfaceTools
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
-        #@toolbar.add_script( File.join(path, 'js', 'wnd_toolbar.js') )
-        @toolbar.add_style( File.join(path, 'css', 'wnd_toolbar.css') )
+        #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
+        @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
         
         # Select
         button = TT::GUI::Button.new('Select') {
@@ -144,7 +143,7 @@ module TT::Plugins::BezierSurfaceTools
           tool = VertexSelectionTool.new( self )
           select_tool( tool )
         }
-        button.icon = File.join( path, 'Icons', 'Select_24.png' )
+        button.icon = File.join( PATH_ICONS, 'Select_24.png' )
         @toolbar.add_control( button )
         
         # Move
@@ -153,7 +152,7 @@ module TT::Plugins::BezierSurfaceTools
           tool = MoveTool.new( self )
           select_tool( tool )
         }
-        button.icon = File.join( path, 'Icons', 'Move_24.png' )
+        button.icon = File.join( PATH_ICONS, 'Move_24.png' )
         @toolbar.add_control( button )
         
         # Move
