@@ -23,4 +23,10 @@
 
 // NOTES ///////////////////////////////////////////////////////////////////////
 
-* GUID verification check (of bezier surface group)
+* GUID verification check (of bezier surface group).
+
+* Detect Axis change.
+
+* Detect active context change due to undo/redo.
+
+* Error catching, validation and user feedback.
