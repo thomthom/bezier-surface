@@ -3,6 +3,10 @@ module TT::Plugins::BezierSurfaceTools
   
   # Manages the editing environment for bezier patches.
   #
+  # The cless is a Tool class, used as the root for the editing tools. This
+  # class must be activated first - then the sub-tools are pushed into the
+  # stack.
+  #
   # @since 1.0.0
   class BezierSurfaceEditor    
     
