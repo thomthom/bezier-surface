@@ -23,6 +23,13 @@ module TT::Plugins::BezierSurfaceTools
       @model_observer = BP_Editor_ModelObserver.new
     end
     
+    # Activates Bezier Surface editing mode.
+    # Used when a bezier surface group or component is opened for editing.
+    #
+    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def edit( instance )
       TT.debug( 'BezierSurfaceEditor.edit' )
       @model.selection.clear
@@ -32,6 +39,12 @@ module TT::Plugins::BezierSurfaceTools
       select_tool( tool )
     end
     
+    # Activates a bezier editing tool - pushing it into SketchUp's tool stack.
+    #
+    # @param [Sketchup::Tool] tool
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def select_tool( tool )
       TT.debug( 'BezierSurfaceEditor.select_tool' )
       @model.tools.pop_tool if @active_tool
@@ -39,6 +52,13 @@ module TT::Plugins::BezierSurfaceTools
       @model.tools.push_tool( tool )
     end
     
+    # Ends the active editing session. Called when the bezier surface instance
+    # is closed or when the user activates another tool.
+    #
+    # When the user activates another tool the open bezier instance is closed.
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def end_session
       TT.debug( 'BezierSurfaceEditor.end_session' )
       if @active
@@ -48,6 +68,14 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # (!) Move to BezierSurface ?
+    #
+    # Changes the subdivision of the active surface and commits it.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def change_subdivisions( subdivs )
       if subdivs > 0
         @model.start_operation('Change Subdivisions', true)
@@ -60,6 +88,15 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # (!) Move to BezierSurface ?
+    #
+    # Applies a transformation to the selected control-points to the active
+    # surface and commits it.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def transform_selection( transformation )
       @model.start_operation('Edit Bezier Surface', true)
       for point in @selection
@@ -78,6 +115,12 @@ module TT::Plugins::BezierSurfaceTools
       local_transform = (et.inverse * transformation) * et
     end
     
+    # Moves the selected control points by the given vector.
+    #
+    # @param [Geom::Vector3d] vector
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def move_selection( vector )
       if vector.valid? && @selection.size > 0
         t = Geom::Transformation.new( vector )
@@ -88,11 +131,22 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # Checks if the current model context is a bezier surface.
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def valid_context?
       (@model.active_path.nil?) ? false : @model.active_path.last == @surface.instance
     end
     
-    # Called by the BP_Editor_ModelObserver observer
+    # Called by the BP_Editor_ModelObserver observer when something is undone or
+    # redone.
+    #
+    # When editing is active the mesh is refreshed, otherwise the active 
+    # editing session is ended.
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def undo_redo
       TT.debug( 'BezierSurfaceEditor.undo_redo' )
       if valid_context?
@@ -102,9 +156,16 @@ module TT::Plugins::BezierSurfaceTools
         TT.debug( '> Invalid Context' )
         self.end_session
       end
+      nil
     end
     
-    # Draw mesh grids and control points
+    # Draw mesh grids and control points.
+    #
+    # @param [Sketchup::View] view
+    # @param [Boolean] preview
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def draw( view, preview = false )
       t = view.model.edit_transform
       # Control Grid
@@ -124,10 +185,16 @@ module TT::Plugins::BezierSurfaceTools
       view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
     end
     
+    # @return [String]
+    # @since 1.0.0
     def inspect
       "#<#{self.class}:#{self.object_id}>"
     end
     
+    # Creates and displays the bezier surface editing toolbar.
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def show_toolbar
       if @toolbar.nil?
         options = {
@@ -173,12 +240,18 @@ module TT::Plugins::BezierSurfaceTools
       @toolbar.show_window
     end
     
+    # Closes the bezier surface editing toolbar.
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def close_toolbar
       @toolbar.close if @toolbar.visible?
+      nil
     end
     
     ### Tool Events
     
+    # @since 1.0.0
     def activate
       TT.debug( 'BezierSurfaceEditor.activate' )
       @active = true
@@ -191,6 +264,7 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( @model.add_observer( @model_observer ) )
     end
     
+    # @since 1.0.0
     def deactivate(view)
       TT.debug( 'BezierSurfaceEditor.deactivate' )
       @active = false
@@ -199,8 +273,8 @@ module TT::Plugins::BezierSurfaceTools
       close_toolbar()
       
       # (!) SketchUp bug!
-      # Normally, closing a group/component appears on the undo stack.
-      # But when this method is used in SU8-M0 and older the action does not
+      # Normally, closing a group/component appears in the undo stack.
+      # But when this method is used in SU8-M1 and older the action does not
       # appear in the stack - and when you then trigger and undo after using
       # this method all the modified geometry is offset.
       model.close_active
