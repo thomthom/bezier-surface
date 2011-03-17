@@ -31,7 +31,7 @@ module TT::Plugins::BezierSurfaceTools
   MESH_VERSION = [1,0,0].freeze
   
   PATH = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
-  PATH_ICONS = File.join( PATH, 'UI', 'Icons' )
+  PATH_ICONS = File.join( PATH, 'UI', 'Icons' ).freeze
   
   # UI Constants
   
