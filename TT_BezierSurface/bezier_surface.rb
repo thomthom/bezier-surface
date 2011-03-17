@@ -60,8 +60,17 @@ module TT::Plugins::BezierSurfaceTools
       @patches.clear
       attr = d.attribute_dictionaries[ ATTR_ID ]
       attr.each { |key, value|
+        # Patch data dictionary:
+        # * Key: Patch{index}_{type}
+        #        Example: "Patch3_QuadPatch"
+        # * Value: Array of [x,y,z] points in inches.
         test = key.match(/Patch(\d+)_(\w+)/)
         next unless test
+        # The patch type string is eval'ed into a Class object which is then
+        # used to load the patch data. The patch is left with the resonsibility
+        # of handling the data loading.
+        #
+        # (!) Error catching and validation before eval'ing should be added.
         patchtype = eval( test[2] )
         data = eval( value )
         points = data.map { |pt| Geom::Point3d.new( pt ) }
@@ -280,8 +289,10 @@ module TT::Plugins::BezierSurfaceTools
     
     def update_attributes
       d = TT::Instance.definition( @instance )
+      # Write Surface data
       d.set_attribute( ATTR_ID, 'Type', MESH_TYPE )
       d.set_attribute( ATTR_ID, 'Subdivs', @subdivs )
+      # Write Patches
       @patches.each_with_index { |patch, i|
         section = "Patch#{i}_#{patch.typename}"
         data = patch.control_points.to_a.map { |pt|
