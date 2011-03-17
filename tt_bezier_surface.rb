@@ -31,6 +31,7 @@ module TT::Plugins::BezierSurfaceTools
   MESH_VERSION = [1,0,0].freeze
   
   PATH = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
+  PATH_ICONS = File.join( PATH, 'UI', 'Icons' )
   
   # UI Constants
   
@@ -79,9 +80,20 @@ module TT::Plugins::BezierSurfaceTools
   end
   
   unless file_loaded?( File.basename(__FILE__) )
+    # Commands
+    cmd = UI::Command.new('Create Quadpatch') {
+      self.draw_quadpatch
+    }
+    cmd.small_icon = File.join( PATH_ICONS, 'QuadPatch_16.png' )
+    cmd.large_icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
+    cmd.status_bar_text = 'Create a Quadpatch Bezier Surface'
+    cmd.tooltip = 'Create a Quadpatch Bezier Surface'
+    cmd_create_quad_patch = cmd
+    
+    # Menus
     m = TT.menu('Draw').add_submenu( PLUGIN_NAME )
-    m.add_item('Create Quadpatch')   { self.draw_quadpatch }
-    menu = m.add_item('Create Tripatch')    { self.draw_quadpatch }
+    m.add_item( cmd_create_quad_patch )
+    menu = m.add_item('Create Tripatch')    { puts 'Create Tripatch' }
     m.set_validation_proc(menu) { MF_DISABLED | MF_GRAYED }
 
     #m.add_separator
@@ -97,6 +109,14 @@ module TT::Plugins::BezierSurfaceTools
         #}
       #end
     #}
+    
+    # Toolbar
+    toolbar = UI::Toolbar.new( PLUGIN_NAME )
+    toolbar.add_item( cmd_create_quad_patch )
+    if toolbar.get_last_state == TB_VISIBLE
+      toolbar.restore
+      UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
+    end
     
     # Observers
     Sketchup.add_observer( BP_AppObserver.new )
