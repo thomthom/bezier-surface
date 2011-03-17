@@ -8,6 +8,9 @@
 
 module TT::Plugins::BezierSurfaceTools
   
+  # Central class managing the bezier surface object and data.
+  #
+  # @since 1.0.0
   class BezierSurface
     
     attr_reader( :patches, :instance )
