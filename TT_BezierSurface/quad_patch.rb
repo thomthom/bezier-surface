@@ -54,7 +54,15 @@ module TT::Plugins::BezierSurfaceTools
       points
     end
     
+    # Returns an array of +BezierEdge+ objects in clock-wise order.
+    #
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
     def edges
+      # (!) Edges can't be created dynamically like this. They need to be
+      # created when the QuadPatch is initialized and then updated when
+      # requested. BezierEdge objects need to maintain references to the
+      # patches it's connected to.
       [
         BezierEdge.new( @points.row(0) ),
         BezierEdge.new( @points.column(3) ),
