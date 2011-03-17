@@ -67,6 +67,11 @@ module TT::Plugins::BezierSurfaceTools
   
   # This method must be here as it needs to be availible when the script loads
   # so it can attach the model observer to the current model.
+  #
+  # @param [Sketchup::Model] model
+  #
+  # @return [Nil]
+  # @since 1.0.0
   def self.observe_model( model )
     model.add_observer( BP_ModelObserver.new )
     editor = BezierSurfaceEditor.new( model )
@@ -127,6 +132,11 @@ module TT::Plugins::BezierSurfaceTools
   # Returns the BezierSurfaceEditor for the current model. This ensures the 
   # tool can be used for multiple models simultaneously - as is possible under
   # OSX.
+  #
+  # @param [Sketchup::Model] current_model
+  #
+  # @return [BezierSurfaceEditor|Nil]
+  # @since 1.0.0
   def self.get_editor( current_model )
     TT.debug( 'Editor' )
     TT.debug( "> #{current_model.inspect}" )
@@ -156,6 +166,9 @@ module TT::Plugins::BezierSurfaceTools
   end
 
   # Initates the tool to draw a new QuadPatch.
+  #
+  # @return [Boolean]
+  # @since 1.0.0
   def self.draw_quadpatch
     Sketchup.active_model.tools.push_tool( CreatePatchTool.new )
   end
@@ -174,6 +187,11 @@ module TT::Plugins::BezierSurfaceTools
   #
   # This quick exist in all current SketchUp versions.
   # Current: SketchUp 8 M1
+  #
+  # @param [String] path
+  #
+  # @return [String|Nil]
+  # @since 1.0.0
   def self.get_instructor_path( path )
     path = File.expand_path( path )
     origin = Sketchup.get_resource_path( 'helpcontent' )
@@ -201,6 +219,11 @@ module TT::Plugins::BezierSurfaceTools
   ### DEBUG ### ----------------------------------------------------------------
   
   # TT::Plugins::BezierSurfaceTools.reload
+  #
+  # @param [Boolean] tt_lib
+  #
+  # @return [Integer]
+  # @since 1.0.0
   def self.reload( tt_lib = false )
     TT::Lib.reload if tt_lib
     # Core file (this)

@@ -1,6 +1,9 @@
 
 module TT::Plugins::BezierSurfaceTools
-
+  
+  # Manages the editing environment for bezier patches.
+  #
+  # @since 1.0.0
   class BezierSurfaceEditor    
     
     attr_reader( :model, :surface, :selection )
