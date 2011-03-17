@@ -127,7 +127,7 @@ module TT::Plugins::BezierSurfaceTools
     def show_toolbar
       if @toolbar.nil?
         options = {
-          :title => 'Bezier Surface',
+          :title => PLUGIN_NAME,
           :pref_key => "#{PLUGIN::ID}_Toolbar",
           :left => 200,
           :top => 200,
