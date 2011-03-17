@@ -95,17 +95,14 @@ module TT::Plugins::BezierSurfaceTools
     m.add_item( cmd_create_quad_patch )
     menu = m.add_item('Create Tripatch')    { puts 'Create Tripatch' }
     m.set_validation_proc(menu) { MF_DISABLED | MF_GRAYED }
-
-    #m.add_separator
-    #m.add_item('Edit Surface')      { self.edit_surface }
     
     # Right click menu
     #UI.add_context_menu_handler { |context_menu|
       #model = Sketchup.active_model
       #sel = model.selection
       #if sel.length == 1 && BezierSurface.is?( sel[0] )
-        #context_menu.add_item('Edit Bezier Surface') { 
-        #  self.edit_surface
+        #context_menu.add_item('refresh Bezier Surface') { 
+        #  self.refresh_selected_surface
         #}
       #end
     #}
