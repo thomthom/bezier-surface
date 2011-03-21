@@ -45,23 +45,42 @@ module TT::Plugins::BezierSurfaceTools
       # appear reporting reference to missing entity. The model? Or maybe
       # the instance - get_attribute might have been a trigger point...
       
-      #TT.debug( 'BP_onActivePathChanged' )
+      #TT.debug( 'BP_ModelObserver.onActivePathChanged' )
       instance = (model.active_path.nil?) ? nil : model.active_path.last
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
-        #TT.debug( '> New Session...' )
-        #BezierSurfaceEditor.new( instance ) # ???
         editor = PLUGIN.get_editor( model )
         editor.edit( instance )
-        #model.selection.clear
       else
-        #TT.debug( '> Ending Session...' )
         editor = PLUGIN.get_editor( model )
-        #TT.debug( editor )
         editor.end_session unless editor.nil?
       end
     end
     
-    #
+    # @since 1.0.0
+    def onTransactionUndo(model)
+      TT.debug( 'BP_ModelObserver.onTransactionUndo' )
+      checkActivePathUndoRedo( model )
+    end
+    
+    # @since 1.0.0
+    def onTransactionRedo(model)
+      TT.debug( 'BP_ModelObserver.onTransactionRedo' )
+      checkActivePathUndoRedo( model )
+    end
+    
+    # @since 1.0.0
+    def checkActivePathUndoRedo( model )
+      instance = (model.active_path.nil?) ? nil : model.active_path.last
+      if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
+        TT.debug( '> Is BezierSurface' )
+        #editor = PLUGIN.get_editor( model )
+        #unless editor
+        #  editor.edit( instance )
+        #end
+      else
+        TT.debug( '> Is Not BezierSurface' )
+      end
+    end
     
   end # class BP_ModelObserver
   
