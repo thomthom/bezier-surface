@@ -11,6 +11,9 @@ require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_patch.rb' )
 
 module TT::Plugins::BezierSurfaceTools
   
+  # Manages bezier quad-patches.
+  #
+  # @since 1.0.0
   class QuadPatch
     include BezierPatch
     
@@ -33,22 +36,42 @@ module TT::Plugins::BezierSurfaceTools
       }
     end
     
+    # Used when writing the bezier data to attribute dictionaries.
+    #
+    # @return [String]
+    # @since 1.0.0
     def typename
       'QuadPatch'
     end
     
     # Accurate calculation of the number of vertices in the mesh.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Integer]
+    # @since 1.0.0
     def count_mesh_points( subdiv )
       ( subdiv + 1 ) * ( subdiv + 1 )
     end
     
     # Maximum number of polygons in a patch. If the patch tries to maintain
     # quad-faces when possible the actual number of polygons might be less.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Integer]
+    # @since 1.0.0
     def count_mesh_polygons( subdiv )
       subdiv * subdiv * 2
     end
     
+    # Returns a set of 3d points for this patch using the given sub-division.
+    # 
+    # @param [Integer] subdivs
+    # @param [Geom::Transformation] transformation
+    #
     # @return [TT::Dimension]
+    # @since 1.0.0
     def mesh_points( subdiv, transformation )
       # Transform to active model space
       wpts = @points.map { |pt| pt.transform( transformation ) }
@@ -81,6 +104,11 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # (?) Private
+    #
+    # @param [Array<Geom::Point3d] points
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def get_control_grid_border( points )
       [
         points.row(0),
@@ -91,6 +119,11 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # (?) Private
+    #
+    # @param [Array<Geom::Point3d] points
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def get_control_grid_interior( points )
       [
         points.row(1),
@@ -133,8 +166,11 @@ module TT::Plugins::BezierSurfaceTools
     # ... and repeat.
     #
     # @param [Geom::PolygonMesh] pm
+    # @param [Integer] subdivs
+    # @param [Geom::Transformation] transformation
     #
-    # @return [nil]
+    # @return [Geom::PolygonMesh]
+    # @since 1.0.0
     def add_to_mesh( pm, subdiv, transformation )
       triangulate = false # (?) Instance variable
       mirror = false # (?) Instance variable
