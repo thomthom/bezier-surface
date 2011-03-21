@@ -30,3 +30,5 @@
 * Detect active context change due to undo/redo.
 
 * Error catching, validation and user feedback.
+
+* Check control-point references validity for BezierEdges.
