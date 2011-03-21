@@ -170,6 +170,7 @@ module TT::Plugins::BezierSurfaceTools
   # @return [Boolean]
   # @since 1.0.0
   def self.draw_quadpatch
+    Sketchup.active_model.select_tool( nil )
     Sketchup.active_model.tools.push_tool( CreatePatchTool.new )
   end
   
