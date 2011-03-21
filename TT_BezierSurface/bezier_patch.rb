@@ -8,6 +8,15 @@
 
 module TT::Plugins::BezierSurfaceTools
   
+  # Mix-in module with core methods used and required by all types of patches.
+  #
+  # @example
+  #  class QuadPatch
+  #    include BezierPatch
+  #    # ...
+  #  end
+  #
+  # @since 1.0.0
   module BezierPatch
     
     def initialize( *args )
@@ -24,12 +33,26 @@ module TT::Plugins::BezierSurfaceTools
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
-        
+    
+    # Returns the control points for this BezierPatch.
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def control_points
       @points
     end
-
-    def pick_control_points(x, y, view)
+    
+    # Pick-tests the patch with the given screen co-ordinates. Returns an array
+    # of picked points.
+    #
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def pick_control_points( x, y, view )
+      # (?) Return only one point?
       picked = []
       t = view.model.edit_transform
       aperture = VERTEX_SIZE * 2
@@ -42,7 +65,18 @@ module TT::Plugins::BezierSurfaceTools
       picked
     end
     
-    def pick_edges(subdivs, x, y, view)
+    # Pick-tests the patch's edges with the given sub-division.  Returns an array
+    # of picked +BezierEdge+ objects.
+    #
+    # @param [Integer] subdivs
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def pick_edges( subdivs, x, y, view )
+      # (?) Return only one entity?
       picked = []
       ph = view.pick_helper( x, y )
       for edge in self.edges
@@ -52,7 +86,13 @@ module TT::Plugins::BezierSurfaceTools
       picked
     end
     
-    def draw_control_grid(view)
+    # Draws the patch's control grid.
+    #
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_control_grid( view )
       # Transform to active model space
       t = view.model.edit_transform
       pts = @points.map { |pt|
@@ -98,9 +138,20 @@ module TT::Plugins::BezierSurfaceTools
       for segment in interior
         view.draw2d( GL_LINE_STRIP, segment )
       end
+      nil
     end
     
-    def draw_grid(subdivs, view)
+    # Draws the patch's internal grid with the given sub-division.
+    #
+    # @param [Integer] subdivs
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_grid( subdivs, view )
+      # (!) This is spesific to quad patches. Move to QuadPatch class or
+      # abstract if possible.
+      
       # Transform to active model space
       t = view.model.edit_transform
       pts = mesh_points( subdivs, t )
@@ -120,11 +171,16 @@ module TT::Plugins::BezierSurfaceTools
   end # module BezierPatch
   
   
+  # Collection of methods for managing the bezier patch edges and their
+  # relationship to connected entities.
+  #
+  # @since 1.0.0
   class BezierEdge
     
     attr_accessor( :control_points, :patches )
     
     def initialize( control_points )
+      # (?) Require parent patch?
       # (!) Validate
       @control_points = control_points
       @patches = []
@@ -169,10 +225,21 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # Returns an array of 3d points representing the bezier curve with the given
+    # sub-division.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def segment( subdivs )
       TT::Geom3d::Bezier.points( @control_points, subdivs )
     end
     
+    # Returns an array of 3d points representing control points.
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
     def to_a
       @control_points.dup
     end
