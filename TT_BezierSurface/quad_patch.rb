@@ -21,6 +21,16 @@ module TT::Plugins::BezierSurfaceTools
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16
       @points = TT::Dimension.new( points, 4, 4 )
+      
+      # Create edges and assosiate them with this patch.
+      @edges = [
+        BezierEdge.new( @points.row(0) ),
+        BezierEdge.new( @points.column(3) ),
+        BezierEdge.new( @points.row(3) ),
+        BezierEdge.new( @points.column(0) )
+      ].each { |edge|
+        edge.link( self )
+      }
     end
     
     def typename
@@ -59,16 +69,15 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
-      # (!) Edges can't be created dynamically like this. They need to be
-      # created when the QuadPatch is initialized and then updated when
-      # requested. BezierEdge objects need to maintain references to the
-      # patches it's connected to.
-      [
-        BezierEdge.new( @points.row(0) ),
-        BezierEdge.new( @points.column(3) ),
-        BezierEdge.new( @points.row(3) ),
-        BezierEdge.new( @points.column(0) )
-      ]
+      # (i) BezierEdge objects doesn't maintain an updated reference to the
+      # control points when they are manipulated. (?) Update the points
+      # before returning the edges.
+      #
+      # (i) Don't hold on to BezierEdge objects for their 3d data.
+      @edges[0].control_points = @points.row(0)
+      @edges[1].control_points = @points.column(3)
+      @edges[2].control_points = @points.row(3)
+      @edges[3].control_points = @points.column(0)
     end
     
     # (?) Private

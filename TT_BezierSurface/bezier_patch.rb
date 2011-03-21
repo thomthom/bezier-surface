@@ -130,6 +130,45 @@ module TT::Plugins::BezierSurfaceTools
       @patches = []
     end
     
+    # Assosiates an entity with the current BezierEdge. Use to keep track of
+    # which entities use this edge.
+    #
+    # @param [BezierPatch] entity
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def link( entity )
+      if entity.is_a?( BezierPatch )
+        if @patches.include?( entity )
+          raise ArgumentError, 'Entity already linked.'
+        else
+          @patches << entity
+        end
+      else
+        raise ArgumentError, "Can't link BezierEdge with #{entity.class}. Invalid entity type."
+      end
+      nil
+    end
+    
+    # De-assosiates an entity.
+    #
+    # @param [BezierPatch] entity
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def unlink( entity )
+      if entity.is_a?( BezierPatch )
+        if @patches.include?( entity )
+          @patches.delete( entity )
+        else
+          raise ArgumentError, 'Entity not linked.'
+        end
+      else
+        raise ArgumentError, "Can't unlink BezierEdge with #{entity.class}. Invalid entity type."
+      end
+      nil
+    end
+    
     def segment( subdivs )
       TT::Geom3d::Bezier.points( @control_points, subdivs )
     end
