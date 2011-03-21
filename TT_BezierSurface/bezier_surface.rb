@@ -61,11 +61,21 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def self.load( instance )
       TT.debug( 'BezierSurface.load' )
-      return nil unless self.is?( instance )
-      # (!) Validate version
-      # self.version_compatible?( instance )
+      unless self.is?( instance )
+        UI.messagebox("This is not a valid bezier surface instance and can not be edited.")
+        return nil
+      end
+      unless self.version_compatible?( instance )
+        d = TT::Instance.definition( instance )
+        version = d.get_attribute( ATTR_ID, 'Version' )
+        mesh_version = version.join('.') if version.is_a?( Array )
+        user_version = MESH_VERSION.join('.')
+        UI.messagebox("This bezier surface was made with a newer version and can not be edited.\n\nMesh Version: #{mesh_version}\nUser Version: #{user_version}")
+        return nil
+      end
       surface = self.new( instance )
       surface.reload
+      surface
     end
     
     # Reloads the bezier patch data from the attribute dictionary of the

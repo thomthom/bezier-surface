@@ -32,11 +32,16 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edit( instance )
       TT.debug( 'BezierSurfaceEditor.edit' )
-      @model.selection.clear
-      @model.tools.push_tool( self )
       @surface = BezierSurface.load( instance )
-      tool = VertexSelectionTool.new( self )
-      select_tool( tool )
+      if @surface
+        @model.selection.clear
+        @model.tools.push_tool( self )
+        tool = VertexSelectionTool.new( self )
+        select_tool( tool )
+      else
+        # Invalid instance or incompatible version
+        model.close_active # (?)
+      end
     end
     
     # Activates a bezier editing tool - pushing it into SketchUp's tool stack.
@@ -167,6 +172,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw( view, preview = false )
+      return unless @surface
       t = view.model.edit_transform
       # Control Grid
       @surface.draw_grid( view, preview )
