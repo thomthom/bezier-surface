@@ -1,15 +1,27 @@
+#-------------------------------------------------------------------------------
+#
+# Thomas Thomassen
+# thomas[at]thomthom[dot]net
+#
+#-------------------------------------------------------------------------------
+
+
 module TT::Plugins::BezierSurfaceTools
 
   
   # Detect new models and attach a model observer to monitor when the user
   # opens a Bezier Surface for editing.
+  #
+  # @since 1.0.0
   class BP_AppObserver < Sketchup::AppObserver
   
+    # @since 1.0.0
     def onNewModel(model)
       #TT.debug( 'BP_onNewModel' )
       PLUGIN.observe_model( model )
     end
     
+    # @since 1.0.0
     def onOpenModel(model)
       #TT.debug( 'BP_onOpenModel' )
       PLUGIN.observe_model( model )
@@ -22,9 +34,12 @@ module TT::Plugins::BezierSurfaceTools
   # for editing - activate the Bezier editing tools.
   #
   # When the user closes a Bezier Surface Group/ComponentInstance the
-  # edit session is ended. 
+  # edit session is ended.
+  #
+  # @since 1.0.0
   class BP_ModelObserver < Sketchup::ModelObserver
   
+    # @since 1.0.0
     def onActivePathChanged(model)
       # (!) This appear to trigger on occations when not expected. Errors can
       # appear reporting reference to missing entity. The model? Or maybe
@@ -56,14 +71,18 @@ module TT::Plugins::BezierSurfaceTools
   # (!) Probably merge this with the main observer - the undo/redo events are
   # needed to detect when undo/redo changes the current context as it does not
   # trigger onActivePathChanged.
+  #
+  # @since 1.0.0
   class BP_Editor_ModelObserver < Sketchup::ModelObserver
   
+    # @since 1.0.0
     def onTransactionUndo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
       editor = PLUGIN.get_editor( model )
       editor.undo_redo
     end
     
+    # @since 1.0.0
     def onTransactionRedo(model)
       #TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
       editor = PLUGIN.get_editor( model )
