@@ -167,56 +167,57 @@ module TT::Plugins::BezierSurfaceTools
     #
     # ... and repeat.
     #
-    # @param [Geom::PolygonMesh] pm
+    # @param [Geom::PolygonMesh] mesh
     # @param [Integer] subdivs
     # @param [Geom::Transformation] transformation
     #
     # @return [Geom::PolygonMesh]
     # @since 1.0.0
-    def add_to_mesh( pm, subdiv, transformation )
+    def add_to_mesh( mesh, subdiv, transformation )
       triangulate = false # (?) Instance variable
-      mirror = false # (?) Instance variable
+      inversed = false # (?) Instance variable
 
-      p = mesh_points( subdiv, transformation )
+      pts = mesh_points( subdiv, transformation )
       
-      # Add points to point list and build index.
-      pi = []
-      p.each { |i|
-        pi << pm.add_point(i)
-      }
+      # Increase speed by pre-populating the points that will be used and keep
+      # a cache of the point indexes.
+      point_index = []
+      for pt in pts
+        point_index << mesh.add_point( pt )
+      end
       
-      0.upto(p.height-2) { |y|
-        0.upto(p.width-2) { |x|
-          r = y * p.width # Current row
+      for y in (0...pts.height-1)
+        for x in (0...pts.width-1)
+          row = y * pts.width # Current row
           # Pick out the indexes from the patch 2D-matrix we're interested in.
-          pos = [ x+r, x+1+r, x+p.width+1+r, x+p.width+r ]
+          pos = [ x+row, x+1+row, x+pts.width+1+row, x+pts.width+row ]
           # Get the point indexes and mirror orientation
-          indexes = pos.collect { |i| pi[i] }
-          indexes.reverse! if mirror
+          indexes = pos.collect { |i| point_index[i] }
+          indexes.reverse! if inversed
 
           next unless indexes.length > 2
           
           if indexes.length == 3
-            pm.add_polygon(indexes)
+            mesh.add_polygon( indexes )
           else
             # When triangulate is false, try to make quadfaces. Find out if all the points
             # fit on the same plane.
             if triangulate 
-              pm.add_polygon([ indexes[0], indexes[1], indexes[2] ])
-              pm.add_polygon([ indexes[0], indexes[2], indexes[3] ])
+              mesh.add_polygon([ indexes[0], indexes[1], indexes[2] ])
+              mesh.add_polygon([ indexes[0], indexes[2], indexes[3] ])
             else
-              points = pos.collect { |i| p[i] }
-              if TT::Geom3d.planar_points?(points)
-                pm.add_polygon(indexes)
+              points = pos.collect { |i| pts[i] }
+              if TT::Geom3d.planar_points?( points )
+                mesh.add_polygon( indexes )
               else
-                pm.add_polygon([ indexes[0], indexes[1], indexes[2] ])
-                pm.add_polygon([ indexes[0], indexes[2], indexes[3] ])
+                mesh.add_polygon([ indexes[0], indexes[1], indexes[2] ])
+                mesh.add_polygon([ indexes[0], indexes[2], indexes[3] ])
               end
-            end
+            end # triangulate
           end
-        }
-      }
-      return pm
+        end # x
+      end # y
+      mesh
     end
     
   end # class QuadPatch
