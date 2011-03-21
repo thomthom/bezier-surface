@@ -179,6 +179,9 @@ module TT::Plugins::BezierSurfaceTools
     
     attr_accessor( :control_points, :patches )
     
+    # @param [Array<Geom::Point3d>] control_points Bezier control points
+    #
+    # @since 1.0.0
     def initialize( control_points )
       # (?) Require parent patch?
       # (!) Validate

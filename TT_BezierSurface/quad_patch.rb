@@ -19,6 +19,9 @@ module TT::Plugins::BezierSurfaceTools
     
     #attr_reader( :points )
     
+    # @param [Array<Geom::Point3d>] points 16 bezier control points
+    #
+    # @since 1.0.0
     def initialize( points )
       super
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
