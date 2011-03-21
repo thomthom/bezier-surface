@@ -19,7 +19,7 @@ module TT::Plugins::BezierSurfaceTools
     
     #attr_reader( :points )
     
-    # @param [Array<Geom::Point3d>] points 16 bezier control points
+    # @param [Array<Geom::Point3d>] points Bezier control points
     #
     # @since 1.0.0
     def initialize( points )
