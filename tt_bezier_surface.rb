@@ -11,7 +11,7 @@
 require 'sketchup.rb'
 require 'TT_Lib2/core.rb'
 
-TT::Lib.compatible?('2.5.0', 'Bezier Surface')
+TT::Lib.compatible?('2.6.0', 'Bezier Surface')
 
 #-------------------------------------------------------------------------------
 

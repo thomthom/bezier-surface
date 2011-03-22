@@ -251,6 +251,7 @@ module TT::Plugins::BezierSurfaceTools
           puts 'Tool: Select Control Points'
           tool = VertexSelectionTool.new( self )
           select_tool( tool )
+          TT::SketchUp.activate_main_window
         }
         button.icon = File.join( PATH_ICONS, 'Select_24.png' )
         @toolbar.add_control( button )
@@ -260,6 +261,7 @@ module TT::Plugins::BezierSurfaceTools
           puts 'Tool: Select Edges'
           tool = EdgeSelectionTool.new( self )
           select_tool( tool )
+          TT::SketchUp.activate_main_window
         }
         button.icon = File.join( PATH_ICONS, 'Select_24.png' )
         @toolbar.add_control( button )
@@ -269,6 +271,7 @@ module TT::Plugins::BezierSurfaceTools
           puts 'Tool: Move'
           tool = MoveTool.new( self )
           select_tool( tool )
+          TT::SketchUp.activate_main_window
         }
         button.icon = File.join( PATH_ICONS, 'Move_24.png' )
         @toolbar.add_control( button )
@@ -277,6 +280,7 @@ module TT::Plugins::BezierSurfaceTools
         button = TT::GUI::Button.new('Add QuadPatch') {
           puts 'Add QuadPatch'
           PLUGIN.add_quadpatch
+          TT::SketchUp.activate_main_window
         }
         button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
         @toolbar.add_control( button )
@@ -286,10 +290,12 @@ module TT::Plugins::BezierSurfaceTools
         list.label = ' Axis:'
         list.on_change { |value|
           puts "Axis: #{value}"
+          TT::SketchUp.activate_main_window
         }
         @toolbar.add_control( list )
       end
       @toolbar.show_window
+      TT::SketchUp.activate_main_window
     end
     
     # Closes the bezier surface editing toolbar.
