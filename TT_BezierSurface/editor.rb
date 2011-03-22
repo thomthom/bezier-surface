@@ -26,8 +26,16 @@ module TT::Plugins::BezierSurfaceTools
       
       @active_tool = nil
       @active = false
-      
-      @model_observer = BP_Editor_ModelObserver.new
+    end
+    
+    # Indicates if there is an active edit session.
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def active?
+      #TT.debug( 'BezierSurfaceEditor.active?' )
+      #TT.debug( "> #{@active}" )
+      @active == true
     end
     
     # Activates Bezier Surface editing mode.
@@ -39,6 +47,11 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edit( instance )
       TT.debug( 'BezierSurfaceEditor.edit' )
+      # Don't activate a new session while there is one already active.
+      if @active
+        TT.debug( '> Already active edit session!' )
+        return false
+      end
       @surface = BezierSurface.load( instance )
       if @surface
         @model.selection.clear
@@ -49,6 +62,7 @@ module TT::Plugins::BezierSurfaceTools
         # Invalid instance or incompatible version
         model.close_active # (?)
       end
+      true
     end
     
     # Activates a bezier editing tool - pushing it into SketchUp's tool stack.
@@ -59,7 +73,11 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def select_tool( tool )
       TT.debug( 'BezierSurfaceEditor.select_tool' )
-      @model.tools.pop_tool if @active_tool
+      if @active_tool
+        TT.debug( '> Pop active tool...' )
+        @model.tools.pop_tool
+      end
+      TT.debug( '> Push new tool...' )
       @active_tool = tool
       @model.tools.push_tool( tool )
     end
@@ -74,8 +92,12 @@ module TT::Plugins::BezierSurfaceTools
     def end_session
       TT.debug( 'BezierSurfaceEditor.end_session' )
       if @active
-        TT.debug( '> Ending active...' )
-        @model.tools.pop_tool if @active_tool
+        TT.debug( '> Ending active tool...' )
+        if @active_tool
+          TT.debug( '  > Pop sub-tool...' )
+          @model.tools.pop_tool
+        end
+        TT.debug( '  > Pop self...' )
         @model.tools.pop_tool
       end
     end
@@ -151,7 +173,7 @@ module TT::Plugins::BezierSurfaceTools
       (@model.active_path.nil?) ? false : @model.active_path.last == @surface.instance
     end
     
-    # Called by the BP_Editor_ModelObserver observer when something is undone or
+    # Called by the BP_ModelObserver observer when something is undone or
     # redone.
     #
     # When editing is active the mesh is refreshed, otherwise the active 
@@ -242,7 +264,7 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'Move_24.png' )
         @toolbar.add_control( button )
         
-        # Move
+        # Axis
         list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
         list.label = ' Axis:'
         list.on_change { |value|
@@ -273,8 +295,6 @@ module TT::Plugins::BezierSurfaceTools
       
       # UI
       show_toolbar()
-      
-      TT.debug( @model.add_observer( @model_observer ) )
     end
     
     # @since 1.0.0
@@ -290,9 +310,10 @@ module TT::Plugins::BezierSurfaceTools
       # But when this method is used in SU8-M1 and older the action does not
       # appear in the stack - and when you then trigger and undo after using
       # this method all the modified geometry is offset.
-      model.close_active
-      
-      TT.debug( @model.remove_observer( @model_observer ) )
+      if valid_context?
+        TT.debug( '> Closing active context' )
+        view.model.close_active
+      end
     end
     
   end # class BezierSurfaceEditor

@@ -17,13 +17,13 @@ module TT::Plugins::BezierSurfaceTools
   
     # @since 1.0.0
     def onNewModel(model)
-      #TT.debug( 'BP_onNewModel' )
+      #TT.debug( 'BP_AppObserver.onNewModel' )
       PLUGIN.observe_model( model )
     end
     
     # @since 1.0.0
     def onOpenModel(model)
-      #TT.debug( 'BP_onOpenModel' )
+      #TT.debug( 'BP_AppObserver.onOpenModel' )
       PLUGIN.observe_model( model )
     end
 
@@ -40,72 +40,62 @@ module TT::Plugins::BezierSurfaceTools
   class BP_ModelObserver < Sketchup::ModelObserver
   
     # @since 1.0.0
-    def onActivePathChanged(model)
+    def onActivePathChanged( model )
       # (!) This appear to trigger on occations when not expected. Errors can
       # appear reporting reference to missing entity. The model? Or maybe
       # the instance - get_attribute might have been a trigger point...
+      #
+      # 2011-03-22
+      # Not noticed this again. Maybe the issue is gone. Or it was an observer
+      # reload issue.
       
       #TT.debug( 'BP_ModelObserver.onActivePathChanged' )
-      instance = (model.active_path.nil?) ? nil : model.active_path.last
-      if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
-        editor = PLUGIN.get_editor( model )
-        editor.edit( instance )
-      else
-        editor = PLUGIN.get_editor( model )
-        editor.end_session unless editor.nil?
-      end
+      check_active_path( model )
     end
     
     # @since 1.0.0
-    def onTransactionUndo(model)
+    def onTransactionUndo( model )
       TT.debug( 'BP_ModelObserver.onTransactionUndo' )
-      checkActivePathUndoRedo( model )
+      check_active_path( model )
     end
     
     # @since 1.0.0
-    def onTransactionRedo(model)
+    def onTransactionRedo( model )
       TT.debug( 'BP_ModelObserver.onTransactionRedo' )
-      checkActivePathUndoRedo( model )
+      check_active_path( model )
     end
     
+    # If it's a valid bezier surface context, ensure that an editor is
+    # active. This must be checked in the undo events because 
+    # onActivePathChanged does not trigger when undo/redo cause the
+    # active context to change.
+    #
     # @since 1.0.0
-    def checkActivePathUndoRedo( model )
-      instance = (model.active_path.nil?) ? nil : model.active_path.last
+    def check_active_path( model )
+      TT.debug( 'BP_ModelObserver.check_active_path' )
+      instance = (model.active_path) ? model.active_path.last : nil
+      editor = PLUGIN.get_editor( model )
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
         TT.debug( '> Is BezierSurface' )
-        #editor = PLUGIN.get_editor( model )
-        #unless editor
-        #  editor.edit( instance )
-        #end
+        if editor
+          # Valid context, ensure an editor is active.
+          unless editor.active?
+            TT.debug( '  > Activating editor...' )
+            editor.edit( instance )
+            editor.undo_redo
+          else
+            TT.debug( '  > Editor already active.' )
+            editor.undo_redo
+          end
+        else
+          TT.debug( '  > No Editor!' )
+          # (?) Error? State not seen.
+        end
       else
         TT.debug( '> Is Not BezierSurface' )
+        editor.end_session # Ensures any active sessions is ended.
       end
-    end
-    
-  end # class BP_ModelObserver
-  
-  
-  # Detect when a user undo an editing operation while editing a Bezier Surface.
-  #
-  # (!) Probably merge this with the main observer - the undo/redo events are
-  # needed to detect when undo/redo changes the current context as it does not
-  # trigger onActivePathChanged.
-  #
-  # @since 1.0.0
-  class BP_Editor_ModelObserver < Sketchup::ModelObserver
-  
-    # @since 1.0.0
-    def onTransactionUndo(model)
-      #TT.debug( 'BP_Editor_ModelObserver.onTransactionUndo' )
-      editor = PLUGIN.get_editor( model )
-      editor.undo_redo
-    end
-    
-    # @since 1.0.0
-    def onTransactionRedo(model)
-      #TT.debug( 'BP_Editor_ModelObserver.onTransactionRedo' )
-      editor = PLUGIN.get_editor( model )
-      editor.undo_redo
+      nil
     end
     
   end # class BP_ModelObserver

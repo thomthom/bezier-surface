@@ -114,7 +114,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onCancel(reason, view)
-      TT.debug( 'onCancel' )
+      TT.debug( 'VertexSelectionTool.onCancel' )
       case reason
       when 0 # ESC
         TT.debug( '> ESC' )
@@ -191,7 +191,7 @@ module TT::Plugins::BezierSurfaceTools
         points = @surface.pick_control_points( x, y, view )
       when S_DRAG
         if @ip_start.valid? && @ip_mouse.valid?
-          TT.debug( '> Rectangle Selection' )
+          #TT.debug( '> Rectangle Selection' )
           polygon = selection_polygon()
           points = @surface.control_points.select { |pt|
             pt2d = view.screen_coords( pt.transform(t) )

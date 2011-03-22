@@ -138,15 +138,15 @@ module TT::Plugins::BezierSurfaceTools
   # @return [BezierSurfaceEditor|Nil]
   # @since 1.0.0
   def self.get_editor( current_model )
-    TT.debug( 'Editor' )
-    TT.debug( "> #{current_model.inspect}" )
-    TT.debug( "> #{current_model.guid}" )
+    TT.debug( 'get_editor' )
+    #TT.debug( "  > #{current_model.inspect}" )
+    #TT.debug( "  > #{current_model.guid}" )
     
     # Monitor if this work.
-    TT.debug( "> Instance Variable:" )
+    #TT.debug( "  > Instance Variable:" )
     e = current_model.instance_variable_get( :@tt_bezier_surface_editor )
     TT.debug( "> #{e}" )
-    TT.debug( (e) ? 'Editor Variable: OK' : 'Editor Variable: LOST!' )
+    TT.debug( (e) ? '> Editor Variable: OK' : '> Editor Variable: LOST!' )
     
     # (i) model.guid isn't always reliable - it can change so the model object
     # is also compared. Model is also not 100% reliable, which might be why

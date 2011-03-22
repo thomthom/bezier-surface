@@ -124,7 +124,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def update( transformation )
-      TT.debug( 'Updating Bezier Surface...' )
+      TT.debug( 'BezierSurface.update' )
       Sketchup.status_text = 'Updating Bezier Surface...'
       update_mesh( @subdivs, transformation )
       update_attributes()
