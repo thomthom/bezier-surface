@@ -103,6 +103,7 @@ module TT::Plugins::BezierSurfaceTools
       @edges[1].control_points = @points.column(3)
       @edges[2].control_points = @points.row(3)
       @edges[3].control_points = @points.column(0)
+      @edges
     end
     
     # (?) Private

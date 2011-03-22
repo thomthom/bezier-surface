@@ -64,12 +64,18 @@ module TT::Plugins::BezierSurfaceTools
     # * Regenerate full mesh
     # * Update UI
     def activate
+      # (!)
+      # <temp>
+      @editor.selection.clear # (!) Temp
+      
+      # (!) Get selection center.
       t = @editor.model.edit_transform
  
       pt = TT::Geom3d.average_point( @editor.selection ).transform( t )
       xaxis = X_AXIS.transform( t )
       yaxis = Y_AXIS.transform( t )
       zaxis = Z_AXIS.transform( t )
+      # </temp>
       
       @gizmo = TT::Gizmo::Manipulator.new( pt, xaxis, yaxis, zaxis )
       @gizmo.on_transform_start {

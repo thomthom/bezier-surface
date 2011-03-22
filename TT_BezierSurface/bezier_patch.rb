@@ -79,8 +79,10 @@ module TT::Plugins::BezierSurfaceTools
       # (?) Return only one entity?
       picked = []
       ph = view.pick_helper( x, y )
+      tr = view.model.edit_transform
       for edge in self.edges
-        picked << edge if ph.pick_segment( edge.segment(subdivs) , x, y )
+        segment = edge.segment( subdivs, tr )
+        picked << edge if ph.pick_segment( segment, x, y )
       end
       #( picked.empty? ) ? nil : picked
       picked
@@ -155,17 +157,22 @@ module TT::Plugins::BezierSurfaceTools
       # Transform to active model space
       t = view.model.edit_transform
       pts = mesh_points( subdivs, t )
-      # Set up viewport
-      view.drawing_color = CLR_MESH_GRID
-      # Meshgrid
-      view.line_width = MESH_GRID_LINE_WIDTH
-      view.line_stipple = ''
-      pts.each_row { |row|
-        view.draw( GL_LINE_STRIP, row )
-      }
-      pts.each_column { |col|
-        view.draw( GL_LINE_STRIP, col )
-      }
+      
+      if pts.size > 2
+        # Set up viewport
+        view.drawing_color = CLR_MESH_GRID
+        # Meshgrid
+        view.line_width = MESH_GRID_LINE_WIDTH
+        view.line_stipple = ''
+        pts.rows[1...pts.width-1].each { |row|
+        #pts.each_row { |row|
+          view.draw( GL_LINE_STRIP, row )
+        }
+        pts.columns[1...pts.height-1].each { |col|
+        #pts.each_column { |col|
+          view.draw( GL_LINE_STRIP, col )
+        }
+      end
     end
     
   end # module BezierPatch
@@ -235,8 +242,12 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
-    def segment( subdivs )
-      TT::Geom3d::Bezier.points( @control_points, subdivs )
+    def segment( subdivs, transformation = nil )
+      points = TT::Geom3d::Bezier.points( @control_points, subdivs )
+      if transformation
+        points.map! { |point| point.transform!( transformation ) }
+      end
+      points
     end
     
     # Returns an array of 3d points representing control points.

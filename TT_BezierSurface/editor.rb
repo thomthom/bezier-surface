@@ -246,10 +246,19 @@ module TT::Plugins::BezierSurfaceTools
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
         
-        # Select
-        button = TT::GUI::Button.new('Select') {
-          puts 'Tool: Select'
+        # Select Vertex
+        button = TT::GUI::Button.new('Select Control Points') {
+          puts 'Tool: Select Control Points'
           tool = VertexSelectionTool.new( self )
+          select_tool( tool )
+        }
+        button.icon = File.join( PATH_ICONS, 'Select_24.png' )
+        @toolbar.add_control( button )
+        
+        # Select Edge
+        button = TT::GUI::Button.new('Select Edges') {
+          puts 'Tool: Select Edges'
+          tool = EdgeSelectionTool.new( self )
           select_tool( tool )
         }
         button.icon = File.join( PATH_ICONS, 'Select_24.png' )

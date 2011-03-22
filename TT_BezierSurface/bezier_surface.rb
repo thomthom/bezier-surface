@@ -238,7 +238,7 @@ module TT::Plugins::BezierSurfaceTools
     def pick_edges(subdivs, x, y, view)
       picked = []
       for patch in @patches
-        edges = patch.pick_edges( subdivs, x, y, views )
+        edges = patch.pick_edges( subdivs, x, y, view )
         picked.concat( edges ) unless edges.nil?
       end
       #( picked.empty? ) ? nil : picked.uniq
