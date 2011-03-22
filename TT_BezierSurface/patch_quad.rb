@@ -25,6 +25,11 @@ module TT::Plugins::BezierSurfaceTools
       super
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16
+      unless points.all? { |point|
+        point.is_a?( Geom::Point3d )
+      }
+        raise ArgumentError, 'points must be Point3d objects.'
+      end
       @points = TT::Dimension.new( points, 4, 4 )
       
       # Create edges and assosiate them with this patch.
@@ -44,6 +49,131 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def typename
       'QuadPatch'
+    end
+    
+    # @param [BezierSurface] surface
+    # @param [BezierEdge] edge
+    #
+    # @return [QuadPatch]
+    # @since 1.0.0
+    def self.extrude_edge( surface, edge )
+      if edge.patches.size > 1
+        raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
+      end
+      
+      patch = edge.patches[0]
+      
+      prev_edge = patch.prev_edge( edge )
+      next_edge = patch.prev_edge( edge )
+      
+      pts1 = prev_edge.control_points
+      pts2 = next_edge.control_points
+      
+      if prev_edge.start == edge.start
+        v1 = pts1[0].vector_to( pts1[1] ).reverse
+      else
+        v1 = pts1[3].vector_to( pts1[2] ).reverse
+      end
+      
+      if next_edge.start == edge.start
+        v2 = pts2[0].vector_to( pts2[1] ).reverse
+      else
+        v2 = pts2[3].vector_to( pts2[2] ).reverse
+      end
+      
+      directions = [ v1, v1, v2, v2 ]
+      
+      
+        direction = edge.direction
+        if edge.reversed_in?( patch )
+          direction.reverse!
+          reversed = true
+        else
+          reversed = false
+        end
+        vector = direction * Z_AXIS # (!) Not correct!
+      
+      
+      length = edge.length( surface.subdivs ) / 3
+      
+      #puts patch
+      #puts direction
+      #puts vector
+      #puts length.to_s
+      
+      points = []
+      edge.control_points.each_with_index { |point, index|
+        points << point.clone
+        points << point.offset( directions[index], length )
+        points << point.offset( directions[index], length * 2 )
+        points << point.offset( directions[index], length * 3 )
+      }
+      
+      #puts points.size
+      #p points
+      
+      new_patch = QuadPatch.new( points )
+      new_patch.reversed = true if reversed
+      edge.link( new_patch )
+      
+      surface.add_patch( new_patch )
+      surface.update( Sketchup.active_model.edit_transform )
+      
+      # (!) merge edges
+      new_patch
+    end
+    
+    # (!) private
+    #
+    # @param [BezierEdge] edge
+    #
+    # @return [BezierEdge]
+    # @since 1.0.0
+    def next_edge( edge )
+      index = edge_index( edge )
+      array_index = ( index + 1 ) % @edges.size
+      @edges[ array_index ]
+    end
+    
+    # (!) private
+    #
+    # @param [BezierEdge] edge
+    #
+    # @return [BezierEdge]
+    # @since 1.0.0
+    def prev_edge( edge )
+      index = edge_index( edge )
+      array_index = ( index - 1 ) % @edges.size
+      @edges[ array_index ]
+    end
+    
+    # (!) private
+    #
+    # @param [BezierEdge] edge
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def edge_index( edge )
+      @edges.each_with_index { |e, index|
+        return index if edge == e
+      }
+      raise ArgumentError, 'Edge not connected to this patch.'
+    end
+    
+    # @param [BezierEdge] edge
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def edge_reversed?( edge )
+      TT.debug( 'QuadPatch.edge_reversed?' )
+      index = edge_index( edge )
+      if index == 2 || index == 3
+        TT.debug( "> Reversed" )
+        return true
+      else
+        TT.debug( "> Normal" )
+        return false
+      end
     end
     
     # Accurate calculation of the number of vertices in the mesh.
@@ -176,7 +306,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def add_to_mesh( mesh, subdiv, transformation )
       triangulate = false # (?) Instance variable
-      inversed = false # (?) Instance variable
+      #inversed = false # (?) Instance variable
+      inversed = self.reversed
 
       pts = mesh_points( subdiv, transformation )
       

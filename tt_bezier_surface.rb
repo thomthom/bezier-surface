@@ -175,6 +175,23 @@ module TT::Plugins::BezierSurfaceTools
   end
   
   
+  # Initates the tool to draw a new QuadPatch.
+  #
+  # @return [Boolean]
+  # @since 1.0.0
+  def self.add_quadpatch
+    model = Sketchup.active_model
+    editor = self.get_editor( model )
+    return false unless editor
+    return false unless editor.active?
+    return false unless editor.selection.size == 1
+    entity = editor.selection[0]
+    return false unless entity.is_a?( BezierEdge )
+    QuadPatch.extrude_edge( editor.surface, entity )
+    true
+  end
+  
+  
   # Get Instructor Path
   #
   # Tool.getInstructorContentDirectory expects a path relative to SketchUp's

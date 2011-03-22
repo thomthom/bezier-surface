@@ -273,6 +273,14 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'Move_24.png' )
         @toolbar.add_control( button )
         
+        # Add QuadPatch
+        button = TT::GUI::Button.new('Add QuadPatch') {
+          puts 'Add QuadPatch'
+          PLUGIN.add_quadpatch
+        }
+        button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
+        @toolbar.add_control( button )
+        
         # Axis
         list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
         list.label = ' Axis:'

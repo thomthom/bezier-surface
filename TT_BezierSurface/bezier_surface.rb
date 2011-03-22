@@ -301,12 +301,13 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def mesh_points( subdivs, transformation )
-      pts = []
+      points = []
       for patch in @patches
-        pts.concat( patch.mesh_points( subdivs, transformation ).to_a )
+        points.concat( patch.mesh_points( subdivs, transformation ).to_a )
       end
-      pts.uniq! # (!) custom uniq to only return uniqe 3d positions.
-      pts
+      points = TT::Point3d.extend_all( points ) # So that .uniq! works
+      points.uniq!
+      points
     end
     
     # Returns all the vertices for the surface mesh in the same order as
@@ -320,7 +321,10 @@ module TT::Plugins::BezierSurfaceTools
     def mesh_vertices( subdivs, transformation )
       d = TT::Instance.definition( @instance )
       pts = mesh_points( subdivs, transformation )
-      vertices = raw_mesh_vertices()      
+      vertices = raw_mesh_vertices()
+      #TT.debug( 'mesh_vertices' )
+      #TT.debug( "> Points: #{pts.length}" )
+      #TT.debug( "> Vertices: #{vertices.length}" )
       patch_vertices = []
       for pt in pts
         vertex = vertices.find { |v| v.position == pt } # (!) Optimize

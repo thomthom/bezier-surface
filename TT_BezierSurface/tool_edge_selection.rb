@@ -86,19 +86,31 @@ module TT::Plugins::BezierSurfaceTools
     def draw( view )
       #@editor.draw( view, @preview )
       
+      subdivs = @surface.subdivs
+      tr = view.model.edit_transform
+      
       # Internal grid
       @surface.draw_grid( view )
       
       # Selection
       selection = @editor.selection
       unless selection.empty?
-        subdivs = @surface.subdivs
-        tr = view.model.edit_transform
-        
         view.line_stipple = ''
         view.line_width = 5
         view.drawing_color = CLR_VERTEX
         for edge in selection
+          view.draw( GL_LINE_STRIP, edge.segment( subdivs, tr ) )
+        end
+      end
+      
+      # Unselected Edges
+      selected = selection.to_a
+      unselected = @surface.edges.to_a - selected
+      unless unselected.empty?
+        view.line_stipple = ''
+        view.line_width = 5
+        view.drawing_color = CLR_CTRL_GRID
+        for edge in unselected
           view.draw( GL_LINE_STRIP, edge.segment( subdivs, tr ) )
         end
       end

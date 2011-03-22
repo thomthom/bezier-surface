@@ -19,8 +19,10 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   module BezierPatch
     
+    attr_accessor( :reversed )
+    
     def initialize( *args )
-      #...
+      @reversed = false
     end
     
     # Subclasses must implement these methods:
@@ -248,6 +250,47 @@ module TT::Plugins::BezierSurfaceTools
         points.map! { |point| point.transform!( transformation ) }
       end
       points
+    end
+    
+    # @param [BezierPatch] subdivs
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def reversed_in?( patch )
+      patch.edge_reversed?( self )
+    end
+    
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def direction
+      p1 = @control_points.first
+      p2 = @control_points.last
+      p1.vector_to( p2 )
+    end
+    
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def start
+      @control_points.first.extend( TT::Point3d_Ex )
+    end
+    
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def end
+      @control_points.last.extend( TT::Point3d_Ex )
+    end
+    
+    # @return [Length]
+    # @since 1.0.0
+    def length( subdivs )
+      total = 0.to_l
+      points = segment( subdivs )
+      for index in (0...points.size-1)
+        pt1 = points[index]
+        pt2 = points[index+1]
+        total += pt1.distance( pt2 )
+      end
+      total
     end
     
     # Returns an array of 3d points representing control points.
