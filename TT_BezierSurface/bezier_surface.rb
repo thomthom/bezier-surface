@@ -168,9 +168,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def count_mesh_points( subdivs )
       count = 0
-      @patches.each { |patch|
+      for patch in @patches
         count += patch.count_mesh_points( subdivs )
-      }
+      end
       count
     end
     
@@ -186,9 +186,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def count_mesh_polygons( subdivs )
       count = 0
-      @patches.each { |patch|
+      for patch in @patches
         count += patch.count_mesh_polygons( subdivs )
-      }
+      end
       count
     end
     
@@ -198,9 +198,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def control_points
       pts = []
-      @patches.each { |patch|
+      for patch in @patches
         pts.concat( patch.control_points.to_a )
-      }
+      end
       pts.uniq!
       pts
     end
@@ -219,10 +219,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def pick_control_points(x, y, view)
       picked = []
-      @patches.each { |patch|
+      for patch in @patches
         points = patch.pick_control_points( x, y, view )
         picked.concat( points ) unless points.nil?
-      }
+      end
       #( picked.empty? ) ? nil : picked.uniq
       picked.uniq
     end
@@ -237,10 +237,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def pick_edges(subdivs, x, y, view)
       picked = []
-      @patches.each { |patch|
-        points = patch.pick_edges( subdivs, x, y, views )
-        picked.concat( points ) unless points.nil?
-      }
+      for patch in @patches
+        edges = patch.pick_edges( subdivs, x, y, views )
+        picked.concat( edges ) unless edges.nil?
+      end
       #( picked.empty? ) ? nil : picked.uniq
       picked.uniq
     end
@@ -252,9 +252,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_control_grid(view)
-      @patches.each { |patch|
+      for patch in @patches
         patch.draw_control_grid( view )
-      }
+      end
       nil
     end
     
@@ -266,13 +266,13 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_grid(view, preview = false)
-      @patches.each { |patch|
+      for patch in @patches
         if preview
           patch.draw_grid( preview, view )
         else
           patch.draw_grid( @subdivs, view )
         end
-      }
+      end
       nil
     end
     
@@ -282,9 +282,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edges
       edges = []
-      @patches.each { |patch|
+      for patch in @patches
         edges.concat( patch.edges )
-      }
+      end
+      edges.uniq!
       edges
     end
     
@@ -301,9 +302,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def mesh_points( subdivs, transformation )
       pts = []
-      @patches.each { |patch|
+      for patch in @patches
         pts.concat( patch.mesh_points( subdivs, transformation ).to_a )
-      }
+      end
       pts.uniq! # (!) custom uniq to only return uniqe 3d positions.
       pts
     end
