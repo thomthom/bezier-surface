@@ -62,9 +62,13 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       patch = edge.patches[0]
+      reversed = edge.reversed_in?( patch )
       
       prev_edge = patch.prev_edge( edge )
-      next_edge = patch.prev_edge( edge )
+      next_edge = patch.next_edge( edge )
+      
+      TT.debug( "> Prev Edge: #{prev_edge}" )
+      TT.debug( "> Next Edge: #{next_edge}" )
       
       pts1 = prev_edge.control_points
       pts2 = next_edge.control_points
@@ -75,31 +79,20 @@ module TT::Plugins::BezierSurfaceTools
         v1 = pts1[3].vector_to( pts1[2] ).reverse
       end
       
-      if next_edge.start == edge.start
+      if next_edge.start == edge.end
         v2 = pts2[0].vector_to( pts2[1] ).reverse
       else
         v2 = pts2[3].vector_to( pts2[2] ).reverse
       end
       
+      #if reversed
+      #  v1.reverse!
+      #  v2.reverse!
+      #end
+      
       directions = [ v1, v1, v2, v2 ]
-      
-      
-        direction = edge.direction
-        if edge.reversed_in?( patch )
-          direction.reverse!
-          reversed = true
-        else
-          reversed = false
-        end
-        vector = direction * Z_AXIS # (!) Not correct!
-      
-      
+
       length = edge.length( surface.subdivs ) / 3
-      
-      #puts patch
-      #puts direction
-      #puts vector
-      #puts length.to_s
       
       points = []
       edge.control_points.each_with_index { |point, index|
@@ -109,17 +102,17 @@ module TT::Plugins::BezierSurfaceTools
         points << point.offset( directions[index], length * 3 )
       }
       
-      #puts points.size
-      #p points
-      
       new_patch = QuadPatch.new( points )
       new_patch.reversed = true if reversed
       edge.link( new_patch )
-      
-      surface.add_patch( new_patch )
-      surface.update( Sketchup.active_model.edit_transform )
-      
       # (!) merge edges
+      
+      model = Sketchup.active_model
+      model.start_operation('Add Quad Patch', true)
+      surface.add_patch( new_patch )
+      surface.update( model.edit_transform )
+      model.commit_operation
+      
       new_patch
     end
     
@@ -165,6 +158,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def edge_reversed?( edge )
+      # (!) Not correct!
       TT.debug( 'QuadPatch.edge_reversed?' )
       index = edge_index( edge )
       if index == 2 || index == 3

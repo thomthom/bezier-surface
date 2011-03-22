@@ -271,13 +271,13 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def start
-      @control_points.first.extend( TT::Point3d_Ex )
+      @control_points.first#.extend( TT::Point3d_Ex )
     end
     
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def end
-      @control_points.last.extend( TT::Point3d_Ex )
+      @control_points.last#.extend( TT::Point3d_Ex )
     end
     
     # @return [Length]
