@@ -276,6 +276,36 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # Debug
+    def draw_edges( view )
+      tr = view.model.edit_transform
+      subdivs = @subdivs
+      for patch in @patches
+        for edge in patch.edges
+          pts = edge.segment( subdivs, tr )
+          
+          if edge.reversed_in?( patch )
+            view.drawing_color = 'purple'
+            d = pts[-1].vector_to( pts[-2] )
+            pt = pts[-2]
+          else
+            view.drawing_color = 'green'
+            d = pts[0].vector_to( pts[1] )
+            pt = pts[1]
+          end
+          
+          v = d * Z_AXIS
+          view.line_width = 4
+          view.line_stipple = ''
+          
+          size = view.pixels_to_model( 25, pt )
+          o = pt.offset( v, size )
+          
+          view.draw_line( pt, o )
+        end
+      end
+    end
+    
     # Returns all the +BezierEdge+ entities for the surface.
     #
     # @return [Array<BezierEdge>]

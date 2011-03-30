@@ -114,6 +114,9 @@ module TT::Plugins::BezierSurfaceTools
           view.draw( GL_LINE_STRIP, edge.segment( subdivs, tr ) )
         end
       end
+      
+      # Debug
+      @surface.draw_edges( view )
     end
     
     def onSetCursor
