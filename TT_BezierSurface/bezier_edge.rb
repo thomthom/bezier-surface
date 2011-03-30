@@ -27,6 +27,14 @@ module TT::Plugins::BezierSurfaceTools
       @patches = []
     end
     
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def direction
+      p1 = @control_points.first
+      p2 = @control_points.last
+      p1.vector_to( p2 )
+    end
+    
     # @return [QuadPatch]
     # @since 1.0.0
     def extrude_quad_patch
@@ -105,6 +113,19 @@ module TT::Plugins::BezierSurfaceTools
       
       new_patch
     end
+
+    # @return [Length]
+    # @since 1.0.0
+    def length( subdivs )
+      total = 0.0
+      points = segment( subdivs )
+      for index in (0...points.size-1)
+        pt1 = points[index]
+        pt2 = points[index+1]
+        total += pt1.distance( pt2 )
+      end
+      total.to_l
+    end
     
     # Assosiates an entity with the current BezierEdge. Use to keep track of
     # which entities use this edge.
@@ -145,6 +166,14 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @param [BezierPatch] subdivs
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def reversed_in?( patch )
+      patch.edge_reversed?( self )
+    end
+    
     # Returns an array of 3d points representing the bezier curve with the given
     # sub-division.
     #
@@ -160,45 +189,16 @@ module TT::Plugins::BezierSurfaceTools
       points
     end
     
-    # @param [BezierPatch] subdivs
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def reversed_in?( patch )
-      patch.edge_reversed?( self )
-    end
-    
-    # @return [Geom::Vector3d]
-    # @since 1.0.0
-    def direction
-      p1 = @control_points.first
-      p2 = @control_points.last
-      p1.vector_to( p2 )
-    end
-    
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def start
-      @control_points.first#.extend( TT::Point3d_Ex )
+      @control_points.first #.extend( TT::Point3d_Ex )
     end
     
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def end
-      @control_points.last#.extend( TT::Point3d_Ex )
-    end
-    
-    # @return [Length]
-    # @since 1.0.0
-    def length( subdivs )
-      total = 0.0
-      points = segment( subdivs )
-      for index in (0...points.size-1)
-        pt1 = points[index]
-        pt2 = points[index+1]
-        total += pt1.distance( pt2 )
-      end
-      total.to_l
+      @control_points.last #.extend( TT::Point3d_Ex )
     end
     
     # Returns an array of 3d points representing control points.
