@@ -352,9 +352,13 @@ module TT::Plugins::BezierSurfaceTools
       d = TT::Instance.definition( @instance )
       pts = mesh_points( subdivs, transformation )
       vertices = raw_mesh_vertices()
-      #TT.debug( 'mesh_vertices' )
-      #TT.debug( "> Points: #{pts.length}" )
-      #TT.debug( "> Vertices: #{vertices.length}" )
+      
+      unless pts.length == vertices.length
+        TT.debug( 'mesh_vertices' )
+        TT.debug( "> Points: #{pts.length}" )
+        TT.debug( "> Vertices: #{vertices.length}" )
+      end
+      
       patch_vertices = []
       for pt in pts
         vertex = vertices.find { |v| v.position == pt } # (!) Optimize
