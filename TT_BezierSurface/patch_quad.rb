@@ -62,7 +62,13 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       patch = edge.patches[0]
-      reversed = edge.reversed_in?( patch )
+      edge_reversed = edge.reversed_in?( patch )
+      
+      index = patch.edge_index( edge )
+      TT.debug( "Extrude Edge: (#{index}) #{edge}" )
+      TT.debug( "> Length: #{edge.length(surface.subdivs).to_s}" )
+      TT.debug( "> Length: #{edge.length(surface.subdivs).class}" )
+      TT.debug( "> Reversed: #{edge_reversed}" )
       
       prev_edge = patch.prev_edge( edge )
       next_edge = patch.next_edge( edge )
@@ -70,32 +76,24 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( "> Prev Edge: #{prev_edge}" )
       TT.debug( "> Next Edge: #{next_edge}" )
       
-      pts1 = prev_edge.control_points
-      pts2 = next_edge.control_points
+      pts = edge.control_points
+      pts_prev = prev_edge.control_points
+      pts_next = next_edge.control_points
       
-      if prev_edge.start == edge.start
-        v1 = pts1[0].vector_to( pts1[1] ).reverse
-      else
-        v1 = pts1[3].vector_to( pts1[2] ).reverse
-      end
+      pts.reverse! if edge_reversed
+      pts_prev.reverse! if prev_edge.reversed_in?( patch )
+      pts_next.reverse! if next_edge.reversed_in?( patch )
       
-      if next_edge.start == edge.end
-        v2 = pts2[0].vector_to( pts2[1] ).reverse
-      else
-        v2 = pts2[3].vector_to( pts2[2] ).reverse
-      end
-      
-      #if reversed
-      #  v1.reverse!
-      #  v2.reverse!
-      #end
+      v1 = pts_prev[3].vector_to( pts_prev[2] ).reverse
+      v2 = pts_next[0].vector_to( pts_next[1] ).reverse
       
       directions = [ v1, v1, v2, v2 ]
 
       length = edge.length( surface.subdivs ) / 3
       
       points = []
-      edge.control_points.each_with_index { |point, index|
+      #edge.control_points.each_with_index { |point, index|
+      pts.each_with_index { |point, index|
         points << point.clone
         points << point.offset( directions[index], length )
         points << point.offset( directions[index], length * 2 )
@@ -103,7 +101,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       
       new_patch = QuadPatch.new( points )
-      new_patch.reversed = true if reversed
+      #new_patch.reversed = true if edge_reversed
       edge.link( new_patch )
       # (!) merge edges
       
@@ -159,15 +157,17 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edge_reversed?( edge )
       # (!) Not correct!
-      TT.debug( 'QuadPatch.edge_reversed?' )
+      #TT.debug( 'QuadPatch.edge_reversed?' )
       index = edge_index( edge )
       if index == 2 || index == 3
-        TT.debug( "> Reversed" )
-        return true
+        #TT.debug( "> Reversed" )
+        is_reversed = true
       else
-        TT.debug( "> Normal" )
-        return false
+        #TT.debug( "> Normal" )
+        is_reversed = false
       end
+      is_reversed = !is_reversed if @reversed
+      is_reversed
     end
     
     # Accurate calculation of the number of vertices in the mesh.
