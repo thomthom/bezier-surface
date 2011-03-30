@@ -283,14 +283,14 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Length]
     # @since 1.0.0
     def length( subdivs )
-      total = 0.to_l
+      total = 0.0
       points = segment( subdivs )
       for index in (0...points.size-1)
         pt1 = points[index]
         pt2 = points[index+1]
         total += pt1.distance( pt2 )
       end
-      total
+      total.to_l
     end
     
     # Returns an array of 3d points representing control points.
