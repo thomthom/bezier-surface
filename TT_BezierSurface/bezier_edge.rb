@@ -15,14 +15,15 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEdge
     
+    attr_reader( :parent )
     attr_accessor( :control_points, :patches )
     
     # @param [Array<Geom::Point3d>] control_points Bezier control points
     #
     # @since 1.0.0
-    def initialize( control_points )
-      # (?) Require parent patch?
+    def initialize( parent, control_points )
       # (!) Validate
+      @parent = parent # BezierSurface
       @control_points = control_points
       @patches = []
     end
@@ -43,7 +44,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       patch = self.patches[0]
-      surface = patch.parent
+      surface = self.parent
       edge_reversed = self.reversed_in?( patch )
       
       # <debug>

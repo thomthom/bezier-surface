@@ -34,10 +34,10 @@ module TT::Plugins::BezierSurfaceTools
       
       # Create edges and assosiate them with this patch.
       @edges = [
-        BezierEdge.new( @points.row(0) ),
-        BezierEdge.new( @points.column(3) ),
-        BezierEdge.new( @points.row(3) ),
-        BezierEdge.new( @points.column(0) )
+        BezierEdge.new( parent, @points.row(0) ),
+        BezierEdge.new( parent, @points.column(3) ),
+        BezierEdge.new( parent, @points.row(3) ),
+        BezierEdge.new( parent, @points.column(0) )
       ].each { |edge|
         edge.link( self )
       }
