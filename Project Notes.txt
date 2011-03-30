@@ -32,3 +32,5 @@
 * Error catching, validation and user feedback.
 
 * Check control-point references validity for BezierEdges.
+
+* Option for control point to not always be visible. Occluded by geometry.
