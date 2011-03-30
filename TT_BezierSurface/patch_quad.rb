@@ -21,7 +21,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Array<Geom::Point3d>] points Bezier control points
     #
     # @since 1.0.0
-    def initialize( points )
+    def initialize( parent, points )
       super
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16
@@ -49,69 +49,6 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def typename
       'QuadPatch'
-    end
-    
-    # @param [BezierSurface] surface
-    # @param [BezierEdge] edge
-    #
-    # @return [QuadPatch]
-    # @since 1.0.0
-    def self.extrude_edge( surface, edge )
-      if edge.patches.size > 1
-        raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
-      end
-      
-      patch = edge.patches[0]
-      edge_reversed = edge.reversed_in?( patch )
-      
-      index = patch.edge_index( edge )
-      TT.debug( "Extrude Edge: (#{index}) #{edge}" )
-      TT.debug( "> Length: #{edge.length(surface.subdivs).to_s}" )
-      TT.debug( "> Length: #{edge.length(surface.subdivs).class}" )
-      TT.debug( "> Reversed: #{edge_reversed}" )
-      
-      prev_edge = patch.prev_edge( edge )
-      next_edge = patch.next_edge( edge )
-      
-      TT.debug( "> Prev Edge: #{prev_edge}" )
-      TT.debug( "> Next Edge: #{next_edge}" )
-      
-      pts = edge.control_points
-      pts_prev = prev_edge.control_points
-      pts_next = next_edge.control_points
-      
-      pts.reverse! if edge_reversed
-      pts_prev.reverse! if prev_edge.reversed_in?( patch )
-      pts_next.reverse! if next_edge.reversed_in?( patch )
-      
-      v1 = pts_prev[3].vector_to( pts_prev[2] ).reverse
-      v2 = pts_next[0].vector_to( pts_next[1] ).reverse
-      
-      directions = [ v1, v1, v2, v2 ]
-
-      length = edge.length( surface.subdivs ) / 3
-      
-      points = []
-      #edge.control_points.each_with_index { |point, index|
-      pts.each_with_index { |point, index|
-        points << point.clone
-        points << point.offset( directions[index], length )
-        points << point.offset( directions[index], length * 2 )
-        points << point.offset( directions[index], length * 3 )
-      }
-      
-      new_patch = QuadPatch.new( points )
-      #new_patch.reversed = true if edge_reversed
-      edge.link( new_patch )
-      # (!) merge edges
-      
-      model = Sketchup.active_model
-      model.start_operation('Add Quad Patch', true)
-      surface.add_patch( new_patch )
-      surface.update( model.edit_transform )
-      model.commit_operation
-      
-      new_patch
     end
     
     # (!) private

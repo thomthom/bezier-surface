@@ -107,7 +107,7 @@ module TT::Plugins::BezierSurfaceTools
         patchtype = eval( test[2] )
         data = eval( value )
         points = data.map { |pt| Geom::Point3d.new( pt ) }
-        self.add_patch( patchtype.new( points ) )
+        self.add_patch( patchtype.new( self, points ) )
       }
       self
     end

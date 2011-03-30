@@ -19,9 +19,11 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   module BezierPatch
     
+    attr_reader( :parent )
     attr_accessor( :reversed )
     
     def initialize( *args )
+      @parent = args[0] # BezierSurface
       @reversed = false
     end
     
@@ -196,6 +198,85 @@ module TT::Plugins::BezierSurfaceTools
       # (!) Validate
       @control_points = control_points
       @patches = []
+    end
+    
+    # @return [QuadPatch]
+    # @since 1.0.0
+    def extrude_quad_patch
+      if self.patches.size > 1
+        raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
+      end
+      
+      patch = self.patches[0]
+      surface = patch.parent
+      edge_reversed = self.reversed_in?( patch )
+      
+      # <debug>
+      index = patch.edge_index( self )
+      TT.debug( "Extrude Edge: (#{index}) #{self}" )
+      TT.debug( "> Length: #{self.length(surface.subdivs).to_s}" )
+      TT.debug( "> Reversed: #{edge_reversed}" )
+      # </debug>
+      
+      # Use the connected edges to determine the direction of the extruded
+      # bezier patch.
+      prev_edge = patch.prev_edge( self )
+      next_edge = patch.next_edge( self )
+      
+      # <debug>
+      TT.debug( "> Prev Edge: #{prev_edge}" )
+      TT.debug( "> Next Edge: #{next_edge}" )
+      # </debug>
+      
+      # Cache the point for quicker access.
+      pts = self.control_points
+      pts_prev = prev_edge.control_points
+      pts_next = next_edge.control_points
+      
+      # Sort the points in a continuous predictable order.
+      pts.reverse! if edge_reversed
+      pts_prev.reverse! if prev_edge.reversed_in?( patch )
+      pts_next.reverse! if next_edge.reversed_in?( patch )
+      
+      # Calculate the extrusion direction for the control points in the new patch.
+      v1 = pts_prev[3].vector_to( pts_prev[2] ).reverse
+      v2 = pts_next[0].vector_to( pts_next[1] ).reverse
+      
+      # (!) Unfinished - this is a quick hack. Need better Bezier Entity control
+      # first.
+      # The start and end control point vectors is used for the interior points.
+      # In the finished product the interior points should be derived from
+      # related interior points from the source patch in order to provide
+      # a continous surface.
+      directions = [ v1, v1, v2, v2 ]
+
+      # Extrude the new patch by the same length as the edge it's extruded from.
+      # This should be an ok length that scales predictably in most conditions.
+      length = self.length( surface.subdivs ) / 3
+      
+      # Generate the control points for the new patch.
+      points = []
+      pts.each_with_index { |point, index|
+        points << point.clone
+        points << point.offset( directions[index], length )
+        points << point.offset( directions[index], length * 2 )
+        points << point.offset( directions[index], length * 3 )
+      }
+      
+      # Create the BezierPatch entity, add all entity assosiations.
+      new_patch = QuadPatch.new( surface, points )
+      new_patch.reversed = true if patch.reversed
+      self.link( new_patch )
+      # (!) merge edges
+      
+      # Add the patch to the surface and regenerate the mesh.
+      model = Sketchup.active_model
+      model.start_operation('Add Quad Patch', true)
+      surface.add_patch( new_patch )
+      surface.update( model.edit_transform )
+      model.commit_operation
+      
+      new_patch
     end
     
     # Assosiates an entity with the current BezierEdge. Use to keep track of

@@ -70,8 +70,8 @@ module TT::Plugins::BezierSurfaceTools
         g = view.model.active_entities.add_group
         g.name = 'Bezier Surface'
         g.transform!( Geom::Transformation.new(@ip_start.position) )
-        patch = QuadPatch.new( points )
         surface = BezierSurface.new( g )
+        patch = QuadPatch.new( surface, points )
         surface.add_patch( patch )
         surface.update( view.model.edit_transform )
         view.model.commit_operation

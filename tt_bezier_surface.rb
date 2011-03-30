@@ -185,9 +185,9 @@ module TT::Plugins::BezierSurfaceTools
     return false unless editor
     return false unless editor.active?
     return false unless editor.selection.size == 1
-    entity = editor.selection[0]
-    return false unless entity.is_a?( BezierEdge )
-    QuadPatch.extrude_edge( editor.surface, entity )
+    edge = editor.selection[0]
+    return false unless edge.is_a?( BezierEdge )
+    edge.extrude_quad_patch
     true
   end
   
