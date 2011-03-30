@@ -53,6 +53,17 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def self.is_beta?( instance )
+      d = TT::Instance.definition( instance )
+      return false if d.nil?
+      version = d.get_attribute( ATTR_ID, 'Version' )
+      version == [1,0,0]
+    end
+    
     # Loads the bezier patch data from the given instance (group or component).
     #
     # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
@@ -88,6 +99,51 @@ module TT::Plugins::BezierSurfaceTools
     def reload
       TT.debug( 'BezierSurface.reload' )
       d = TT::Instance.definition( @instance )
+      
+      if self.class.is_beta?( instance )
+        TT.debug( '> Beta Surface' )
+        return self.reload_old_beta
+      end
+      
+      self.subdivs = d.get_attribute( ATTR_ID, 'Subdivs' )
+      # Load Patches
+      @patches.clear
+      attr = d.attribute_dictionaries[ ATTR_ID ]
+      attr.each { |key, value|
+        # Patch data dictionary:
+        # * Key: Patch{index}_{type}
+        #        Example: "Patch3_QuadPatch"
+        # * Value: Array of [x,y,z] points in inches.
+        test = key.match(/Patch(\d+)_(\w+)/)
+        next unless test
+        # The patch type string is eval'ed into a Class object which is then
+        # used to load the patch data. The patch is left with the resonsibility
+        # of handling the data loading.
+        #
+        # (!) Error catching and validation before eval'ing should be added.
+        patchtype = eval( test[2] )
+        # Load binary data.
+        #data = Marshal.load( value )
+        data = eval( value )
+        reversed = data['Reversed']
+        points = data['Points'].map { |pt| Geom::Point3d.new( pt ) }
+        # Try to create the patch objects.
+        patch = patchtype.new( self, points )
+        self.add_patch( patch )
+      }
+      self
+    end
+    
+    # Reloads the bezier patch data from the attribute dictionary of the
+    # assosiated instance.
+    #
+    # Use after undo is detected to corrently rebuild the geometry.
+    #
+    # @return [BezierSurface|Nil]
+    # @since 1.0.0
+    def reload_old_beta
+      TT.debug( 'BezierSurface.reload_old_beta' )
+      d = TT::Instance.definition( @instance )
       self.subdivs = d.get_attribute( ATTR_ID, 'Subdivs' )
       # Load Patches
       @patches.clear
@@ -109,6 +165,7 @@ module TT::Plugins::BezierSurfaceTools
         points = data.map { |pt| Geom::Point3d.new( pt ) }
         self.add_patch( patchtype.new( self, points ) )
       }
+      #update_attributes() # (?) Cause SketchUp to crash!
       self
     end
     
@@ -431,10 +488,18 @@ module TT::Plugins::BezierSurfaceTools
       # Write Patches
       @patches.each_with_index { |patch, i|
         section = "Patch#{i}_#{patch.typename}"
-        data = patch.control_points.to_a.map { |pt|
+        # Convert the control points into arrays of floats because the custom
+        # objects doesn't support Marshal.
+        points = patch.control_points.to_a.map { |pt|
           [ pt.x.to_f, pt.y.to_f, pt.z.to_f ]
         }
-        d.set_attribute( ATTR_ID, section, data.inspect )
+        # Build hash with binary patch data and write to dictionary.
+        data = {}
+        data['Reversed'] = patch.reversed
+        data['Points'] = points
+        #binary = Marshal.dump( data )
+        binary = data.inspect
+        d.set_attribute( ATTR_ID, section, binary )
       }
       true
     end
