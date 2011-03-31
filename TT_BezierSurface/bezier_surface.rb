@@ -31,7 +31,7 @@ module TT::Plugins::BezierSurfaceTools
     def self.is?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
-      mesh_type = d.get_attribute( ATTR_ID, 'Type' )
+      mesh_type = d.get_attribute( ATTR_ID, ATTR_TYPE )
       mesh_type == MESH_TYPE
     end
     
@@ -45,7 +45,7 @@ module TT::Plugins::BezierSurfaceTools
     def self.version_compatible?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
-      version = d.get_attribute( ATTR_ID, 'Version' )
+      version = d.get_attribute( ATTR_ID, ATTR_VERSION )
       return false unless version
       return false if MESH_VERSION[0] < version[0]
       return false if MESH_VERSION[0] == version[0] && MESH_VERSION[1] < version[1]
@@ -60,7 +60,7 @@ module TT::Plugins::BezierSurfaceTools
     def self.is_beta?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
-      version = d.get_attribute( ATTR_ID, 'Version' )
+      version = d.get_attribute( ATTR_ID, ATTR_VERSION )
       version == [1,0,0]
     end
     
@@ -78,7 +78,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       unless self.version_compatible?( instance )
         d = TT::Instance.definition( instance )
-        version = d.get_attribute( ATTR_ID, 'Version' )
+        version = d.get_attribute( ATTR_ID, ATTR_VERSION )
         mesh_version = version.join('.') if version.is_a?( Array )
         user_version = MESH_VERSION.join('.')
         UI.messagebox("This bezier surface was made with a newer version and can not be edited.\n\nMesh Version: #{mesh_version}\nUser Version: #{user_version}")
@@ -105,7 +105,7 @@ module TT::Plugins::BezierSurfaceTools
         return self.reload_old_beta
       end
       
-      self.subdivs = d.get_attribute( ATTR_ID, 'Subdivs' )
+      self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
       # Load Patches
       @patches.clear
       attr = d.attribute_dictionaries[ ATTR_ID ]
@@ -144,7 +144,7 @@ module TT::Plugins::BezierSurfaceTools
     def reload_old_beta
       TT.debug( 'BezierSurface.reload_old_beta' )
       d = TT::Instance.definition( @instance )
-      self.subdivs = d.get_attribute( ATTR_ID, 'Subdivs' )
+      self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
       # Load Patches
       @patches.clear
       attr = d.attribute_dictionaries[ ATTR_ID ]
@@ -482,9 +482,9 @@ module TT::Plugins::BezierSurfaceTools
     def update_attributes
       d = TT::Instance.definition( @instance )
       # Write Surface data
-      d.set_attribute( ATTR_ID, 'Type', MESH_TYPE )
-      d.set_attribute( ATTR_ID, 'Version', MESH_VERSION )
-      d.set_attribute( ATTR_ID, 'Subdivs', @subdivs )
+      d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
+      d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION )
+      d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
       # Write Patches
       @patches.each_with_index { |patch, i|
         section = "Patch#{i}_#{patch.typename}"

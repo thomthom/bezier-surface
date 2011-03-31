@@ -27,6 +27,10 @@ module TT::Plugins::BezierSurfaceTools
   PLUGIN_NAME = 'Bezier Surface'.freeze
   
   ATTR_ID      = 'TT_Mesh'.freeze
+  ATTR_TYPE    = 'Type'.freeze
+  ATTR_VERSION = 'Version'.freeze
+  ATTR_SUBDIVS = 'Subdivs'.freeze
+  
   MESH_TYPE    = 'BezierSurface'.freeze
   MESH_VERSION = [1,0,1].freeze
   
