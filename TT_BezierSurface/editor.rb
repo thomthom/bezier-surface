@@ -55,6 +55,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface = BezierSurface.load( instance )
       if @surface
         @model.selection.clear
+        @model.select_tool( nil ) # Ensure no other tool is active.
         @model.tools.push_tool( self )
         tool = VertexSelectionTool.new( self )
         select_tool( tool )
@@ -127,7 +128,7 @@ module TT::Plugins::BezierSurfaceTools
     # Applies a transformation to the selected control-points to the active
     # surface and commits it.
     #
-    # @param [Integer] subdivs
+    # @param [Geom::Transformation] transformation
     #
     # @return [Boolean]
     # @since 1.0.0
@@ -140,6 +141,16 @@ module TT::Plugins::BezierSurfaceTools
       @model.commit_operation
     end
     
+    # Converts a transformation for the global space into a transformation
+    # within the local space.
+    #
+    # Use when editing a bezier surface. The group will be open and the
+    # co-ordinate system in SketchUp is working in world space.
+    #
+    # @param [Geom::Transformation] transformation
+    #
+    # @return [Boolean]
+    # @since 1.0.0
     def local_transformation( transformation )
       # Cast Vector3d into Transformation.
       if transformation.is_a?( Geom::Vector3d )
