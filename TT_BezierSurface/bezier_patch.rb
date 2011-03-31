@@ -37,6 +37,7 @@ module TT::Plugins::BezierSurfaceTools
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
+    # def edge_reversed?( bezier_edge )
     
     # Returns the control points for this BezierPatch.
     #
