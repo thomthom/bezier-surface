@@ -409,11 +409,13 @@ module TT::Plugins::BezierSurfaceTools
       pts = mesh_points( subdivs, transformation )
       vertices = raw_mesh_vertices()
       
+      # <debug>
       unless pts.length == vertices.length
         TT.debug( 'mesh_vertices' )
         TT.debug( "> Points: #{pts.length}" )
         TT.debug( "> Vertices: #{vertices.length}" )
       end
+      # </debug>
       
       patch_vertices = []
       for pt in pts
@@ -432,25 +434,15 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def set_vertex_positions( vertices, positions )
-      #TT::debug 'set_vertex_positions'
-      #TT::debug '> vertices'
-      #TT::debug vertices
-      #TT::debug '> position'
-      #TT::debug positions
       entities = []
       vectors = []
       vertices.each_with_index { |v,i|
-        #TT::debug v.position
-        #TT::debug positions[i]
         vector = v.position.vector_to( positions[i] )
-        #vectors << vector if vector.valid?
         if vector.valid?
           entities << v
           vectors << vector
         end
       }
-      #TT::debug vectors
-      #TT::debug "Vertices: #{entities.length} - Vectors: #{vectors.length}"
       # (!) ensure entities has same length as vectors
       d = TT::Instance.definition( @instance )
       d.entities.transform_by_vectors( entities, vectors )
