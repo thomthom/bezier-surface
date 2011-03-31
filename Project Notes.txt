@@ -28,6 +28,7 @@
 * Detect Axis change.
 
 * Detect active context change due to undo/redo.
+  > Catch errors when loading patch data.
 
 * Error catching, validation and user feedback.
 
