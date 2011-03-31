@@ -45,19 +45,17 @@ module TT::Plugins::BezierSurfaceTools
     def self.version_compatible?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
-      version = d.get_attribute( ATTR_ID, ATTR_VERSION )
-      return false unless version
-      return false if MESH_VERSION[0] < version[0]
-      return false if MESH_VERSION[0] == version[0] && MESH_VERSION[1] < version[1]
-      return false if MESH_VERSION[1] == version[1] && MESH_VERSION[2] < version[2]
-      true
+      string_version = d.get_attribute( ATTR_ID, ATTR_VERSION )
+      version = TT::Version.new( string_version )
+      MESH_VERSION >= version
     end
     
     # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
     #
+    # @private
     # @return [Boolean]
     # @since 1.0.0
-    def self.is_beta?( instance )
+    def self.is_old_alpha_format?( instance )
       d = TT::Instance.definition( instance )
       return false if d.nil?
       version = d.get_attribute( ATTR_ID, ATTR_VERSION )
@@ -79,9 +77,8 @@ module TT::Plugins::BezierSurfaceTools
       unless self.version_compatible?( instance )
         d = TT::Instance.definition( instance )
         version = d.get_attribute( ATTR_ID, ATTR_VERSION )
-        mesh_version = version.join('.') if version.is_a?( Array )
-        user_version = MESH_VERSION.join('.')
-        UI.messagebox("This bezier surface was made with a newer version and can not be edited.\n\nMesh Version: #{mesh_version}\nUser Version: #{user_version}")
+        mesh_version = TT::Version.new( version )
+        UI.messagebox("This bezier surface was made with a newer version and can not be edited.\n\nMesh Version: #{mesh_version}\nUser Version: #{MESH_VERSION}")
         return nil
       end
       surface = self.new( instance )
@@ -100,10 +97,12 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurface.reload' )
       d = TT::Instance.definition( @instance )
       
-      if self.class.is_beta?( instance )
+      # <alpha>
+      if self.class.is_old_alpha_format?( instance )
         TT.debug( '> Beta Surface' )
         return self.reload_old_beta
       end
+      # </alpha>
       
       self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
       # Load Patches
@@ -123,7 +122,7 @@ module TT::Plugins::BezierSurfaceTools
         # (!) Error catching and validation before eval'ing should be added.
         patchtype = eval( test[2] )
         # Load binary data.
-        #data = Marshal.load( value )
+        #data = Marshal.load( value ) # (!) Errors about incorrect length.
         data = eval( value )
         reversed = data[P_REVERSED]
         points = data[P_POINTS].map { |pt| Geom::Point3d.new( pt ) }
@@ -284,8 +283,7 @@ module TT::Plugins::BezierSurfaceTools
       picked.uniq
     end
     
-    # (!) Placeholder method. BezierEdges not implemented.
-    #
+    # @param [Integer] subdivs
     # @param [Integer] x
     # @param [Integer] y
     # @param [Sketchup::View] view
@@ -333,7 +331,7 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # Debug
+    # <debug>
     def draw_edges( view )
       tr = view.model.edit_transform
       subdivs = @subdivs
@@ -362,6 +360,7 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
     end
+    # </debug>
     
     # Returns all the +BezierEdge+ entities for the surface.
     #
@@ -483,7 +482,7 @@ module TT::Plugins::BezierSurfaceTools
       d = TT::Instance.definition( @instance )
       # Write Surface data
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
-      d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION )
+      d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION.to_s )
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
       # Write Patches
       @patches.each_with_index { |patch, i|

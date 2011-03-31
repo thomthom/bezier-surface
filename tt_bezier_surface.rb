@@ -35,7 +35,7 @@ module TT::Plugins::BezierSurfaceTools
   
   # Attribute dictionary values
   MESH_TYPE    = 'BezierSurface'.freeze
-  MESH_VERSION = [1,0,1].freeze
+  MESH_VERSION = TT::Version.new(1,0,1).freeze
   
   # Data structure - Patch Properties
   P_REVERSED = 'Reversed'.freeze
