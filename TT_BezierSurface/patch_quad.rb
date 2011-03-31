@@ -51,43 +51,6 @@ module TT::Plugins::BezierSurfaceTools
       'QuadPatch'
     end
     
-    # (!) private
-    #
-    # @param [BezierEdge] edge
-    #
-    # @return [BezierEdge]
-    # @since 1.0.0
-    def next_edge( edge )
-      index = edge_index( edge )
-      array_index = ( index + 1 ) % @edges.size
-      @edges[ array_index ]
-    end
-    
-    # (!) private
-    #
-    # @param [BezierEdge] edge
-    #
-    # @return [BezierEdge]
-    # @since 1.0.0
-    def prev_edge( edge )
-      index = edge_index( edge )
-      array_index = ( index - 1 ) % @edges.size
-      @edges[ array_index ]
-    end
-    
-    # (!) private
-    #
-    # @param [BezierEdge] edge
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def edge_index( edge )
-      @edges.each_with_index { |e, index|
-        return index if edge == e
-      }
-      raise ArgumentError, 'Edge not connected to this patch.'
-    end
-    
     # @param [BezierEdge] edge
     #
     # @return [Boolean]
