@@ -125,8 +125,8 @@ module TT::Plugins::BezierSurfaceTools
         # Load binary data.
         #data = Marshal.load( value )
         data = eval( value )
-        reversed = data['Reversed']
-        points = data['Points'].map { |pt| Geom::Point3d.new( pt ) }
+        reversed = data[P_REVERSED]
+        points = data[P_POINTS].map { |pt| Geom::Point3d.new( pt ) }
         # Try to create the patch objects.
         patch = patchtype.new( self, points )
         self.add_patch( patch )
@@ -495,8 +495,8 @@ module TT::Plugins::BezierSurfaceTools
         }
         # Build hash with binary patch data and write to dictionary.
         data = {}
-        data['Reversed'] = patch.reversed
-        data['Points'] = points
+        data[P_REVERSED] = patch.reversed
+        data[P_POINTS] = points
         #binary = Marshal.dump( data )
         binary = data.inspect
         d.set_attribute( ATTR_ID, section, binary )

@@ -21,19 +21,27 @@ module TT::Plugins::BezierSurfaceTools
   
   ### CONSTANTS ### ------------------------------------------------------------
   
-  PLUGIN      = self
+  # Plugin information
+  PLUGIN      = self # Namespace shortcut
   ID          = 'TT_BezierSurface'.freeze
   VERSION     = '1.0.0'.freeze
   PLUGIN_NAME = 'Bezier Surface'.freeze
   
+  # Attribute dictionary keys
   ATTR_ID      = 'TT_Mesh'.freeze
   ATTR_TYPE    = 'Type'.freeze
   ATTR_VERSION = 'Version'.freeze
   ATTR_SUBDIVS = 'Subdivs'.freeze
   
+  # Attribute dictionary values
   MESH_TYPE    = 'BezierSurface'.freeze
   MESH_VERSION = [1,0,1].freeze
   
+  # Data structure - Patch Properties
+  P_REVERSED = 'Reversed'.freeze
+  P_POINTS   = 'Points'.freeze
+  
+  # Resource paths
   PATH       = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
   PATH_UI    = File.join( PATH, 'UI' ).freeze
   PATH_ICONS = File.join( PATH_UI, 'Icons' ).freeze
