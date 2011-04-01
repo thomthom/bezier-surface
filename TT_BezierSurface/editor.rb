@@ -258,7 +258,7 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
         
         # Select Vertex
-        button = TT::GUI::Button.new('Select Control Points') {
+        button = TT::GUI::ToolbarButton.new('Select Control Points') {
           puts 'Tool: Select Control Points'
           tool = VertexSelectionTool.new( self )
           select_tool( tool )
@@ -268,7 +268,7 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.add_control( button )
         
         # Select Edge
-        button = TT::GUI::Button.new('Select Edges') {
+        button = TT::GUI::ToolbarButton.new('Select Edges') {
           puts 'Tool: Select Edges'
           tool = EdgeSelectionTool.new( self )
           select_tool( tool )
@@ -278,7 +278,7 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.add_control( button )
         
         # Move
-        button = TT::GUI::Button.new('Move') {
+        button = TT::GUI::ToolbarButton.new('Move') {
           puts 'Tool: Move'
           tool = MoveTool.new( self )
           select_tool( tool )
@@ -288,7 +288,7 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.add_control( button )
         
         # Add QuadPatch
-        button = TT::GUI::Button.new('Add QuadPatch') {
+        button = TT::GUI::ToolbarButton.new('Add QuadPatch') {
           puts 'Add QuadPatch'
           PLUGIN.add_quadpatch
           TT::SketchUp.activate_main_window

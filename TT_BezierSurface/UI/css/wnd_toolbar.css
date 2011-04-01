@@ -7,11 +7,11 @@ body > div {
   float: left;
 }
 
-body > div.button {
+body > div.toolbarbutton {
   width: 26px;
   padding: 1px;
 }
-body > div.button:hover {
+body > div.toolbarbutton:hover {
   background: #333;
 }
 
