@@ -297,15 +297,27 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.add_control( button )
         
         # Axis
+        container = TT::GUI::Container.new
         list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
-        list.label = ' Axis:'
         list.on_change { |value|
           puts "Axis: #{value}"
           TT::SketchUp.activate_main_window
         }
-        @toolbar.add_control( list )
+        label = TT::GUI::Label.new( 'Axis:', list )
+        container.add_control( label )
+        container.add_control( list )
+        @toolbar.add_control( container )
+        
+        #list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
+        #list.label = ' Axis:'
+        #list.on_change { |value|
+        #  puts "Axis: #{value}"
+        #  TT::SketchUp.activate_main_window
+        #}
+        #@toolbar.add_control( list )
       end
       @toolbar.show_window
+      
       TT::SketchUp.activate_main_window
     end
     
