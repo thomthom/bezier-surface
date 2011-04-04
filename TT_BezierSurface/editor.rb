@@ -254,6 +254,7 @@ module TT::Plugins::BezierSurfaceTools
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
+        @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
         
@@ -303,7 +304,7 @@ module TT::Plugins::BezierSurfaceTools
           puts "Axis: #{value}"
           TT::SketchUp.activate_main_window
         }
-        label = TT::GUI::Label.new( 'Axis:', list )
+        label = TT::GUI::Label.new( 'Axis: ', list )
         container.add_control( label )
         container.add_control( list )
         @toolbar.add_control( container )
