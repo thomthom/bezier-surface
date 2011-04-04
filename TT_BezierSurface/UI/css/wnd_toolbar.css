@@ -8,13 +8,15 @@ body > div {
 }
 
 body > div.toolbarbutton {
-  width: 26px;
   padding: 1px;
+}
+body > div.toolbarbutton.pressed {
+  padding: 2px;
 }
 body > div.toolbarbutton:hover {
   background: #333;
 }
 
-body > div.list {
+body > div.container {
   padding: 3px 1px;
 }
