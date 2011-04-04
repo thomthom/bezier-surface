@@ -107,17 +107,24 @@ module TT::Plugins::BezierSurfaceTools
     def update_properties
       types = {}
       for e in @selection
-        types[ e.class ] ||= 0
-        types[ e.class ] += 1
+        types[ e.class ] ||= []
+        types[ e.class ] << e
       end
       names = {
         PLUGIN::BezierEdge => 'Edges',
         Geom::Point3d => 'Control Points'
       }
       info = "Entity Info\n"
-      types.each { |key,value|
-        info += "#{value} #{names[key]}\n"
+      types.each { |type, entities|
+        info += "#{entities.size} #{names[type]}\n"
       }
+      if types[ PLUGIN::BezierEdge ] 
+        length = 0.mm
+        for edge in types[ PLUGIN::BezierEdge ] 
+          length += edge.length( @surface.subdivs )
+        end
+        info += "\nLength: #{length.to_l.to_s}"
+      end
       PLUGIN::PropertiesWindow.info = info
     end
     
