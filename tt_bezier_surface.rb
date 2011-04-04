@@ -111,8 +111,11 @@ module TT::Plugins::BezierSurfaceTools
     # Menus
     m = TT.menu('Draw').add_submenu( PLUGIN_NAME )
     m.add_item( cmd_create_quad_patch )
-    menu = m.add_item('Create Tripatch')    { puts 'Create Tripatch' }
+    menu = m.add_item('Create Tripatch') { puts 'Create Tripatch' }
     m.set_validation_proc(menu) { MF_DISABLED | MF_GRAYED }
+    
+    m = UI.menu('Window')
+    m.add_item('Bezier Surface Properties') { PLUGIN::PropertiesWindow.toggle }
     
     # Right click menu
     #UI.add_context_menu_handler { |context_menu|
