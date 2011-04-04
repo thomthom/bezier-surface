@@ -88,7 +88,7 @@ module TT::Plugins::BezierSurfaceTools
 
       # Extrude the new patch by the same length as the edge it's extruded from.
       # This should be an ok length that scales predictably in most conditions.
-      length = self.length( surface.subdivs ) / 3
+      length = self.length( surface.subdivs ) / 3.0
       
       # Generate the control points for the new patch.
       points = []
