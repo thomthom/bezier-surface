@@ -30,8 +30,9 @@ module TT::Plugins::BezierSurfaceTools
         @window = TT::GUI::ToolWindow.new( options )
         @window.theme = TT::GUI::Window::THEME_GRAPHITE
         
-        label = TT::GUI::Label.new( 'Hello World' )
+        label = TT::GUI::Label.new( 'Entity Info' )
         @window.add_control( label )
+        @lbl_info = label
       end
       @window.show_window
       TT::SketchUp.activate_main_window
@@ -54,6 +55,21 @@ module TT::Plugins::BezierSurfaceTools
       else
         self.show
         true
+      end
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def self.visible?
+      @window && @window.visible?
+    end
+    
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def self.info=( string )
+      if @window && @window.visible?
+        @lbl_info.caption = string
       end
     end
     

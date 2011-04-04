@@ -103,6 +103,8 @@ module TT::Plugins::BezierSurfaceTools
       
       @state = S_NORMAL
       update_ui()
+      
+      @editor.update_properties # Temp
     end
     
     def deactivate(view)
@@ -140,6 +142,8 @@ module TT::Plugins::BezierSurfaceTools
         @state = S_NORMAL
         view.invalidate
       end
+      
+      @editor.update_properties # Temp
     end
     
     def onMouseMove(flags, x, y, view)
@@ -170,6 +174,8 @@ module TT::Plugins::BezierSurfaceTools
         @ip_start.copy!(@ip_mouse)
         @screen_start = Geom::Point3d.new( x, y, 0 )
       end
+      
+      @editor.update_properties # Temp
     end
     
     # (!) Optimize and clean up code!
@@ -227,6 +233,8 @@ module TT::Plugins::BezierSurfaceTools
 			@ip_mouse.clear
       @state = S_NORMAL
       view.invalidate
+      
+      @editor.update_properties # Temp
     end
     
     def onKeyDown(key, repeat, flags, view)

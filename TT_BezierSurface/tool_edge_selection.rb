@@ -34,6 +34,8 @@ module TT::Plugins::BezierSurfaceTools
     def activate    
       @editor.selection.clear
       update_ui()
+      
+      @editor.update_properties # Temp
     end
     
     def deactivate(view)
@@ -67,6 +69,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       view.invalidate
+      
+      @editor.update_properties # Temp
     end
     
     def onKeyDown(key, repeat, flags, view)

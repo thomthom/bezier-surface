@@ -103,6 +103,24 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # @since 1.0.0
+    def update_properties
+      types = {}
+      for e in @selection
+        types[ e.class ] ||= 0
+        types[ e.class ] += 1
+      end
+      names = {
+        PLUGIN::BezierEdge => 'Edges',
+        Geom::Point3d => 'Control Points'
+      }
+      info = "Entity Info\n"
+      types.each { |key,value|
+        info += "#{value} #{names[key]}\n"
+      }
+      PLUGIN::PropertiesWindow.info = info
+    end
+    
     # (!) Move to BezierSurface ?
     #
     # Changes the subdivision of the active surface and commits it.
