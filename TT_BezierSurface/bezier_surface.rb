@@ -336,20 +336,28 @@ module TT::Plugins::BezierSurfaceTools
       tr = view.model.edit_transform
       subdivs = @subdivs
       for patch in @patches
+        v1 = patch.edges[0].direction
+        v2 = patch.edges[1].direction
+        normal = v1 * v2
         for edge in patch.edges
           pts = edge.segment( subdivs, tr )
           
+          d = edge.direction
           if edge.reversed_in?( patch )
             view.drawing_color = 'purple'
-            d = pts[-1].vector_to( pts[-2] )
+            #d = pts[-1].vector_to( pts[-2] )
+            d.reverse!
             pt = pts[-2]
           else
             view.drawing_color = 'green'
-            d = pts[0].vector_to( pts[1] )
+            #d = pts[0].vector_to( pts[1] )
+            #d = pts[0].vector_to( pts[1] )
             pt = pts[1]
           end
           
-          v = d * Z_AXIS
+          #v = d * Z_AXIS
+          v = d * normal
+          #v = d.axes.x
           view.line_width = 4
           view.line_stipple = ''
           
