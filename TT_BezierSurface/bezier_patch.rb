@@ -83,7 +83,7 @@ module TT::Plugins::BezierSurfaceTools
       aperture = VERTEX_SIZE * 2
       ph = view.pick_helper( x, y, aperture )
       ph.init( x, y, aperture )
-      for pt in @points
+      for pt in control_points()
         picked << pt if ph.test_point( pt.transform(t) )
       end
       #( picked.empty? ) ? nil : picked
@@ -159,9 +159,10 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_control_grid( view )
+      cpoints = control_points()
       # Transform to active model space
       t = view.model.edit_transform
-      pts = @points.map { |pt|
+      pts = cpoints.map { |pt|
         view.screen_coords( pt.transform(t) )
       }
       # These methods needs to be implemented by the Patch subclass.
@@ -173,7 +174,7 @@ module TT::Plugins::BezierSurfaceTools
         fill.alpha = 32
         view.drawing_color = fill
         
-        pts3d = @points.map { |pt| pt.transform(t) }       
+        pts3d = cpoints.map { |pt| pt.transform(t) }       
         quads = pts3d.to_a.values_at(
            0, 1, 5, 4,
            1, 2, 6, 5,

@@ -100,7 +100,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def mesh_points( subdiv, transformation )
       # Transform to active model space
-      wpts = @points.map { |pt| pt.transform( transformation ) }
+      wpts = control_points().map { |pt| pt.transform( transformation ) }
       # Calculate Bezier mesh points.
       pass1 = TT::Dimension.new( subdiv+1, 4 )
       wpts.each_row { |row, index|
@@ -123,10 +123,11 @@ module TT::Plugins::BezierSurfaceTools
       # before returning the edges.
       #
       # (i) Don't hold on to BezierEdge objects for their 3d data.
-      @edges[0].control_points = @points.row(0)
-      @edges[1].control_points = @points.column(3)
-      @edges[2].control_points = @points.row(3)
-      @edges[3].control_points = @points.column(0)
+      cpoints = control_points()
+      @edges[0].control_points = cpoints.row(0)
+      @edges[1].control_points = cpoints.column(3)
+      @edges[2].control_points = cpoints.row(3)
+      @edges[3].control_points = cpoints.column(0)
       @edges
     end
     
