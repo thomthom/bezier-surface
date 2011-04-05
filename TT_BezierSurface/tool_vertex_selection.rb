@@ -117,7 +117,12 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onUserText(text, view)
-      @editor.change_subdivisions( text.to_i )
+      subdivs = text.to_i
+      if (1..48).include?( subdivs )
+        @editor.change_subdivisions( subdivs )
+      else
+        UI.beep
+      end
       update_ui()
     end
     
