@@ -31,6 +31,8 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'points must be Point3d objects.'
       end
       
+      TT::Point3d.extend_all( points ) # TT::Point3d_Ex
+      
       # Create edges and assosiate them with this patch.
       grid = TT::Dimension.new( points, 4, 4 )
       @edges = [
