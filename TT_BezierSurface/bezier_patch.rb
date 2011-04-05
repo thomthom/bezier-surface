@@ -40,14 +40,6 @@ module TT::Plugins::BezierSurfaceTools
     # def get_control_grid_interior( points )
     # def edge_reversed?( bezier_edge )
     
-    # Returns the control points for this BezierPatch.
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    #def control_points
-    #  @points
-    #end
-    
     # Replace an edge object with another.
     #
     # @param [BezierEdge] old_edge

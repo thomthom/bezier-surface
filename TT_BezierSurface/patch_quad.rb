@@ -43,15 +43,14 @@ module TT::Plugins::BezierSurfaceTools
       ].each { |edge|
         edge.link( self )
       }
-      @points = grid
       
       # Interior patch points - indirectly controlled by the edges.
-      @interior_points = [
+      @interior_points = TT::Dimension.new( [
         points[5],
         points[6],
         points[9],
         points[10]
-      ]
+      ], 2, 2 )
     end
     
     # Used when writing the bezier data to attribute dictionaries.
@@ -203,16 +202,6 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
-      # (i) BezierEdge objects doesn't maintain an updated reference to the
-      # control points when they are manipulated. (?) Update the points
-      # before returning the edges.
-      #
-      # (i) Don't hold on to BezierEdge objects for their 3d data.
-      #cpoints = control_points()
-      #@edges[0].control_points = cpoints.row(0)
-      #@edges[1].control_points = cpoints.column(3)
-      #@edges[2].control_points = cpoints.row(3)
-      #@edges[3].control_points = cpoints.column(0)
       @edges.dup
     end
     
