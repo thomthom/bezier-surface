@@ -34,6 +34,7 @@ module TT::Plugins::BezierSurfaceTools
     # def mesh_points( subdiv, transformation )
     # def count_mesh_points( subdiv )
     # def count_mesh_polygons( subdiv )
+    # def control_points
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
@@ -43,9 +44,9 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
-    def control_points
-      @points
-    end
+    #def control_points
+    #  @points
+    #end
     
     # Replace an edge object with another.
     #
@@ -59,8 +60,6 @@ module TT::Plugins::BezierSurfaceTools
       unless @edges.include?( old_edge )
         raise ArgumentError, 'Edge not related to Patch.'
       end
-      
-      # (!) Update control points.
       
       index = edge_index( old_edge )
       @edges[ index ] = new_edge

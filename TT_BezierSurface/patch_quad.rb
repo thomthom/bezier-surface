@@ -30,17 +30,26 @@ module TT::Plugins::BezierSurfaceTools
       }
         raise ArgumentError, 'points must be Point3d objects.'
       end
-      @points = TT::Dimension.new( points, 4, 4 )
       
       # Create edges and assosiate them with this patch.
+      grid = TT::Dimension.new( points, 4, 4 )
       @edges = [
-        BezierEdge.new( parent, @points.row(0) ),
-        BezierEdge.new( parent, @points.column(3) ),
-        BezierEdge.new( parent, @points.row(3) ),
-        BezierEdge.new( parent, @points.column(0) )
+        BezierEdge.new( parent, grid.row(0) ),
+        BezierEdge.new( parent, grid.column(3) ),
+        BezierEdge.new( parent, grid.row(3) ),
+        BezierEdge.new( parent, grid.column(0) )
       ].each { |edge|
         edge.link( self )
       }
+      @points = grid
+      
+      # Interior patch points - indirectly controlled by the edges.
+      @interior_points = [
+        points[5],
+        points[6],
+        points[9],
+        points[10]
+      ]
     end
     
     # Used when writing the bezier data to attribute dictionaries.
@@ -49,6 +58,79 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def typename
       'QuadPatch'
+    end
+    
+    # Returns the control points for this BezierPatch.
+    #
+    # @example:
+    #  0---1---2---3
+    #  |   |   |   |
+    #  4---5---6---7
+    #  |   |   |   |
+    #  8---9---10--11
+    #  |   |   |   |
+    #  12--13--14--15
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def control_points
+      #
+      # X---X---X---X
+      # |   |   |   |
+      # X---X---X---X
+      # |   |   |   |
+      # X---X---X---X
+      # |   |   |   |
+      # X---X---X---X
+      #
+      # POINTS:
+      #
+      # 0---1---2---3
+      # |   |   |   |
+      # 4---5---6---7
+      # |   |   |   |
+      # 8---9---10--11
+      # |   |   |   |
+      # 12--13--14--15
+      #
+      # EDGES:
+      #
+      # X-----0-----X
+      # |   |   |   |
+      # |---X---X---|
+      # 3   |   |   1
+      # |---X---X---|
+      # |   |   |   |
+      # X-----2-----X
+      #
+      # INTERIOR POINTS:
+      #
+      # X---X---X---X
+      # |   |   |   |
+      # X---0---1---X
+      # |   |   |   |
+      # X---2---3---X
+      # |   |   |   |
+      # X---X---X---X
+      #
+      edges = edges()
+      # Row 1
+      points = edges[0].control_points
+      # Row 2
+      points << edges[3].control_points[1]
+      points << @interior_points[0]
+      points << @interior_points[1]
+      points << edges[1].control_points[1]
+      # Row 3
+      points << edges[3].control_points[2]
+      points << @interior_points[2]
+      points << @interior_points[3]
+      points << edges[1].control_points[2]
+      # Row 4
+      points.concat( edges[2].control_points )
+      # Matrix
+      matrix = TT::Dimension.new( points, 4, 4 )
+      matrix
     end
     
     # @param [BezierEdge] edge
@@ -100,7 +182,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def mesh_points( subdiv, transformation )
       # Transform to active model space
-      wpts = control_points().map { |pt| pt.transform( transformation ) }
+      cpoints = control_points()
+      wpts = cpoints.map { |pt| pt.transform( transformation ) }
       # Calculate Bezier mesh points.
       pass1 = TT::Dimension.new( subdiv+1, 4 )
       wpts.each_row { |row, index|
@@ -123,12 +206,12 @@ module TT::Plugins::BezierSurfaceTools
       # before returning the edges.
       #
       # (i) Don't hold on to BezierEdge objects for their 3d data.
-      cpoints = control_points()
-      @edges[0].control_points = cpoints.row(0)
-      @edges[1].control_points = cpoints.column(3)
-      @edges[2].control_points = cpoints.row(3)
-      @edges[3].control_points = cpoints.column(0)
-      @edges
+      #cpoints = control_points()
+      #@edges[0].control_points = cpoints.row(0)
+      #@edges[1].control_points = cpoints.column(3)
+      #@edges[2].control_points = cpoints.row(3)
+      #@edges[3].control_points = cpoints.column(0)
+      @edges.dup
     end
     
     # (?) Private

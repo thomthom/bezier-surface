@@ -511,13 +511,16 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def update_mesh( subdivs, transformation )
+      TT.debug( 'Surface.update_mesh' )
       d = TT::Instance.definition( @instance )
       points = count_mesh_points( subdivs )
       polygons = count_mesh_polygons( subdivs )
       mesh = Geom::PolygonMesh.new( points, polygons )
+      TT.debug( '> Adding patches...' )
       @patches.each { |patch|
         patch.add_to_mesh( mesh, subdivs, transformation )
       }
+      TT.debug( '> Clear and fill...' )
       d.entities.clear!
       d.entities.fill_from_mesh( mesh, true, TT::MESH_SOFT_SMOOTH )
     end

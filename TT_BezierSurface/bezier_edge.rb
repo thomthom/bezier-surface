@@ -28,6 +28,20 @@ module TT::Plugins::BezierSurfaceTools
       @patches = []
     end
     
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def control_points
+      @control_points.dup
+    end
+    
+    # @param [Array<Geom::Point3d>] new_control_points
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def control_points=( new_control_points )
+      @control_points = new_control_points
+    end
+    
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def direction
@@ -102,6 +116,7 @@ module TT::Plugins::BezierSurfaceTools
       # Create the BezierPatch entity, add all entity assosiations.
       new_patch = QuadPatch.new( surface, points )
       new_patch.reversed = true if patch.reversed
+      new_patch.set_edge( new_patch.edges.last, self )
       self.link( new_patch )
       # (!) merge edges
       
