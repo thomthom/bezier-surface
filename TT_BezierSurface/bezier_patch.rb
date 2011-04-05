@@ -47,6 +47,26 @@ module TT::Plugins::BezierSurfaceTools
       @points
     end
     
+    # Replace an edge object with another.
+    #
+    # @param [BezierEdge] old_edge
+    # @param [BezierEdge] new_edge
+    #
+    # @return [BezierEdge]
+    # @since 1.0.0
+    def set_edge( old_edge, new_edge )
+      # Ensure the old edge belongs to this patch.
+      unless @edges.include?( old_edge )
+        raise ArgumentError, 'Edge not related to Patch.'
+      end
+      
+      # (!) Update control points.
+      
+      index = edge_index( old_edge )
+      @edges[ index ] = new_edge
+      new_edge
+    end
+    
     # Pick-tests the patch with the given screen co-ordinates. Returns an array
     # of picked points.
     #
@@ -70,6 +90,8 @@ module TT::Plugins::BezierSurfaceTools
       picked
     end
     
+    # (!) Move to BezierEdge
+    #
     # Pick-tests the patch's edges with the given sub-division.  Returns an array
     # of picked +BezierEdge+ objects.
     #
