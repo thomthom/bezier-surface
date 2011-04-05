@@ -484,6 +484,15 @@ module TT::Plugins::BezierSurfaceTools
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
       d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION.to_s )
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
+      
+      # (!)
+      # <todo>
+      # * Index control points
+      # * Serialize edges into arrays with control point indexes
+      # * Serialize patches into edge indexes and inner-control-point list
+      # * Write
+      # </todo>
+      
       # Write Patches
       @patches.each_with_index { |patch, i|
         section = "Patch#{i}_#{patch.typename}"
