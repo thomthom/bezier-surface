@@ -17,6 +17,7 @@ module TT::Plugins::BezierSurfaceTools
     include BezierPatch
     
     #attr_reader( :points )
+    attr_accessor( :edgeuses )
     
     # @param [Array<Geom::Point3d>] points Bezier control points
     #
@@ -35,14 +36,43 @@ module TT::Plugins::BezierSurfaceTools
       
       # Create edges and assosiate them with this patch.
       grid = TT::Dimension.new( points, 4, 4 )
-      @edges = [
-        BezierEdge.new( parent, grid.row(0) ),
-        BezierEdge.new( parent, grid.column(3) ),
-        BezierEdge.new( parent, grid.row(3) ),
-        BezierEdge.new( parent, grid.column(0) )
-      ].each { |edge|
-        edge.link( self )
-      }
+      @edgeuses = []
+      
+      # Order of edges and direction of their control points.
+      #
+      #  Y - Columns
+      #
+      #  ^
+      #  |
+      #
+      #  x --> X - Rows
+      #
+      # +--->---+
+      # |   2   |
+      # ^3     1^
+      # |   0   |
+      # +--->---+
+      #   
+      # Edge 2 and 3 is initially reversed.
+      edge = BezierEdge.new( parent, grid.row(0) )
+      edge.link( self )
+      edgeuse = BezierEdgeUse.new( self, edge, false )
+      @edgeuses << edgeuse
+      
+      edge = BezierEdge.new( parent, grid.column(3) )
+      edge.link( self )
+      edgeuse = BezierEdgeUse.new( self, edge, false )
+      @edgeuses << edgeuse
+      
+      edge = BezierEdge.new( parent, grid.row(3).reverse )
+      edge.link( self )
+      edgeuse = BezierEdgeUse.new( self, edge, false )
+      @edgeuses << edgeuse
+      
+      edge = BezierEdge.new( parent, grid.column(0).reverse )
+      edge.link( self )
+      edgeuse = BezierEdgeUse.new( self, edge, false )
+      @edgeuses << edgeuse
       
       # Interior patch points - indirectly controlled by the edges.
       @interior_points = TT::Dimension.new( [
@@ -64,13 +94,13 @@ module TT::Plugins::BezierSurfaceTools
     # Returns the control points for this BezierPatch.
     #
     # @example:
-    #  0---1---2---3
-    #  |   |   |   |
-    #  4---5---6---7
+    #  12--13--14--15
     #  |   |   |   |
     #  8---9---10--11
     #  |   |   |   |
-    #  12--13--14--15
+    #  4---5---6---7
+    #  |   |   |   |
+    #  0---1---2---3
     #
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
@@ -86,71 +116,68 @@ module TT::Plugins::BezierSurfaceTools
       #
       # POINTS:
       #
-      # 0---1---2---3
-      # |   |   |   |
-      # 4---5---6---7
+      # 12--13--14--15
       # |   |   |   |
       # 8---9---10--11
       # |   |   |   |
-      # 12--13--14--15
+      # 4---5---6---7
+      # |   |   |   |
+      # 0---1---2---3
       #
       # EDGES:
       #
-      # X-----0-----X
+      # X-----2-----X
       # |   |   |   |
       # |---X---X---|
       # 3   |   |   1
       # |---X---X---|
       # |   |   |   |
-      # X-----2-----X
+      # X-----0-----X
       #
       # INTERIOR POINTS:
       #
       # X---X---X---X
       # |   |   |   |
-      # X---0---1---X
-      # |   |   |   |
       # X---2---3---X
+      # |   |   |   |
+      # X---0---1---X
       # |   |   |   |
       # X---X---X---X
       #
-      edges = edges()
+      #cpoints = ordered_edge_control_points()
+      e0,e1,e2,e3 = ordered_edge_control_points()
+      #e0,e1,e2,e3 = edgeuses.map { |edgeuse| edgeuse.edge.control_points }
+      points = []
       # Row 1
-      points = edges[0].control_points
+      points.concat( e0 )
       # Row 2
-      points << edges[3].control_points[1]
+      points << e3[2]
       points << @interior_points[0]
       points << @interior_points[1]
-      points << edges[1].control_points[1]
+      points << e1[1]
       # Row 3
-      points << edges[3].control_points[2]
+      points << e3[1]
       points << @interior_points[2]
       points << @interior_points[3]
-      points << edges[1].control_points[2]
+      points << e1[2]
       # Row 4
-      points.concat( edges[2].control_points )
+      points.concat( e2.reverse )
       # Matrix
       matrix = TT::Dimension.new( points, 4, 4 )
       matrix
     end
     
-    # @param [BezierEdge] edge
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def edge_reversed?( edge )
-      # (!) Not correct!
-      #TT.debug( 'QuadPatch.edge_reversed?' )
-      index = edge_index( edge )
-      if index == 2 || index == 3
-        #TT.debug( "> Reversed" )
-        is_reversed = true
-      else
-        #TT.debug( "> Normal" )
-        is_reversed = false
+    # @private
+    def ordered_edge_control_points
+      points = []
+      for edgeuse in edgeuses
+        if edgeuse.reversed?
+          points << edgeuse.edge.control_points.reverse!
+        else
+          points << edgeuse.edge.control_points
+        end
       end
-      is_reversed = !is_reversed if @reversed
-      is_reversed
+      points
     end
     
     # Accurate calculation of the number of vertices in the mesh.
@@ -202,7 +229,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
-      @edges.dup
+      @edgeuses.map { |edgeuse| edgeuse.edge }
+      #@edges.dup
     end
     
     # (?) Private
@@ -276,7 +304,7 @@ module TT::Plugins::BezierSurfaceTools
     def add_to_mesh( mesh, subdiv, transformation )
       triangulate = false # (?) Instance variable
       #inversed = false # (?) Instance variable
-      inversed = self.reversed
+      inversed = self.reversed # (!)
 
       pts = mesh_points( subdiv, transformation )
       

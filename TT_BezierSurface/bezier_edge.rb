@@ -57,8 +57,9 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
       end
       
-      patch = self.patches[0]
       surface = self.parent
+      patch = self.patches[0]
+      edgeuse = patch.get_edgeuse( self )
       edge_reversed = self.reversed_in?( patch )
       
       # <debug>
@@ -70,8 +71,8 @@ module TT::Plugins::BezierSurfaceTools
       
       # Use the connected edges to determine the direction of the extruded
       # bezier patch.
-      prev_edge = patch.prev_edge( self )
-      next_edge = patch.next_edge( self )
+      prev_edge = edgeuse.previous.edge
+      next_edge = edgeuse.next.edge
       
       # <debug>
       TT.debug( "> Prev Edge: #{prev_edge}" )
@@ -187,7 +188,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def reversed_in?( patch )
-      patch.edge_reversed?( self )
+      edgeuse = patch.get_edgeuse( self )
+      # (?) Take into account reversed patch?
+      edgeuse.reversed?
     end
     
     # Returns an array of 3d points representing the bezier curve with the given
@@ -223,6 +226,12 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def to_a
       @control_points.dup
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def used_by?( patch )
+      patch.edgeuses.any? { |edgeuse| edgeuse.edge == self }
     end
     
   end # class BezierEdge

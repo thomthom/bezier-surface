@@ -20,7 +20,7 @@ module TT::Plugins::BezierSurfaceTools
   module BezierPatch
     
     attr_reader( :parent )
-    attr_accessor( :reversed )
+    attr_accessor( :reversed ) # (!) Not currently implemented!
     
     def initialize( *args )
       @parent = args[0] # BezierSurface
@@ -38,7 +38,6 @@ module TT::Plugins::BezierSurfaceTools
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
-    # def edge_reversed?( bezier_edge )
     
     # Replace an edge object with another.
     #
@@ -49,12 +48,25 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def set_edge( old_edge, new_edge )
       # Ensure the old edge belongs to this patch.
-      unless @edges.include?( old_edge )
+      unless old_edge.used_by?( self )
         raise ArgumentError, 'Edge not related to Patch.'
       end
       
-      index = edge_index( old_edge )
-      @edges[ index ] = new_edge
+      edgeuse = get_edgeuse( old_edge )
+      edgeuse.edge = new_edge
+      
+      # (!) Hack - Find a method that works even if the points are not at
+      # the same location. Or require points to be the same?
+      TT.debug( 'BezierPatch.set_edge' )
+      #TT.debug( "> #{old_edge.start == new_edge.start}" )
+      #TT.debug( "> #{old_edge.start == new_edge.end}" )
+      if old_edge.start == new_edge.end
+        TT.debug( '> Reversed!' )
+        edgeuse.reversed = !edgeuse.reversed?
+      end
+      
+      # (!) Update control points of connected edges.
+      
       new_edge
     end
     
@@ -98,7 +110,7 @@ module TT::Plugins::BezierSurfaceTools
       picked = []
       ph = view.pick_helper( x, y )
       tr = view.model.edit_transform
-      for edge in self.edges
+      for edge in edges()
         segment = edge.segment( subdivs, tr )
         picked << edge if ph.pick_segment( segment, x, y )
       end
@@ -110,35 +122,24 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @param [BezierEdge] edge
     #
-    # @return [BezierEdge]
-    # @since 1.0.0
-    def next_edge( edge )
-      index = edge_index( edge )
-      array_index = ( index + 1 ) % @edges.size
-      @edges[ array_index ]
-    end
-    
-    # (!) private? BezierPatchLoop?
-    #
-    # @param [BezierEdge] edge
-    #
-    # @return [BezierEdge]
-    # @since 1.0.0
-    def prev_edge( edge )
-      index = edge_index( edge )
-      array_index = ( index - 1 ) % @edges.size
-      @edges[ array_index ]
-    end
-    
-    # (!) private? BezierPatchLoop?
-    #
-    # @param [BezierEdge] edge
-    #
-    # @return [Boolean]
+    # @return [Integer]
     # @since 1.0.0
     def edge_index( edge )
-      @edges.each_with_index { |e, index|
-        return index if edge == e
+      edgeuses.each_with_index { |edgeuse, index|
+        return index if edge == edgeuse.edge
+      }
+      raise ArgumentError, 'Edge not connected to this patch.'
+    end
+    
+    # (!) private? BezierPatchLoop?
+    #
+    # @param [BezierEdge] edge
+    #
+    # @return [BezierEdgeUse]
+    # @since 1.0.0
+    def get_edgeuse( edge )
+      edgeuses.each_with_index { |edgeuse, index|
+        return edgeuse if edgeuse.edge == edge
       }
       raise ArgumentError, 'Edge not connected to this patch.'
     end
