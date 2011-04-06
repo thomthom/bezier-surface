@@ -11,8 +11,8 @@ module TT::Plugins::BezierSurfaceTools
   class CreatePatchTool
     
     def initialize
-      @ip_start = Sketchup::InputPoint.new			
-			@ip_mouse = Sketchup::InputPoint.new
+      @ip_start = Sketchup::InputPoint.new
+      @ip_mouse = Sketchup::InputPoint.new
       @subdivs = 6
     end
     
@@ -21,6 +21,11 @@ module TT::Plugins::BezierSurfaceTools
       adjusted_path = PLUGIN.get_instructor_path( real_path )
       TT::debug( adjusted_path )
       adjusted_path
+    end
+    
+    def reset
+      @ip_start = Sketchup::InputPoint.new
+      @ip_mouse = Sketchup::InputPoint.new
     end
     
     def update_ui
@@ -52,6 +57,22 @@ module TT::Plugins::BezierSurfaceTools
       points.each { |pt| pt.transform!( tr ) }
       bb.add( points ) if points
       bb
+    end
+    
+    def onCancel(reason, view)
+      TT.debug( 'CreatePatchTool.onCancel' )
+      case reason
+      when 0 # ESC
+        TT.debug( '> ESC' )
+        reset()
+      when 1 # Reactivate Tool
+        TT.debug( '> Reactivate' )
+        reset()
+      when 2 # Undo
+        TT.debug( '> Undo' )
+      end
+      update_ui()
+      view.invalidate
     end
     
     def onUserText(text, view)
