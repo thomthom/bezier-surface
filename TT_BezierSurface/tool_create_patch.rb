@@ -48,6 +48,8 @@ module TT::Plugins::BezierSurfaceTools
       bb = Geom::BoundingBox.new
       # (!) Optimize: don't need all the points control_points() generates.
       points = control_points()
+      tr = Geom::Transformation.new( points.first )
+      points.each { |pt| pt.transform!( tr ) }
       bb.add( points ) if points
       bb
     end
