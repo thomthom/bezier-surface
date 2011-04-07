@@ -90,13 +90,11 @@ module TT::Plugins::BezierSurfaceTools
     def draw( view )
       # Internal grid
       @surface.draw_internal_grid( view )
-      
       # Edges
       selection = @editor.selection
       unselected = @surface.edges.to_a - selection.to_a
       @surface.draw_edges( view, selection, CLR_VERTEX )
       @surface.draw_edges( view, unselected, CLR_CTRL_GRID )
-      
       # Debug
       @surface.draw_edge_directions( view )
     end
