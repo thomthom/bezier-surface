@@ -21,10 +21,12 @@ module TT::Plugins::BezierSurfaceTools
     
     attr_reader( :parent )
     attr_accessor( :reversed ) # (!) Not currently implemented!
+    attr_accessor( :edgeuses, :interior_points )
     
     def initialize( *args )
       @parent = args[0] # BezierSurface
       @reversed = false
+      @edgeuses = []
     end
     
     # Subclasses must implement these methods:
@@ -38,6 +40,7 @@ module TT::Plugins::BezierSurfaceTools
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
+    # def self.restore( surface, edgeuses, interior_points, reversed )
     
     # Replace an edge object with another.
     #

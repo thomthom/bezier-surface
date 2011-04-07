@@ -95,76 +95,131 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def reload
       TT.debug( 'BezierSurface.reload' )
-      d = TT::Instance.definition( @instance )
+      debug_time_start = Time.now
       
-      # <alpha>
-      if self.class.is_old_alpha_format?( instance )
-        TT.debug( '> Beta Surface' )
-        return self.reload_old_beta
+      # (!)
+      # patch.interior_points
+      # patch.restore
+      
+      # Verify mesh definition
+      d = TT::Instance.definition( @instance )
+      raise 'Invalid definition' if d.nil?
+      
+      # Verify version compatibility
+      mesh_version = d.get_attribute( ATTR_ID, ATTR_VERSION )
+      mesh_version = TT::Version.new( mesh_version )
+      if mesh_version < MESH_VERSION
+        raise 'Unsupported old mesh format.'
       end
-      # </alpha>
       
+      # Read properties
       self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
-      # Load Patches
+      num_points   = d.get_attribute( ATTR_ID, ATTR_NUM_POINTS )
+      num_edges    = d.get_attribute( ATTR_ID, ATTR_NUM_EDGES )
+      num_patches  = d.get_attribute( ATTR_ID, ATTR_NUM_PATCHES )
+      
+      TT.debug "> ControlPoints: #{num_points}"
+      TT.debug "> Edges: #{num_edges}"
+      TT.debug "> Patches: #{num_patches}"
+      
+      # Read Points
+      binary_point_data = d.get_attribute( ATTR_ID, ATTR_CONTROL_POINTS )
+      binary_point_data = TT::Binary.decode64( binary_point_data )
+      point_data = binary_point_data.unpack('G*')
+      unless point_data.size == num_points * 3 # 3 = Size of X, Y, Z
+        raise 'Corrupt or Invalid data. Control-points size validation failed.'
+      end
+      cpoints = []
+      (0...point_data.size).step(3) { |i|
+        point = Geom::Point3d.new( point_data[i, 3] )
+        point.extend( TT::Point3d_Ex )
+        cpoints << point
+      }
+      TT.debug "> cpoints: #{cpoints.size} (#{cpoints.nitems})"
+      
+      # Read Edges
+      binary_edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )
+      binary_edge_data = TT::Binary.decode64( binary_edge_data )
+      edge_data = binary_edge_data.unpack('i*')
+      unless edge_data.size == num_edges * 4 # 4 = Number of control points
+        raise 'Corrupt or Invalid data. Edges size validation failed.'
+      end
+      edge_sets = []
+      (0...edge_data.size).step(4) { |i|
+        indexes = edge_data[i, 4]
+        points = indexes.map { |index| cpoints[index] }
+        unless points.nitems == 4
+          raise 'Invalid control points'
+        end
+        edge = BezierEdge.new( self, points )
+        edge_sets << edge
+      }
+      TT.debug "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
+      
+      # Read Patches
+      valid_patches = ['QuadPatch']
       @patches.clear
-      attr = d.attribute_dictionaries[ ATTR_ID ]
-      attr.each { |key, value|
-        # Patch data dictionary:
-        # * Key: Patch{index}_{type}
-        #        Example: "Patch3_QuadPatch"
-        # * Value: Array of [x,y,z] points in inches.
-        test = key.match(/Patch(\d+)_(\w+)/)
-        next unless test
+      for index in (0...num_patches)
+        # Fetch attribute dictionary
+        section = "BezierPatch#{index}"
+        attributes = d.attribute_dictionaries[ section ]
+        if attributes.nil?
+          raise 'Missing patch data.'
+        end
+        
+        TT.debug "> #{section}"
+        
+        # Read Properties
+        type            = d.get_attribute( section, ATTR_TYPE )
+        reversed        = d.get_attribute( section, ATTR_REVERSED )
+        num_edgeuses    = d.get_attribute( section, ATTR_NUM_EDGEUSES )
+        binary_edgeuses = d.get_attribute( section, ATTR_EDGEUSES )
+        binary_cpoints  = d.get_attribute( section, ATTR_POINTS )
+        
+        TT.debug "  > Type: #{type}"
+        TT.debug "  > Reversed: #{reversed}"
+        TT.debug "  > EdgeUses: #{num_edgeuses}"
+        
         # The patch type string is eval'ed into a Class object which is then
         # used to load the patch data. The patch is left with the resonsibility
         # of handling the data loading.
-        #
-        # (!) Error catching and validation before eval'ing should be added.
-        patchtype = eval( test[2] )
-        # Load binary data.
-        #data = Marshal.load( value ) # (!) Errors about incorrect length.
-        data = eval( value )
-        reversed = data[P_REVERSED]
-        points = data[P_POINTS].map { |pt| Geom::Point3d.new( pt ) }
-        # Try to create the patch objects.
-        patch = patchtype.new( self, points )
+        unless valid_patches.include?( type )
+          raise "Invalid patch type: #{type}"
+        end
+        patchtype = eval( type )
+        
+        # Interior Points
+        binary_cpoints = TT::Binary.decode64( binary_cpoints )
+        interior_points = binary_cpoints.unpack('i*')
+        interior_points.map! { |index| cpoints[index] }
+        
+        TT.debug "  > interior_points: #{interior_points.size} (#{interior_points.nitems})"
+        unless interior_points.nitems == 4
+          raise 'Invalid interior points'
+        end
+        
+        # EdgeUses
+        edgeuses_data = TT::Binary.decode64( binary_edgeuses )
+        edgeuses_data = edgeuses_data.unpack( 'iC' * num_edgeuses )
+        TT.debug "  > edgeuses_data: #{edgeuses_data.size} (#{edgeuses_data.nitems})"
+        edgeuses_set = []
+        (0...edgeuses_data.size).step(2) { |i|
+          # Load EdgeUse properties
+          edge_index, reversed = edgeuses_data[i, 2]
+          edge = edge_sets[edge_index]
+          reversed = !( reversed == 0 ) # 0 = False - Everything else = True
+          # Create temporaty EdgeUse
+          edgeuses_set << BezierEdgeUse.new( nil, edge, reversed )
+        }
+        
+        TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
+        
+        # Add patch
+        patch = patchtype.restore( self, edgeuses_set, interior_points, reversed )
         self.add_patch( patch )
-      }
-      self
-    end
-    
-    # Reloads the bezier patch data from the attribute dictionary of the
-    # assosiated instance.
-    #
-    # Use after undo is detected to corrently rebuild the geometry.
-    #
-    # @return [BezierSurface|Nil]
-    # @since 1.0.0
-    def reload_old_beta
-      TT.debug( 'BezierSurface.reload_old_beta' )
-      d = TT::Instance.definition( @instance )
-      self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
-      # Load Patches
-      @patches.clear
-      attr = d.attribute_dictionaries[ ATTR_ID ]
-      attr.each { |key, value|
-        # Patch data dictionary:
-        # * Key: Patch{index}_{type}
-        #        Example: "Patch3_QuadPatch"
-        # * Value: Array of [x,y,z] points in inches.
-        test = key.match(/Patch(\d+)_(\w+)/)
-        next unless test
-        # The patch type string is eval'ed into a Class object which is then
-        # used to load the patch data. The patch is left with the resonsibility
-        # of handling the data loading.
-        #
-        # (!) Error catching and validation before eval'ing should be added.
-        patchtype = eval( test[2] )
-        data = eval( value )
-        points = data.map { |pt| Geom::Point3d.new( pt ) }
-        self.add_patch( patchtype.new( self, points ) )
-      }
-      #update_attributes() # (?) Cause SketchUp to crash!
+      end # patches
+      
+      TT.debug( "> Loaded in #{Time.now-debug_time_start}s" )
       self
     end
     
@@ -479,6 +534,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def update_attributes
+      TT.debug( 'BezierSurface.update_attributes' )
+      debug_time_start = Time.now
+      
       d = TT::Instance.definition( @instance )
       # Write Surface data
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
@@ -493,22 +551,65 @@ module TT::Plugins::BezierSurfaceTools
       # * Write
       # </todo>
       
-      # Write Patches
-      @patches.each_with_index { |patch, i|
-        section = "Patch#{i}_#{patch.typename}"
-        # Convert the control points into arrays of floats because the custom
-        # objects doesn't support Marshal.
-        points = patch.control_points.to_a.map { |pt|
-          [ pt.x.to_f, pt.y.to_f, pt.z.to_f ]
-        }
-        # Build hash with binary patch data and write to dictionary.
-        data = {}
-        data[P_REVERSED] = patch.reversed
-        data[P_POINTS] = points
-        #binary = Marshal.dump( data )
-        binary = data.inspect
-        d.set_attribute( ATTR_ID, section, binary )
+      ### Points
+      point_data_list = []    # Flattened list of X,Y,Z co-ordinates
+      point_indexes = {}      # Lookup hash for quick indexing
+      control_points.each_with_index { |point, index|
+        point_data_list << point.x
+        point_data_list << point.y
+        point_data_list << point.z
+        point_indexes[ point ] = index
       }
+      # Double-precision float, network (big-endian) byte order
+      binary_point_data = point_data_list.pack('G*')
+      binary_point_data = TT::Binary.encode64( binary_point_data )
+      d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, binary_point_data )
+      
+      ### Edges
+      edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
+      edge_indexes = {}   # Lookup hash for quick indexing
+      edges.each_with_index { |edge, index|
+        indexes = edge.control_points.map { |point| point_indexes[point] }
+        edge_data_list.concat( indexes )
+        edge_indexes[ edge ] = index
+      }
+      binary_edge_data = edge_data_list.pack('i*') # Integer
+      binary_edge_data = TT::Binary.encode64( binary_edge_data )
+      d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
+      
+      ### Patches
+      @patches.each_with_index { |patch, i|
+        # Each patch is written to a separate attribute dictionary
+        section = "BezierPatch#{i}"
+        # Edgeuses
+        edgeuses_data = []
+        for edgeuse in patch.edgeuses
+          edgeuses_data << edge_indexes[ edgeuse.edge ]    # i - Integer
+          edgeuses_data << ( (edgeuse.reversed?) ? 1 : 0 ) # C - Unsigned char
+        end
+        pattern = 'iC' * ( edgeuses_data.size / 2 )
+        binary_edgeuses_data = edgeuses_data.pack( pattern )
+        binary_edgeuses_data = TT::Binary.encode64( binary_edgeuses_data )
+        # Interior Points
+        interior_points = patch.interior_points.map { |point|
+          point_indexes[point]
+        }.to_a
+        binary_interior_points = interior_points.pack('i*') # Integer
+        binary_interior_points = TT::Binary.encode64( binary_interior_points )
+        # Properties
+        d.set_attribute( section, ATTR_TYPE,          patch.typename )
+        d.set_attribute( section, ATTR_REVERSED,      patch.reversed )
+        d.set_attribute( section, ATTR_POINTS,        binary_interior_points )
+        d.set_attribute( section, ATTR_EDGEUSES,      binary_edgeuses_data )
+        d.set_attribute( section, ATTR_NUM_EDGEUSES,  patch.edgeuses.size )
+      }
+      
+      ### Validation Data
+      d.set_attribute( ATTR_ID, ATTR_NUM_POINTS,  point_indexes.size )
+      d.set_attribute( ATTR_ID, ATTR_NUM_EDGES,   edge_indexes.size )
+      d.set_attribute( ATTR_ID, ATTR_NUM_PATCHES, @patches.size )
+      
+      TT.debug( "> Written in #{Time.now-debug_time_start}s" )
       true
     end
     

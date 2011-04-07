@@ -16,9 +16,6 @@ module TT::Plugins::BezierSurfaceTools
   class QuadPatch
     include BezierPatch
     
-    #attr_reader( :points )
-    attr_accessor( :edgeuses )
-    
     # @param [Array<Geom::Point3d>] points Bezier control points
     #
     # @since 1.0.0
@@ -36,7 +33,6 @@ module TT::Plugins::BezierSurfaceTools
       
       # Create edges and assosiate them with this patch.
       grid = TT::Dimension.new( points, 4, 4 )
-      @edgeuses = []
       
       # Order of edges and direction of their control points.
       #
@@ -81,6 +77,36 @@ module TT::Plugins::BezierSurfaceTools
         points[9],
         points[10]
       ], 2, 2 )
+    end
+    
+    # @return [QuadPatch]
+    # @since 1.0.0
+    def self.restore( surface, edgeuses, interior_points, reversed )
+      # Validate
+      unless surface.is_a?( BezierSurface )
+        raise ArgumentError, 'Argument not a BezierSurface.'
+      end
+      unless edgeuses.size == 4
+        raise ArgumentError, "Invalid number of EdgeUses (#{edgeuses.size})."
+      end
+      unless interior_points.size == 4
+        raise ArgumentError, "Invalid number of interior points (#{interior_points.size})."
+      end
+      
+      dummy_points = Array.new( 16, Geom::Point3d.new(0,0,0) )
+      dummy_points[5]  = interior_points[0]
+      dummy_points[6]  = interior_points[1]
+      dummy_points[9]  = interior_points[2]
+      dummy_points[10] = interior_points[3]
+      patch = self.new( surface, dummy_points )
+      patch.reversed = reversed
+      patch.edgeuses.each_with_index { |edgeuse, index|
+        prototype = edgeuses[ index ]
+        edgeuse.edge = prototype.edge
+        edgeuse.edge.link( patch )
+        edgeuse.reversed = prototype.reversed?
+      }
+      patch
     end
     
     # Used when writing the bezier data to attribute dictionaries.
@@ -144,31 +170,28 @@ module TT::Plugins::BezierSurfaceTools
       # |   |   |   |
       # X---X---X---X
       #
-      #cpoints = ordered_edge_control_points()
-      e0,e1,e2,e3 = ordered_edge_control_points()
-      #e0,e1,e2,e3 = edgeuses.map { |edgeuse| edgeuse.edge.control_points }
+      e0,e1,e2,e3 = ordered_edge_control_points( edgeuses )
       points = []
       # Row 1
       points.concat( e0 )
       # Row 2
       points << e3[2]
-      points << @interior_points[0]
-      points << @interior_points[1]
+      points << interior_points[0]
+      points << interior_points[1]
       points << e1[1]
       # Row 3
       points << e3[1]
-      points << @interior_points[2]
-      points << @interior_points[3]
+      points << interior_points[2]
+      points << interior_points[3]
       points << e1[2]
       # Row 4
       points.concat( e2.reverse )
-      # Matrix
-      matrix = TT::Dimension.new( points, 4, 4 )
-      matrix
+      points
+      TT::Dimension.new( points, 4, 4 )
     end
     
     # @private
-    def ordered_edge_control_points
+    def ordered_edge_control_points( edgeuses )
       points = []
       for edgeuse in edgeuses
         if edgeuse.reversed?

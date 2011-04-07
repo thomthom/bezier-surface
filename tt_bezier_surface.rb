@@ -28,18 +28,23 @@ module TT::Plugins::BezierSurfaceTools
   PLUGIN_NAME = 'Bezier Surface'.freeze
   
   # Attribute dictionary keys
-  ATTR_ID      = 'TT_Mesh'.freeze
-  ATTR_TYPE    = 'Type'.freeze
-  ATTR_VERSION = 'Version'.freeze
-  ATTR_SUBDIVS = 'Subdivs'.freeze
+  ATTR_ID             = 'TT_Mesh'.freeze
+  ATTR_TYPE           = 'Type'.freeze
+  ATTR_VERSION        = 'Version'.freeze
+  ATTR_SUBDIVS        = 'Subdivs'.freeze
+  ATTR_CONTROL_POINTS = 'ControlPoints'.freeze
+  ATTR_EDGES          = 'Edges'.freeze
+  ATTR_EDGEUSES       = 'EdgeUses'.freeze
+  ATTR_NUM_EDGES      = 'NumEdges'.freeze
+  ATTR_NUM_EDGEUSES   = 'NumEdgeUses'.freeze
+  ATTR_NUM_PATCHES    = 'NumPatches'.freeze
+  ATTR_NUM_POINTS     = 'NumPoints'.freeze
+  ATTR_POINTS         = 'Points'.freeze
+  ATTR_REVERSED       = 'Reversed'.freeze
   
   # Attribute dictionary values
   MESH_TYPE    = 'BezierSurface'.freeze
-  MESH_VERSION = TT::Version.new(1,0,1).freeze
-  
-  # Data structure - Patch Properties
-  P_REVERSED = 'Reversed'.freeze
-  P_POINTS   = 'Points'.freeze
+  MESH_VERSION = TT::Version.new(1,0,2).freeze
   
   # Resource paths
   PATH       = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
