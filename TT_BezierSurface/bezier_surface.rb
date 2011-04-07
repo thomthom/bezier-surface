@@ -86,6 +86,8 @@ module TT::Plugins::BezierSurfaceTools
       surface
     end
     
+    # Data Format Version: 1.0.2
+    #
     # Reloads the bezier patch data from the attribute dictionary of the
     # assosiated instance.
     #
@@ -96,10 +98,6 @@ module TT::Plugins::BezierSurfaceTools
     def reload
       TT.debug( 'BezierSurface.reload' )
       debug_time_start = Time.now
-      
-      # (!)
-      # patch.interior_points
-      # patch.restore
       
       # Verify mesh definition
       d = TT::Instance.definition( @instance )
@@ -529,6 +527,8 @@ module TT::Plugins::BezierSurfaceTools
       vs
     end
     
+    # Data Format Version: 1.0.2
+    #
     # Updates the attribute dictionary with the BezierSurface data.
     #
     # @return [Boolean]
@@ -537,19 +537,65 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurface.update_attributes' )
       debug_time_start = Time.now
       
+      # ### DATA FORMAT ###
+      #
+      # SURFACE
+      # Surface properties written to attribute:
+      # * Type ( BezierSurface )
+      # * Version
+      # * Subdivisions
+      # * Number of Control Points
+      # * Number of Bezier Edges
+      # * Number of Bezier Patches
+      #
+      # Indexes all control points in the surface into a quick-access hash.
+      # Edges are converted into sets of point-indexes.
+      # Edges are also indexed.
+      # 
+      # CONTROL POINTS
+      # All the control points in the surface is added to a hash lookup table.
+      # Ex: hash { point3d => index, ... }
+      #
+      # The control points are added to a flat array of XYZ values.
+      # Ex: [ x1, y1, z1, x2, y2, z2 ... ]
+      # This is packed into a binary string which has to be run through base64
+      # in order to maintain intact when stored in SketchUp's attributes.
+      #
+      # EDGES
+      # The edges is also indexed in a lookup table.
+      # Ex: hash { point3d => index, ... }
+      #
+      # Then the edges are turned into a flat array of control points.
+      # Indexes is used to reference the points.
+      # Ex: [ e1, e1, e1, e1, e2, e2, e2, e2, e3, e3, e3, e3, ... ]
+      #     array = edge1.control_points + edge2.control_points ...
+      #
+      # PATCHES
+      # Each patch is stored to a separate attribute dictionary because they
+      # require additional attributes. Separate dictionaries seems like an
+      # easy method of managing the data.
+      #
+      # PATCH
+      # Each patch contains the patch properties:
+      # * Type ( QuadPatch | TriPatch | ... )
+      # * Reversed flag
+      # * EdgeUse count
+      # * EdgeUse objects (Serialized)
+      # * Interior Points - Required Control Points not part of the edges.
+      #
+      # VALIDATION
+      # Data size attributes is also stored for data validation. Check that
+      # loaded objects match the indicated size.
+      #
+      # NOTES
+      # (?) Should patches be written into the main dictionary? Would it be
+      #     'cleaner'?
+      
       d = TT::Instance.definition( @instance )
       # Write Surface data
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
       d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION.to_s )
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
-      
-      # (!)
-      # <todo>
-      # * Index control points
-      # * Serialize edges into arrays with control point indexes
-      # * Serialize patches into edge indexes and inner-control-point list
-      # * Write
-      # </todo>
       
       ### Points
       point_data_list = []    # Flattened list of X,Y,Z co-ordinates
@@ -627,12 +673,14 @@ module TT::Plugins::BezierSurfaceTools
       polygons = count_mesh_polygons( subdivs )
       mesh = Geom::PolygonMesh.new( points, polygons )
       TT.debug( '> Adding patches...' )
-      @patches.each { |patch|
+      for patch in @patches
         patch.add_to_mesh( mesh, subdivs, transformation )
-      }
+      end
       TT.debug( '> Clear and fill...' )
+      debug_time_start = Time.now
       d.entities.clear!
       d.entities.fill_from_mesh( mesh, true, TT::MESH_SOFT_SMOOTH )
+      TT.debug( "> Filled in #{Time.now-debug_time_start}s" )
     end
     
   end # class BezierSurface
