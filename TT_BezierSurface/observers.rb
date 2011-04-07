@@ -56,13 +56,13 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def onTransactionUndo( model )
       TT.debug( 'BP_ModelObserver.onTransactionUndo' )
-      check_active_path( model )
+      check_active_path( model, true )
     end
     
     # @since 1.0.0
     def onTransactionRedo( model )
       TT.debug( 'BP_ModelObserver.onTransactionRedo' )
-      check_active_path( model )
+      check_active_path( model, true )
     end
     
     # If it's a valid bezier surface context, ensure that an editor is
@@ -71,7 +71,7 @@ module TT::Plugins::BezierSurfaceTools
     # active context to change.
     #
     # @since 1.0.0
-    def check_active_path( model )
+    def check_active_path( model, undo_redo = false )
       TT.debug( 'BP_ModelObserver.check_active_path' )
       instance = (model.active_path) ? model.active_path.last : nil
       editor = PLUGIN.get_editor( model )
@@ -82,10 +82,10 @@ module TT::Plugins::BezierSurfaceTools
           unless editor.active?
             TT.debug( '  > Activating editor...' )
             editor.edit( instance )
-            editor.undo_redo
+            editor.undo_redo if undo_redo
           else
             TT.debug( '  > Editor already active.' )
-            editor.undo_redo
+            editor.undo_redo if undo_redo
           end
         else
           TT.debug( '  > No Editor!' )
