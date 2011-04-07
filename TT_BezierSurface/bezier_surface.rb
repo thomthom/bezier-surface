@@ -353,6 +353,25 @@ module TT::Plugins::BezierSurfaceTools
       picked.uniq
     end
     
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_control_edges( view, edges )
+      return false if edges.empty?
+      tr = view.model.edit_transform
+      view.line_width = CTRL_GRID_BORDER_WIDTH
+      view.line_stipple = ''
+      view.drawing_color = CLR_CTRL_GRID
+      for edge in edges
+        screen_points = edge.control_points.map { |point|
+          view.screen_coords( point.transform(tr) )
+        }
+        view.draw2d( GL_LINE_STRIP, screen_points )
+      end
+      true
+    end
+    
     # Draws the control grid structure for all the paches in the surface.
     #
     # @param [Sketchup::View] view
@@ -361,7 +380,16 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw_control_grid(view)
       for patch in @patches
-        patch.draw_control_grid( view )
+        patch.draw_control_grid_fill( view )
+      end
+      # Borders
+      draw_control_edges( view, edges )
+      # Internal Grid
+      view.drawing_color = CLR_CTRL_GRID
+      view.line_width = CTRL_GRID_LINE_WIDTH
+      view.line_stipple = '-'
+      for patch in @patches
+        patch.draw_internal_control_grid( view )
       end
       nil
     end
@@ -373,19 +401,37 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_grid(view, preview = false)
+    def draw_internal_grid(view, preview = false)
       for patch in @patches
         if preview
-          patch.draw_grid( preview, view )
+          patch.draw_internal_grid( preview, view )
         else
-          patch.draw_grid( @subdivs, view )
+          patch.draw_internal_grid( @subdivs, view )
         end
       end
       nil
     end
     
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_edges( view, edges, color = CLR_EDGE, width = 5 )
+      return false if edges.empty?
+      tr = view.model.edit_transform
+      subdivs = @subdivs
+      
+      view.line_width = width
+      view.line_stipple = ''
+      view.drawing_color = color
+      for edge in edges
+        view.draw( GL_LINE_STRIP, edge.segment( subdivs, tr ) )
+      end
+      true
+    end
+    
     # <debug>
-    def draw_edges( view )
+    def draw_edge_directions( view )
       tr = view.model.edit_transform
       subdivs = @subdivs
       for patch in @patches
@@ -422,6 +468,31 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     # </debug>
+    
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_control_points( view, selected = [] )
+      tr = view.model.edit_transform
+      # Prepare viewport
+      view.line_stipple = ''
+      view.line_width = 2
+      # Prepare points
+      #unselected = (control_points - selected).map { |pt| pt.transform(tr) }
+      all_points = control_points.map { |pt| pt.transform(tr) }
+      selected = selected.map { |pt| pt.transform(tr) }
+      # Drawing
+      #unless unselected.empty?
+      #  view.draw_points( unselected, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
+      #end
+      view.draw_points( all_points, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
+      unless selected.empty?
+        view.draw_points( selected, VERTEX_SIZE, TT::POINT_FILLED_SQUARE, CLR_VERTEX )
+      end
+      # Account for SU bug where draw_points kills the next draw operation.
+      view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
+    end
     
     # Returns all the +BezierEdge+ entities for the surface.
     #

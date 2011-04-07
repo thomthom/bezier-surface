@@ -258,6 +258,7 @@ module TT::Plugins::BezierSurfaceTools
     
     def draw(view)
       @editor.draw( view, @preview )
+      @surface.draw_edges( view, @surface.edges, CLR_EDGE, 2 )
       
       case @state
       when S_NORMAL

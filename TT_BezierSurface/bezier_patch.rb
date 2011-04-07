@@ -40,6 +40,8 @@ module TT::Plugins::BezierSurfaceTools
     # def edges
     # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
+    # def draw_control_grid( points )
+    # def draw_internal_grid( points )
     # def self.restore( surface, edgeuses, interior_points, reversed )
     
     # Replace an edge object with another.
@@ -121,8 +123,6 @@ module TT::Plugins::BezierSurfaceTools
       picked
     end
     
-    # (!) private? BezierPatchLoop?
-    #
     # @param [BezierEdge] edge
     #
     # @return [Integer]
@@ -134,8 +134,6 @@ module TT::Plugins::BezierSurfaceTools
       raise ArgumentError, 'Edge not connected to this patch.'
     end
     
-    # (!) private? BezierPatchLoop?
-    #
     # @param [BezierEdge] edge
     #
     # @return [BezierEdgeUse]
@@ -153,86 +151,19 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_control_grid( view )
+    def draw_internal_control_grid( view )
       cpoints = control_points()
       # Transform to active model space
-      t = view.model.edit_transform
+      tr = view.model.edit_transform
       pts = cpoints.map { |pt|
-        view.screen_coords( pt.transform(t) )
+        view.screen_coords( pt.transform(tr) )
       }
       # These methods needs to be implemented by the Patch subclass.
-      border    = get_control_grid_border( pts )
-      interior  = get_control_grid_interior( pts )
-      # Fill colour
-      if TT::SketchUp.support?( TT::SketchUp::COLOR_GL_POLYGON )
-        fill = TT::Color.clone( CLR_CTRL_GRID )
-        fill.alpha = 32
-        view.drawing_color = fill
-        
-        pts3d = cpoints.map { |pt| pt.transform(t) }       
-        quads = pts3d.to_a.values_at(
-           0, 1, 5, 4,
-           1, 2, 6, 5,
-           2, 3, 7, 6,
-           
-           4, 5, 9, 8,
-           5, 6,10, 9,
-           6, 7,11,10,
-           
-           8, 9,13,12,
-           9,10,14,13,
-          10,11,15,14
-        )
-        
-        view.draw( GL_QUADS, quads )
-      end
-      # Set up viewport
-      view.drawing_color = CLR_CTRL_GRID
-      # Border
-      view.line_width = CTRL_GRID_BORDER_WIDTH
-      view.line_stipple = ''
-      for segment in border
-        view.draw2d( GL_LINE_STRIP, segment )
-      end
-      # Gridlines
-      view.line_width = CTRL_GRID_LINE_WIDTH
-      view.line_stipple = '-'
+      interior = get_control_grid_interior( pts )
       for segment in interior
         view.draw2d( GL_LINE_STRIP, segment )
       end
       nil
-    end
-    
-    # Draws the patch's internal grid with the given sub-division.
-    #
-    # @param [Integer] subdivs
-    # @param [Sketchup::View] view
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def draw_grid( subdivs, view )
-      # (!) This is spesific to quad patches. Move to QuadPatch class or
-      # abstract if possible.
-      
-      # Transform to active model space
-      t = view.model.edit_transform
-      pts = mesh_points( subdivs, t )
-      
-      if pts.size > 2
-        # Set up viewport
-        view.drawing_color = CLR_MESH_GRID
-        # Meshgrid
-        view.line_width = MESH_GRID_LINE_WIDTH
-        view.line_stipple = ''
-        pts.rows[1...pts.width-1].each { |row|
-        #pts.each_row { |row|
-          view.draw( GL_LINE_STRIP, row )
-        }
-        pts.columns[1...pts.height-1].each { |col|
-        #pts.each_column { |col|
-          view.draw( GL_LINE_STRIP, col )
-        }
-      end
     end
     
   end # module BezierPatch  

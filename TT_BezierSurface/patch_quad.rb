@@ -286,6 +286,70 @@ module TT::Plugins::BezierSurfaceTools
       ]
     end
     
+    # Draws the patch's internal grid with the given sub-division.
+    #
+    # @param [Integer] subdivs
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_internal_grid( subdivs, view )
+      # Transform to active model space
+      t = view.model.edit_transform
+      pts = mesh_points( subdivs, t )
+      
+      if pts.size > 2
+        # Set up viewport
+        view.drawing_color = CLR_MESH_GRID
+        # Meshgrid
+        view.line_width = MESH_GRID_LINE_WIDTH
+        view.line_stipple = ''
+        pts.rows[1...pts.width-1].each { |row|
+        #pts.each_row { |row|
+          view.draw( GL_LINE_STRIP, row )
+        }
+        pts.columns[1...pts.height-1].each { |col|
+        #pts.each_column { |col|
+          view.draw( GL_LINE_STRIP, col )
+        }
+      end
+    end
+    
+    # Draws the patch's control grid.
+    #
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_control_grid_fill( view )
+      cpoints = control_points()
+      tr = view.model.edit_transform
+      # Fill colour
+      if TT::SketchUp.support?( TT::SketchUp::COLOR_GL_POLYGON )
+        fill = TT::Color.clone( CLR_CTRL_GRID )
+        fill.alpha = 32
+        view.drawing_color = fill
+        
+        pts3d = cpoints.map { |pt| pt.transform(tr) }       
+        quads = pts3d.to_a.values_at(
+           0, 1, 5, 4,
+           1, 2, 6, 5,
+           2, 3, 7, 6,
+           
+           4, 5, 9, 8,
+           5, 6,10, 9,
+           6, 7,11,10,
+           
+           8, 9,13,12,
+           9,10,14,13,
+          10,11,15,14
+        )
+        
+        view.draw( GL_QUADS, quads )
+      end
+      nil
+    end
+    
     # Assume a quadratic set of points
     #
     # Example using a 4x4 set of points:

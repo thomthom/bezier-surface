@@ -238,22 +238,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw( view, preview = false )
       return unless @surface
-      t = view.model.edit_transform
-      # Control Grid
-      @surface.draw_grid( view, preview )
+      @surface.draw_internal_grid( view, preview )
       @surface.draw_control_grid( view )
-      # Points
-      view.line_stipple = ''
-      view.line_width = 2
-      pts = @surface.control_points.map { |pt| pt.transform(t) }
-      view.draw_points( pts, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
-      # Selection
-      unless @selection.empty?
-        pts = @selection.map { |pt| pt.transform(t) }
-        view.draw_points( pts, VERTEX_SIZE, TT::POINT_FILLED_SQUARE, CLR_VERTEX )
-      end
-      # Account for SU bug where draw_points kills the next draw operation.
-      view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
+      @surface.draw_control_points( view, @selection.to_a )
     end
     
     # @return [String]
