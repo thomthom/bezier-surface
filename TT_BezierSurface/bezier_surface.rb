@@ -416,10 +416,10 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_edges( view, edges, color = CLR_EDGE, width = 5 )
+    def draw_edges( view, edges, color = CLR_EDGE, width = 5, preview = false )
       return false if edges.empty?
       tr = view.model.edit_transform
-      subdivs = @subdivs
+      subdivs = (preview) ? preview : @subdivs
       
       view.line_width = width
       view.line_stipple = ''

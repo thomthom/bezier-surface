@@ -113,7 +113,6 @@ module TT::Plugins::BezierSurfaceTools
         points << point.offset( directions[index], length * 2 )
         points << point.offset( directions[index], length * 3 )
       }
-      
       # Create the BezierPatch entity, add all entity assosiations.
       new_patch = QuadPatch.new( surface, points )
       new_patch.reversed = true if patch.reversed
