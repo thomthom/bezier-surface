@@ -51,11 +51,12 @@ module TT::Plugins::BezierSurfaceTools
     
     def getExtents
       bb = Geom::BoundingBox.new
-      # (!) Optimize: don't need all the points control_points() generates.
       points = control_points()
-      tr = Geom::Transformation.new( points.first )
-      points.each { |pt| pt.transform!( tr ) }
-      bb.add( points ) if points
+      if points && @ip_start.valid?
+        tr = Geom::Transformation.new( @ip_start.position )
+        points.each { |point| point.transform!( tr ) }
+        bb.add( points )
+      end
       bb
     end
     
