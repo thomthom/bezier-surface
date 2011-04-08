@@ -93,7 +93,7 @@ module TT::Plugins::BezierSurfaceTools
       # Ensure the subdivision is within sensible ranges. Prevents the user from
       # hanging the computer when unreasonable values are entered.
       subdivs = text.to_i
-      if (1..48).include?( subdivs )
+      if SUBDIVS_RANGE.include?( subdivs )
         @subdivs = subdivs
       else
         UI.beep

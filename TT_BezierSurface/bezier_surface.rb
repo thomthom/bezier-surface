@@ -22,6 +22,26 @@ module TT::Plugins::BezierSurfaceTools
       @subdivs = 6
     end
     
+    # Because very large values for subdivision will cause SketchUp to
+    # potentially become unresponsive for a long time while calculating
+    # this property will raise an exception if the value is out of bounds.
+    #
+    # The UI element allowing this property to be set should also perform
+    # validation, but this method acts as an extra security in case a validation
+    # bug should occur.
+    #
+    # @return [Numeric]
+    # @since 1.0.0
+    def subdivs=( value )
+      unless value.is_a?( Numeric )
+        raise ArgumentError, 'Argument not numeric.'
+      end
+      unless SUBDIVS_RANGE.include?( value )
+        raise ArgumentError, 'Invalid subdivision range.'
+      end
+      @subdivs = value
+    end
+    
     # Checks if a given instance (group or component) is a bezier patch.
     #
     # @param [Sketchup::Group|Sketchup::ComponentInstance] instance

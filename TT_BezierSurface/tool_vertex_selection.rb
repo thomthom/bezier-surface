@@ -118,7 +118,7 @@ module TT::Plugins::BezierSurfaceTools
     
     def onUserText(text, view)
       subdivs = text.to_i
-      if (1..48).include?( subdivs )
+      if SUBDIVS_RANGE.include?( subdivs )
         @editor.change_subdivisions( subdivs )
       else
         UI.beep
