@@ -173,6 +173,7 @@ module TT::Plugins::BezierSurfaceTools
     
     def draw(view)
       @surface.draw_internal_grid( view, @preview )
+      @surface.draw_edges( view, @surface.edges, CLR_EDGE, 2 )
       @surface.draw_control_grid( view )
       @surface.draw_control_points( view, @editor.selection.to_a )
       
