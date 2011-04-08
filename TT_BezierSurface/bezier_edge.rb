@@ -118,7 +118,6 @@ module TT::Plugins::BezierSurfaceTools
       new_patch.reversed = true if patch.reversed
       new_patch.set_edge( new_patch.edges.last, self )
       self.link( new_patch )
-      # (!) merge edges
       
       # Add the patch to the surface and regenerate the mesh.
       model = Sketchup.active_model

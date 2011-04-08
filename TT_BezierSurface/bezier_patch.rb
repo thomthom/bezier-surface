@@ -38,7 +38,6 @@ module TT::Plugins::BezierSurfaceTools
     # def count_mesh_polygons( subdiv )
     # def control_points
     # def edges
-    # def get_control_grid_border( points )
     # def get_control_grid_interior( points )
     # def draw_control_grid( points )
     # def draw_internal_grid( points )
