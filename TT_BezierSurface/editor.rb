@@ -311,7 +311,12 @@ module TT::Plugins::BezierSurfaceTools
         
         # Axis
         container = TT::GUI::Container.new
-        list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
+        list = TT::GUI::Listbox.new( [
+          'Local',
+          'Global',
+          'Selection',
+          'Custom'
+        ] )
         list.on_change { |value|
           puts "Axis: #{value}"
           TT::SketchUp.activate_main_window
