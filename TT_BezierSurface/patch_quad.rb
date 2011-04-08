@@ -170,7 +170,7 @@ module TT::Plugins::BezierSurfaceTools
       # |   |   |   |
       # X---X---X---X
       #
-      e0,e1,e2,e3 = ordered_edge_control_points( edgeuses )
+      e0,e1,e2,e3 = ordered_edge_control_points()
       points = []
       # Row 1
       points.concat( e0 )
@@ -191,7 +191,10 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @private
-    def ordered_edge_control_points( edgeuses )
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def ordered_edge_control_points
       points = []
       for edgeuse in edgeuses
         if edgeuse.reversed?
@@ -253,22 +256,6 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edges
       @edgeuses.map { |edgeuse| edgeuse.edge }
-      #@edges.dup
-    end
-    
-    # (?) Private
-    #
-    # @param [Array<Geom::Point3d] points
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def get_control_grid_border( points )
-      [
-        points.row(0),
-        points.column(3),
-        points.row(3),
-        points.column(0)
-      ]
     end
     
     # (?) Private
