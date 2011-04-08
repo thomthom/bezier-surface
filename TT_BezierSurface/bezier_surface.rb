@@ -169,13 +169,13 @@ module TT::Plugins::BezierSurfaceTools
         
         # Read Properties
         type            = d.get_attribute( section, ATTR_TYPE )
-        reversed        = d.get_attribute( section, ATTR_REVERSED )
+        patch_reversed  = d.get_attribute( section, ATTR_REVERSED )
         num_edgeuses    = d.get_attribute( section, ATTR_NUM_EDGEUSES )
         binary_edgeuses = d.get_attribute( section, ATTR_EDGEUSES )
         binary_cpoints  = d.get_attribute( section, ATTR_POINTS )
         
         TT.debug "  > Type: #{type}"
-        TT.debug "  > Reversed: #{reversed}"
+        TT.debug "  > Reversed: #{patch_reversed}"
         TT.debug "  > EdgeUses: #{num_edgeuses}"
         
         # The patch type string is eval'ed into a Class object which is then
@@ -203,17 +203,17 @@ module TT::Plugins::BezierSurfaceTools
         edgeuses_set = []
         (0...edgeuses_data.size).step(2) { |i|
           # Load EdgeUse properties
-          edge_index, reversed = edgeuses_data[i, 2]
+          edge_index, edge_reversed = edgeuses_data[i, 2]
           edge = edge_sets[edge_index]
-          reversed = !( reversed == 0 ) # 0 = False - Everything else = True
+          edge_reversed = !( edge_reversed == 0 ) # 0 = False - Everything else = True
           # Create temporaty EdgeUse
-          edgeuses_set << BezierEdgeUse.new( nil, edge, reversed )
+          edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed )
         }
         
         TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
         
         # Add patch
-        patch = patchtype.restore( self, edgeuses_set, interior_points, reversed )
+        patch = patchtype.restore( self, edgeuses_set, interior_points, patch_reversed )
         self.add_patch( patch )
       end # patches
       
@@ -695,6 +695,7 @@ module TT::Plugins::BezierSurfaceTools
       d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
       
       ### Patches
+      # (!) Remove old patch attributes
       @patches.each_with_index { |patch, i|
         # Each patch is written to a separate attribute dictionary
         section = "BezierPatch#{i}"
