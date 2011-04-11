@@ -20,7 +20,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def initialize( parent, points )
-      super
+      # Validate arguments
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16
       unless points.all? { |point|
@@ -29,7 +29,8 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'points must be Point3d objects.'
       end
       
-      TT::Point3d.extend_all( points ) # TT::Point3d_Ex
+      # Init superclass. (Extends points into Point3d_Ex.)
+      super
       
       # Create edges and assosiate them with this patch.
       grid = TT::Dimension.new( points, 4, 4 )

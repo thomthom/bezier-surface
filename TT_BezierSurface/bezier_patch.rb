@@ -23,8 +23,10 @@ module TT::Plugins::BezierSurfaceTools
     attr_accessor( :reversed ) # (!) Not currently implemented!
     attr_accessor( :edgeuses, :interior_points )
     
-    def initialize( *args )
-      @parent = args[0] # BezierSurface
+    def initialize( parent, points )
+      TT::Point3d.extend_all( points ) # TT::Point3d_Ex
+      
+      @parent = parent # BezierSurface
       @reversed = false
       @edgeuses = []
     end
