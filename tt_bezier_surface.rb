@@ -47,9 +47,10 @@ module TT::Plugins::BezierSurfaceTools
   MESH_VERSION = TT::Version.new(1,0,2).freeze
   
   # Subdivision range limit
-  SUBDIVS_MIN = 1
-  SUBDIVS_MAX = 48
-  SUBDIVS_RANGE = ( SUBDIVS_MIN..SUBDIVS_MAX ).freeze
+  SUBDIVS_MIN     = 1
+  SUBDIVS_MAX     = 48
+  SUBDIVS_RANGE   = ( SUBDIVS_MIN..SUBDIVS_MAX ).freeze
+  SUBDIVS_DEFAULT = 6
   
   # Resource paths
   PATH       = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze

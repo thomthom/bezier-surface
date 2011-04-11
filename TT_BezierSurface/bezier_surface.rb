@@ -19,7 +19,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( instance )
       @instance = instance
       @patches = []
-      @subdivs = 6
+      @subdivs = SUBDIVS_DEFAULT
     end
     
     # Because very large values for subdivision will cause SketchUp to

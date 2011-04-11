@@ -17,7 +17,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize
       @ip_start = Sketchup::InputPoint.new
       @ip_mouse = Sketchup::InputPoint.new
-      @subdivs = 6
+      @subdivs = SUBDIVS_DEFAULT
       
       @cursor = TT::Cursor.get_id(:rectangle)
     end
