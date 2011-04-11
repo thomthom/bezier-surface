@@ -84,7 +84,7 @@ module TT::Plugins::BezierSurfaceTools
   ### VARIABLES ### ------------------------------------------------------------
   
   # Key is model.guid
-  @editors = {}
+  @editors ||= {}
   
   
   ### MENU & TOOLBARS ### ------------------------------------------------------
