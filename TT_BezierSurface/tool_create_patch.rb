@@ -18,6 +18,8 @@ module TT::Plugins::BezierSurfaceTools
       @ip_start = Sketchup::InputPoint.new
       @ip_mouse = Sketchup::InputPoint.new
       @subdivs = 6
+      
+      @cursor = TT::Cursor.get_id(:rectangle)
     end
     
     # @since 1.0.0
@@ -184,6 +186,10 @@ module TT::Plugins::BezierSurfaceTools
         pts[4], pts[7],
         pts[8], pts[11]
       ] )
+    end
+    
+    def onSetCursor
+      UI.set_cursor( @cursor )
     end
     
     # Returns nil when input points are invalid.
