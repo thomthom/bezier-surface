@@ -414,6 +414,67 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_control_handles( view )
+      return false if edges.empty?
+      
+      control_points = []
+      handle_points = []
+      handle_lines = []
+      internal_points = []
+
+      tr = view.model.edit_transform
+      for edge in edges
+        world_points = edge.control_points.map { |point|
+          point.transform(tr)
+        }
+        
+        control_points << world_points[0]
+        control_points << world_points[3]
+        
+        handle_points << world_points[1]
+        handle_points << world_points[2]
+        
+        handle_lines.concat( world_points )
+      end
+      
+      for patch in patches
+        patch.interior_points.each { |point|
+          internal_points << point.transform(tr)
+        }
+      end
+      
+      view.line_width = 2
+      view.line_stipple = ''
+      
+      # Handle Lines
+      view.drawing_color = 'orange'
+      view.draw( GL_LINES, handle_lines )
+      
+      # Handle Points
+      view.line_width = 2
+      #view.draw_points( handle_points, VERTEX_SIZE, TT::POINT_X, 'green' )
+      draw_circles( view, handle_points, 'green' )
+      
+      # Interior Points
+      view.line_width = 2
+      #view.draw_points( internal_points, VERTEX_SIZE, TT::POINT_CROSS, 'black' )
+      draw_markers( view, internal_points, 'black', 6 )
+      
+      # Control Points
+      view.line_width = CTRL_GRID_BORDER_WIDTH
+      view.drawing_color = CLR_VERTEX
+      view.draw_points( control_points, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
+      
+      # Account for SU bug where draw_points kills the next draw operation.
+      view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
+      
+      true
+    end
+    
     # Draws the internal subdivided structure for all the paches in the surface.
     #
     # @param [Sketchup::View] view
@@ -512,6 +573,44 @@ module TT::Plugins::BezierSurfaceTools
       end
       # Account for SU bug where draw_points kills the next draw operation.
       view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
+    end
+    
+    # @since 1.0.0
+    def draw_circles( view, points, color, size = VERTEX_SIZE, line_width = 2 )
+      vector = view.camera.direction.reverse
+      radius = size / 2.0
+      
+      view.line_stipple = ''
+      view.line_width = line_width
+      view.drawing_color = color
+      for point in points
+        screen_size = view.pixels_to_model( radius, point )
+        circle_points = TT::Geom3d.circle( point, vector, screen_size, 8 )
+        view.draw( GL_LINE_LOOP, circle_points )
+      end
+    end
+    
+    # @since 1.0.0
+    def draw_markers( view, points, color, size = VERTEX_SIZE, line_width = 2 )
+      vector = view.camera.direction.reverse
+      vx1 = view.camera.xaxis
+      vx2 = vx1.reverse
+      vy1 = view.camera.yaxis
+      vy2 = vy1.reverse
+      radius = size / 2.0
+      
+      view.line_stipple = ''
+      view.line_width = line_width
+      view.drawing_color = color
+      for point in points
+        screen_size = view.pixels_to_model( radius, point )
+        marker_points = []
+        marker_points << point.offset( vx1, screen_size )
+        marker_points << point.offset( vx2, screen_size )
+        marker_points << point.offset( vy1, screen_size )
+        marker_points << point.offset( vy2, screen_size )
+        view.draw( GL_LINES, marker_points )
+      end
     end
     
     # Returns all the +BezierEdge+ entities for the surface.
