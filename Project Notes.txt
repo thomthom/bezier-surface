@@ -19,6 +19,8 @@
 * Global subdiv multiplier
 * Clones - Independent subdivs
 * UV Map with instance texture
+* Subdivide patch into smaller patches
+* Automatic or Manual interior
 
 
 // NOTES ///////////////////////////////////////////////////////////////////////
