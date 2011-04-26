@@ -129,16 +129,22 @@ module TT::Plugins::BezierSurfaceTools
     m = UI.menu('Window')
     m.add_item('Bezier Surface Properties') { PLUGIN::PropertiesWindow.toggle }
     
-    # Right click menu
-    #UI.add_context_menu_handler { |context_menu|
-      #model = Sketchup.active_model
-      #sel = model.selection
-      #if sel.length == 1 && BezierSurface.is?( sel[0] )
-        #context_menu.add_item('refresh Bezier Surface') { 
-        #  self.refresh_selected_surface
-        #}
-      #end
-    #}
+    # Context menu
+    UI.add_context_menu_handler { |context_menu|
+      model = Sketchup.active_model
+      sel = model.selection
+      if sel.length == 1 && BezierSurface.is?( sel[0] )
+        m = context_menu.add_submenu( PLUGIN_NAME )
+        m.add_item('Clone') { }
+        m.add_item('Select Clones') { }
+        m.add_item('Replace Clones') { }
+        m.add_separator
+        m.add_item('Update') { }
+        m.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
+        m.add_separator
+        m.add_item('Convert to Editable Mesh') { }
+      end
+    }
     
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
