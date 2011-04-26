@@ -20,6 +20,8 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def initialize( parent, points )
+      TT.debug 'QuadPatch.new'
+      
       # Validate arguments
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16

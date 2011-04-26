@@ -24,7 +24,13 @@ module TT::Plugins::BezierSurfaceTools
     attr_accessor( :edgeuses, :interior_points )
     
     def initialize( parent, points )
-      TT::Point3d.extend_all( points ) # TT::Point3d_Ex
+      TT.debug 'BezierPatch.new'
+      
+      BezierVertex.extend_all( points )
+      
+      for point in points
+        point.link( self )
+      end
       
       @parent = parent # BezierSurface
       @reversed = false
@@ -58,12 +64,28 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Edge not related to Patch.'
       end
       
+      TT.debug( 'BezierPatch.set_edge' )
+      TT.debug "Old: #{old_edge}"
+      TT.debug "New: #{old_edge}"
+      
       edgeuse = get_edgeuse( old_edge )
       edgeuse.edge = new_edge
       
+      # Associate the new edge with this patch.
+      #for point in new_edge.control_points
+      #  point.link( self )
+      #end
+      
+      # (?) Required?
+      # Remove association between the old edge and the control points.
+      for point in old_edge.control_points
+        point.unlink( old_edge )
+        #point.link( new_edge )
+      end
+      
       # (!) Hack - Find a method that works even if the points are not at
       # the same location. Or require points to be the same?
-      TT.debug( 'BezierPatch.set_edge' )
+      #TT.debug( 'BezierPatch.set_edge' )
       #TT.debug( "> #{old_edge.start == new_edge.start}" )
       #TT.debug( "> #{old_edge.start == new_edge.end}" )
       if old_edge.start == new_edge.end
@@ -72,6 +94,32 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       # (!) Update control points of connected edges.
+      connected_edges = old_edge.start.edges + old_edge.end.edges
+      TT.debug "Connected Edges: #{connected_edges.size}"
+      TT.debug connected_edges.join("\n")
+      
+      for edge in connected_edges
+        next if edge == new_edge
+        TT.debug "> Connected Edge: #{edge}"
+        new_points = edge.control_points
+        
+        for connected_point in edge.end_control_points          
+          if connected_point == new_edge.start
+            TT.debug "> Merge Start Point with #{connected_point}"
+            new_points[0] = new_edge.start
+          elsif connected_point == new_edge.end
+            TT.debug "> Merge End Point with #{connected_point}"
+            new_points[3] = new_edge.end
+          end
+          edge.control_points = new_points
+        end # for edge.end_control_points
+        
+      end # for connected_edges
+      
+      #for point in new_points
+      #  point.link( new_edge )
+      #end
+      #new_edge.control_points = new_points
       
       new_edge
     end
@@ -165,6 +213,10 @@ module TT::Plugins::BezierSurfaceTools
         view.draw2d( GL_LINE_STRIP, segment )
       end
       nil
+    end
+    
+    def inspect
+      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # module BezierPatch  

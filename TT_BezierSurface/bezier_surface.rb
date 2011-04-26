@@ -326,11 +326,14 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points
+      #TT.debug "\nBezierSurface.control_points"
       pts = []
       for patch in @patches
         pts.concat( patch.control_points.to_a )
       end
+      #TT.debug pts.size
       pts.uniq!
+      #TT.debug pts.size
       pts
     end
     
@@ -698,6 +701,10 @@ module TT::Plugins::BezierSurfaceTools
       d = TT::Instance.definition( @instance )
       d.entities.transform_by_vectors( entities, vectors )
       true
+    end
+    
+    def inspect
+      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
     private

@@ -21,11 +21,19 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Array<Geom::Point3d>] control_points Bezier control points
     #
     # @since 1.0.0
-    def initialize( parent, control_points )
+    def initialize( parent, edge_control_points )
+      #TT.debug 'BezierEdge.new'
       # (!) Validate
       @parent = parent # BezierSurface
-      @control_points = control_points
       @patches = []
+      @control_points = []
+      self.control_points = edge_control_points
+    end
+    
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def end_control_points
+      [ @control_points.first, @control_points.last ]
     end
     
     # @return [Array<Geom::Point3d>]
@@ -40,6 +48,11 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def control_points=( new_control_points )
       @control_points = new_control_points
+      
+      BezierVertex.extend_all( new_control_points )
+      for point in new_control_points
+        point.link( self )
+      end
     end
     
     # @return [Geom::Vector3d]
@@ -151,9 +164,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def link( entity )
       if entity.is_a?( BezierPatch )
-        if @patches.include?( entity )
-          raise ArgumentError, 'Entity already linked.'
-        else
+        #if @patches.include?( entity )
+        #  raise ArgumentError, 'Entity already linked.'
+        #else
+        unless @patches.include?( entity )
           @patches << entity
         end
       else
@@ -230,6 +244,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def used_by?( patch )
       patch.edgeuses.any? { |edgeuse| edgeuse.edge == self }
+    end
+    
+    def inspect
+      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # class BezierEdge

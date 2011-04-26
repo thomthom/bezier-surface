@@ -21,10 +21,18 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def initialize( patch, edge, reversed=false )
+      #TT.debug 'BezierEdgeUse.new'
       # (!) Validate
       @patch = patch
       @edge = edge
       @reversed = reversed
+    end
+    
+    def edge=( new_edge )
+      @edge.unlink( @patch )
+      new_edge.link( @patch )
+      @edge = new_edge
+      new_edge
     end
     
     # @return [Boolean]
@@ -55,6 +63,10 @@ module TT::Plugins::BezierSurfaceTools
       index = patch.edge_index( edge )
       array_index = ( index - 1 ) % edgeuses.size
       edgeuses[ array_index ]
+    end
+    
+    def inspect
+      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # class BezierEdgeUse
