@@ -5,6 +5,8 @@
 #
 #-------------------------------------------------------------------------------
 
+require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_entity.rb' )
+
 
 module TT::Plugins::BezierSurfaceTools
   
@@ -13,7 +15,7 @@ module TT::Plugins::BezierSurfaceTools
   # relationship to connected entities.
   #
   # @since 1.0.0
-  class BezierEdge
+  class BezierEdge < BezierEntity
     
     attr_reader( :parent )
     attr_accessor( :control_points, :patches )
@@ -23,11 +25,18 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def initialize( parent, edge_control_points )
       #TT.debug 'BezierEdge.new'
-      # (!) Validate
+      super()
+      @linkables = [BezierPatch]
       @parent = parent # BezierSurface
       @patches = []
       @control_points = []
       self.control_points = edge_control_points
+    end
+    
+    # @return [String]
+    # @since 1.0.0
+    def typename
+      'BezierEdge'
     end
     
     # @return [Array<Geom::Point3d>]
@@ -153,46 +162,6 @@ module TT::Plugins::BezierSurfaceTools
         total += pt1.distance( pt2 )
       end
       total.to_l
-    end
-    
-    # Assosiates an entity with the current BezierEdge. Use to keep track of
-    # which entities use this edge.
-    #
-    # @param [BezierPatch] entity
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def link( entity )
-      if entity.is_a?( BezierPatch )
-        #if @patches.include?( entity )
-        #  raise ArgumentError, 'Entity already linked.'
-        #else
-        unless @patches.include?( entity )
-          @patches << entity
-        end
-      else
-        raise ArgumentError, "Can't link BezierEdge with #{entity.class}. Invalid entity type."
-      end
-      nil
-    end
-    
-    # De-assosiates an entity.
-    #
-    # @param [BezierPatch] entity
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def unlink( entity )
-      if entity.is_a?( BezierPatch )
-        if @patches.include?( entity )
-          @patches.delete( entity )
-        else
-          raise ArgumentError, 'Entity not linked.'
-        end
-      else
-        raise ArgumentError, "Can't unlink BezierEdge with #{entity.class}. Invalid entity type."
-      end
-      nil
     end
     
     # @param [BezierPatch] subdivs
