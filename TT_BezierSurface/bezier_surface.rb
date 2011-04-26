@@ -70,18 +70,6 @@ module TT::Plugins::BezierSurfaceTools
       MESH_VERSION >= version
     end
     
-    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
-    #
-    # @private
-    # @return [Boolean]
-    # @since 1.0.0
-    def self.is_old_alpha_format?( instance )
-      d = TT::Instance.definition( instance )
-      return false if d.nil?
-      version = d.get_attribute( ATTR_ID, ATTR_VERSION )
-      version == [1,0,0]
-    end
-    
     # Loads the bezier patch data from the given instance (group or component).
     #
     # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
@@ -703,8 +691,11 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # @return [String]
+    # @since 1.0.0
     def inspect
-      "<#{self.class}:#{TT.object_id_hex( self )}>"
+      id = TT.object_id_hex( self )
+      "<#{self.class}:#{id} - Subdivs: #{@subdivs} - Patches: #{@patches.size}>"
     end
     
     private
