@@ -39,6 +39,12 @@ module TT::Plugins::BezierSurfaceTools
       'BezierEdge'
     end
     
+    # @return [Array<BezierPatch>]
+    # @since 1.0.0
+    def patches
+      @linked[BezierPatch].dup
+    end
+    
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def end_control_points

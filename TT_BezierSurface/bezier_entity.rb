@@ -54,12 +54,13 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def link( entity )
-      unless @linkables.any? { |acceptable| entity.is_a?( acceptable ) }
+      type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
+      unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
       # Keep record of each entity type in a hash lookup.
-      @linked[ entity.class ] ||= []
-      collection = @linked[ entity.class ]
+      @linked[ type ] ||= []
+      collection = @linked[ type ]
       # Ensure there's only one entry for each entity.
       # (?) Should the Set class be used? Or does it not give enough performance
       # gain for small arrays?
@@ -78,12 +79,13 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def unlink( entity )
-      unless @linkables.any? { |acceptable| entity.is_a?( acceptable ) }
+      type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
+      unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
       # Look up the entity type in the hash table.
-      @linked[ entity.class ] ||= []
-      collection = @linked[ entity.class ]
+      @linked[ type ] ||= []
+      collection = @linked[ type ]
       
       if collection.include?( entity )
         collection.delete( entity )
