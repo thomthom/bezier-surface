@@ -1,0 +1,61 @@
+#-------------------------------------------------------------------------------
+#
+# Thomas Thomassen
+# thomas[at]thomthom[dot]net
+#
+#-------------------------------------------------------------------------------
+
+
+module TT::Plugins::BezierSurfaceTools
+  
+  
+  # @since 1.0.0
+  class BezierVertex < BezierEntity
+    
+    attr_reader( :position )
+    
+    def initialize( *args )
+      super()
+      @linkable = [ BezierEdge, BezierPatch ]
+      @linked[BezierEdge] = []
+      @linked[BezierPatch] = []
+      # (!) Parse argument into Point3d_Ex
+      @position
+    end
+    
+    # @return [String]
+    # @since 1.0.0
+    def typename
+      'BezierVertex'
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def is_handle?
+      # (!) Is control point handle?
+    end
+    
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
+    def edges
+      fail_if_invalid()
+      @linked[BezierEdge].dup
+    end
+    
+    # @return [Array<BezierPatch>]
+    # @since 1.0.0
+    def patches
+      fail_if_invalid()
+      @linked[BezierPatch].dup
+    end
+    
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def set( *args )
+      fail_if_invalid()
+      # (!) Parse argument into Point3d_Ex
+    end
+    
+  end # class BezierVertex
+
+end # module
