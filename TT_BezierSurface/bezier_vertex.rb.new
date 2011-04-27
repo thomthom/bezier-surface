@@ -10,17 +10,17 @@ module TT::Plugins::BezierSurfaceTools
   
   
   # @since 1.0.0
-  class BezierVertex < BezierEntity
+  class BezierControlPoint < BezierEntity
     
     attr_reader( :position )
     
-    def initialize( *args )
+    def initialize( parent, *args )
       super()
+      @parent = parent
       @linkable = [ BezierEdge, BezierPatch ]
       @linked[BezierEdge] = []
       @linked[BezierPatch] = []
-      # (!) Parse argument into Point3d_Ex
-      @position
+      set( *args )
     end
     
     # @return [String]
@@ -31,8 +31,16 @@ module TT::Plugins::BezierSurfaceTools
     
     # @return [Boolean]
     # @since 1.0.0
+    def is_interior?
+      # Subclass BezierInteriorPoint returns true
+      false
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
     def is_handle?
-      # (!) Is control point handle?
+      # Subclass BezierHandle returns true
+      false
     end
     
     # @return [Array<BezierEdge>]
@@ -53,9 +61,87 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def set( *args )
       fail_if_invalid()
-      # (!) Parse argument into Point3d_Ex
+      if args.size == 1
+        # .set( Geom::Point3d )
+        # .set( [ x, y, z ] )
+        arg = args[0]
+        if arg.is_a?( Geom::Point3d )
+          @position = arg
+        elsif arg.is_a?( Array )
+          if arg.all? { |i| i.is_a?( Numeric ) }
+            @position = Geom.Point3d.new( *arg )
+          else
+            raise ArgumentError, 'Array does not contain all Numeric.'
+          end
+        end
+      elsif args.size == 3
+        # .set( x, y, z )
+        if args.all? { |i| i.is_a?( Numeric ) }
+          @position = Geom.Point3d.new( *args )
+        else
+          raise ArgumentError, 'Arguments not all Numeric.'
+        end
+      else
+        raise ArgumentError, 'Invalid arguments.'
+      end
+      @position.extend( TT::Point3d_Ex ) # Needed?
+      @position
     end
     
   end # class BezierVertex
+  
+  
+  # BezierPatch & BezierEdge vertex.
+  #
+  # @since 1.0.0
+  class BezierVertex < BezierControlPoint
+  
+    # @return [Boolean]
+    # @since 1.0.0
+    def linked_control_points
+      # (!) Find connected BezierHandles and BezierInteriorPoints
+    end
+  
+  end # class BezierInteriorPoint
+  
+  
+  # BezierEdge control handle points.
+  #
+  # @since 1.0.0
+  class BezierHandle < BezierControlPoint
+  
+    # @return [Boolean]
+    # @since 1.0.0
+    def is_handle?
+      true
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def linked?
+      # (!) ...
+    end
+    
+    # @return [Array<BezierHandle>]
+    # @since 1.0.0
+    def linked_handles
+      # (!) Find connected edges with linked handles
+    end
+  
+  end # class BezierHandle
+  
+  
+  # BezierPatch interior control points.
+  #
+  # @since 1.0.0
+  class BezierInteriorPoint < BezierControlPoint
+  
+    # @return [Boolean]
+    # @since 1.0.0
+    def is_interior?
+      true
+    end
+  
+  end # class BezierInteriorPoint
 
 end # module
