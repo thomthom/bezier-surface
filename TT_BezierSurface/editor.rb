@@ -260,7 +260,7 @@ module TT::Plugins::BezierSurfaceTools
           :pref_key => "#{PLUGIN::ID}_Toolbar",
           :left => 200,
           :top => 200,
-          :width => 250,
+          :width => 280,
           :height => 50,
           :resizable => false,
           :scrollable => false
@@ -319,10 +319,20 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
         @toolbar.add_control( button )
         
+        # Add TriPatch
+        button = TT::GUI::ToolbarButton.new('Add TriPatch') {
+          puts 'Add TriPatch'
+          #PLUGIN.add_tripatch # (!)
+          TT::SketchUp.activate_main_window
+        }
+        button.icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
+        @toolbar.add_control( button )
+        
         # Axis
         container = TT::GUI::Container.new
         list = TT::GUI::Listbox.new( [
           'Local',
+          'Parent',
           'Global',
           'Selection',
           'Custom'
@@ -336,13 +346,6 @@ module TT::Plugins::BezierSurfaceTools
         container.add_control( list )
         @toolbar.add_control( container )
         
-        #list = TT::GUI::Listbox.new( ['Local', 'Global', 'Custom'] )
-        #list.label = ' Axis:'
-        #list.on_change { |value|
-        #  puts "Axis: #{value}"
-        #  TT::SketchUp.activate_main_window
-        #}
-        #@toolbar.add_control( list )
       end
       @toolbar.show_window
       

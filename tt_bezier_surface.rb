@@ -120,11 +120,20 @@ module TT::Plugins::BezierSurfaceTools
     cmd.tooltip = 'Create a Quadpatch Bezier Surface'
     cmd_create_quad_patch = cmd
     
+    cmd = UI::Command.new('Create Tripatch') {
+      UI.messagebox( 'Not implemented' )
+    }
+    cmd.small_icon = File.join( PATH_ICONS, 'TriPatch_16.png' )
+    cmd.large_icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
+    cmd.status_bar_text = 'Create a Tripatch Bezier Surface'
+    cmd.tooltip = 'Create a Tripatch Bezier Surface'
+    cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
+    cmd_create_tri_patch = cmd
+    
     # Menus
     m = TT.menu('Draw').add_submenu( PLUGIN_NAME )
     m.add_item( cmd_create_quad_patch )
-    menu = m.add_item('Create Tripatch') { puts 'Create Tripatch' }
-    m.set_validation_proc(menu) { MF_DISABLED | MF_GRAYED }
+    m.add_item( cmd_create_tri_patch )
     
     m = UI.menu('Window')
     m.add_item('Bezier Surface Properties') { PLUGIN::PropertiesWindow.toggle }
@@ -149,6 +158,7 @@ module TT::Plugins::BezierSurfaceTools
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
     toolbar.add_item( cmd_create_quad_patch )
+    toolbar.add_item( cmd_create_tri_patch )
     if toolbar.get_last_state == TB_VISIBLE
       toolbar.restore
       UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
