@@ -229,13 +229,6 @@ module TT::Plugins::BezierSurfaceTools
       @control_points.dup
     end
     
-    # @return [Boolean]
-    # @since 1.0.0
-    def used_by?( patch )
-      fail_if_invalid()
-      patch.edgeuses.any? { |edgeuse| edgeuse.edge == self }
-    end
-    
   end # class BezierEdge
 
 end # module

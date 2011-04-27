@@ -101,6 +101,16 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @return [Boolean]
+    # @since 1.0.0
+    def used_by?( bezier_entity )
+      fail_if_invalid()
+      for type, entities in @linked
+        return true if entities.include?( bezier_entity )
+      end
+      false
+    end
+    
     # @return [String]
     # @since 1.0.0
     def inspect
