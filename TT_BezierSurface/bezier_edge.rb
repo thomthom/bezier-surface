@@ -60,6 +60,15 @@ module TT::Plugins::BezierSurfaceTools
       @control_points.dup
     end
     
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def positions
+      fail_if_invalid()
+      @control_points.map { |point|
+        point.position
+      }
+    end
+    
     # @param [Array<Geom::Point3d>] new_control_points
     #
     # @return [Array<Geom::Point3d>]
