@@ -127,6 +127,12 @@ module TT::Plugins::BezierSurfaceTools
     def linked_handles
       # (!) Find connected edges with linked handles
     end
+    
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def vertex
+      # (!) Related end vertex
+    end
   
   end # class BezierHandle
   
