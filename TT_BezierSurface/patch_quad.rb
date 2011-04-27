@@ -13,7 +13,7 @@ module TT::Plugins::BezierSurfaceTools
   # Manages bezier quad-patches.
   #
   # @since 1.0.0
-  class QuadPatch
+  class QuadPatch < BezierEntity
     include BezierPatch
     
     # @param [Array<Geom::Point3d>] points Bezier control points

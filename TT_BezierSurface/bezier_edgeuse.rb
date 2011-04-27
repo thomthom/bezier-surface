@@ -10,10 +10,9 @@ module TT::Plugins::BezierSurfaceTools
   
   
   # @since 1.0.0
-  class BezierEdgeUse
+  class BezierEdgeUse < BezierEntity
     
-    attr_reader( :patch )
-    attr_accessor( :edge )
+    attr_reader( :edge, :patch )
     
     # @param [BezierPatch] patch
     # @param [BezierEdge] edge
@@ -22,12 +21,23 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def initialize( patch, edge, reversed=false )
       #TT.debug 'BezierEdgeUse.new'
-      # (!) Validate
+      super()
       @patch = patch
       @edge = edge
       @reversed = reversed
+      @parent = @edge.parent # (i) BezierSurface - Not really required?
     end
     
+    # @return [String]
+    # @since 1.0.0
+    def typename
+      'BezierEdgeUse'
+    end
+    
+    # @param [BezierEdge] new_edge
+    #
+    # @return [BezierEdge]
+    # @since 1.0.0
     def edge=( new_edge )
       @edge.unlink( @patch )
       new_edge.link( @patch )
@@ -63,10 +73,6 @@ module TT::Plugins::BezierSurfaceTools
       index = patch.edge_index( edge )
       array_index = ( index - 1 ) % edgeuses.size
       edgeuses[ array_index ]
-    end
-    
-    def inspect
-      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # class BezierEdgeUse

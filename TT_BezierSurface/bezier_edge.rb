@@ -68,6 +68,8 @@ module TT::Plugins::BezierSurfaceTools
       for point in new_control_points
         point.link( self )
       end
+      
+      @control_points.dup
     end
     
     # @return [Geom::Vector3d]
@@ -219,10 +221,6 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def used_by?( patch )
       patch.edgeuses.any? { |edgeuse| edgeuse.edge == self }
-    end
-    
-    def inspect
-      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # class BezierEdge

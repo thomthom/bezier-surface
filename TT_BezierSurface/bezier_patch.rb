@@ -26,6 +26,8 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( parent, points )
       TT.debug 'BezierPatch.new'
       
+      super()
+      
       BezierVertex.extend_all( points )
       
       for point in points
@@ -213,10 +215,6 @@ module TT::Plugins::BezierSurfaceTools
         view.draw2d( GL_LINE_STRIP, segment )
       end
       nil
-    end
-    
-    def inspect
-      "<#{self.class}:#{TT.object_id_hex( self )}>"
     end
     
   end # module BezierPatch  
