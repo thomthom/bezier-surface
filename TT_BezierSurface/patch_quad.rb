@@ -134,6 +134,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points
+      fail_if_invalid()
       #
       # X---X---X---X
       # |   |   |   |
@@ -216,6 +217,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Integer]
     # @since 1.0.0
     def count_mesh_points( subdiv )
+      fail_if_invalid()
       ( subdiv + 1 ) * ( subdiv + 1 )
     end
     
@@ -227,6 +229,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Integer]
     # @since 1.0.0
     def count_mesh_polygons( subdiv )
+      fail_if_invalid()
       subdiv * subdiv * 2
     end
     
@@ -238,6 +241,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [TT::Dimension]
     # @since 1.0.0
     def mesh_points( subdiv, transformation )
+      fail_if_invalid()
       # Transform to active model space
       cpoints = control_points()
       wpts = cpoints.map { |pt| pt.transform( transformation ) }
@@ -258,6 +262,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
+      fail_if_invalid()
       @edgeuses.map { |edgeuse| edgeuse.edge }
     end
     
@@ -268,6 +273,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def get_control_grid_interior( points )
+      fail_if_invalid()
       [
         points.row(1),
         points.row(2),
@@ -284,6 +290,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_internal_grid( subdivs, view )
+      fail_if_invalid()
       # Transform to active model space
       t = view.model.edit_transform
       pts = mesh_points( subdivs, t )
@@ -312,6 +319,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_control_grid_fill( view )
+      fail_if_invalid()
       cpoints = control_points()
       tr = view.model.edit_transform
       # Fill colour
@@ -379,6 +387,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Geom::PolygonMesh]
     # @since 1.0.0
     def add_to_mesh( mesh, subdiv, transformation )
+      fail_if_invalid()
       triangulate = false # (?) Instance variable
       #inversed = false # (?) Instance variable
       inversed = self.reversed # (!)

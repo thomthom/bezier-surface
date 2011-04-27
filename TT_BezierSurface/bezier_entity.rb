@@ -39,6 +39,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def invalidate!
+      fail_if_invalid()
       # Release any reference to other objects.
       @parent = nil
       @linked = {}
@@ -54,6 +55,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def link( entity )
+      fail_if_invalid()
+      
       type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
@@ -79,6 +82,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def unlink( entity )
+      fail_if_invalid()
+      
       type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
@@ -104,6 +109,17 @@ module TT::Plugins::BezierSurfaceTools
       else
         "<Deleted:#{self.class}:#{TT.object_id_hex( self )}>"
       end
+    end
+    
+    private
+    
+    # @return [Nil]
+    # @since 1.0.
+    def fail_if_invalid
+      unless @valid
+        raise TypeError, "Reference to deleted #{self.typename}"
+      end
+      nil
     end
     
   end # class BezierEntity

@@ -42,18 +42,21 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
+      fail_if_invalid()
       @linked[BezierPatch].dup
     end
     
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def end_control_points
+      fail_if_invalid()
       [ @control_points.first, @control_points.last ]
     end
     
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points
+      fail_if_invalid()
       @control_points.dup
     end
     
@@ -62,6 +65,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points=( new_control_points )
+      fail_if_invalid()
       @control_points = new_control_points
       
       BezierVertex.extend_all( new_control_points )
@@ -75,6 +79,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def direction
+      fail_if_invalid()
       p1 = @control_points.first
       p2 = @control_points.last
       p1.vector_to( p2 )
@@ -83,6 +88,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [QuadPatch]
     # @since 1.0.0
     def extrude_quad_patch
+      fail_if_invalid()
       if self.patches.size > 1
         raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
       end
@@ -162,6 +168,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Length]
     # @since 1.0.0
     def length( subdivs )
+      fail_if_invalid()
       total = 0.0
       points = segment( subdivs )
       for index in (0...points.size-1)
@@ -177,6 +184,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def reversed_in?( patch )
+      fail_if_invalid()
       edgeuse = patch.get_edgeuse( self )
       # (?) Take into account reversed patch?
       edgeuse.reversed?
@@ -190,6 +198,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def segment( subdivs, transformation = nil )
+      fail_if_invalid()
       points = TT::Geom3d::Bezier.points( @control_points, subdivs )
       if transformation
         points.map! { |point| point.transform!( transformation ) }
@@ -200,12 +209,14 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def start
+      fail_if_invalid()
       @control_points.first #.extend( TT::Point3d_Ex )
     end
     
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def end
+      fail_if_invalid()
       @control_points.last #.extend( TT::Point3d_Ex )
     end
     
@@ -214,12 +225,14 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def to_a
+      fail_if_invalid()
       @control_points.dup
     end
     
     # @return [Boolean]
     # @since 1.0.0
     def used_by?( patch )
+      fail_if_invalid()
       patch.edgeuses.any? { |edgeuse| edgeuse.edge == self }
     end
     

@@ -61,6 +61,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierEdge]
     # @since 1.0.0
     def set_edge( old_edge, new_edge )
+      fail_if_invalid()
       # Ensure the old edge belongs to this patch.
       unless old_edge.used_by?( self )
         raise ArgumentError, 'Edge not related to Patch.'
@@ -136,6 +137,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def pick_control_points( x, y, view )
+      fail_if_invalid()
       # (?) Return only one point?
       picked = []
       t = view.model.edit_transform
@@ -162,6 +164,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def pick_edges( subdivs, x, y, view )
+      fail_if_invalid()
       # (?) Return only one entity?
       picked = []
       ph = view.pick_helper( x, y )
@@ -179,6 +182,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Integer]
     # @since 1.0.0
     def edge_index( edge )
+      fail_if_invalid()
       edgeuses.each_with_index { |edgeuse, index|
         return index if edge == edgeuse.edge
       }
@@ -190,6 +194,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierEdgeUse]
     # @since 1.0.0
     def get_edgeuse( edge )
+      fail_if_invalid()
       edgeuses.each_with_index { |edgeuse, index|
         return edgeuse if edgeuse.edge == edge
       }
@@ -203,6 +208,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_internal_control_grid( view )
+      fail_if_invalid()
       cpoints = control_points()
       # Transform to active model space
       tr = view.model.edit_transform
