@@ -59,15 +59,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       @control_points.dup
     end
-    
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def positions
-      fail_if_invalid()
-      @control_points.map { |point|
-        point.position
-      }
-    end
+    alias :to_a :control_points
     
     # @param [Array<Geom::Point3d>] new_control_points
     #
@@ -84,6 +76,16 @@ module TT::Plugins::BezierSurfaceTools
       
       @control_points.dup
     end
+    
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def positions
+      fail_if_invalid()
+      @control_points.map { |point|
+        point.position
+      }
+    end
+    #alias :to_a :positions
     
     # @return [Geom::Vector3d]
     # @since 1.0.0
@@ -219,23 +221,14 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def start
       fail_if_invalid()
-      @control_points.first #.extend( TT::Point3d_Ex )
+      @control_points.first
     end
     
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def end
       fail_if_invalid()
-      @control_points.last #.extend( TT::Point3d_Ex )
-    end
-    
-    # Returns an array of 3d points representing control points.
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def to_a
-      fail_if_invalid()
-      @control_points.dup
+      @control_points.last
     end
     
   end # class BezierEdge
