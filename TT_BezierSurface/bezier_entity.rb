@@ -12,6 +12,8 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEntity
     
+    attr_reader( :parent )
+    
     # @since 1.0.0
     def initialize
       @parent = nil

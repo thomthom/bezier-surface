@@ -17,7 +17,6 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEdge < BezierEntity
     
-    attr_reader( :parent )
     attr_accessor( :control_points, :patches )
     
     # @param [Array<Geom::Point3d>] control_points Bezier control points
