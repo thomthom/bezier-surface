@@ -59,7 +59,7 @@ module TT::Plugins::BezierSurfaceTools
       
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
-        raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
+        raise ArgumentError, "Can't link #{self.class.name} with #{entity.class.name}. Invalid entity type."
       end
       # Keep record of each entity type in a hash lookup.
       @links[ type ] ||= []
@@ -86,7 +86,7 @@ module TT::Plugins::BezierSurfaceTools
       
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
-        raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
+        raise ArgumentError, "Can't link #{self.class.name} with #{entity.class.name}. Invalid entity type."
       end
       # Look up the entity type in the hash table.
       @links[ type ] ||= []
