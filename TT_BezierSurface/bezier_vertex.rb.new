@@ -23,12 +23,6 @@ module TT::Plugins::BezierSurfaceTools
       set( *args )
     end
     
-    # @return [String]
-    # @since 1.0.0
-    def typename
-      'BezierVertex'
-    end
-    
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?
@@ -95,7 +89,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BezierVertex < BezierControlPoint
-  
+    
     # @return [Boolean]
     # @since 1.0.0
     def linked_control_points
@@ -109,7 +103,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BezierHandle < BezierControlPoint
-  
+    
     # @return [Boolean]
     # @since 1.0.0
     def is_handle?
@@ -141,7 +135,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BezierInteriorPoint < BezierControlPoint
-  
+    
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?

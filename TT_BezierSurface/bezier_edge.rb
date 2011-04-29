@@ -33,12 +33,6 @@ module TT::Plugins::BezierSurfaceTools
       self.control_points = edge_control_points
     end
     
-    # @return [String]
-    # @since 1.0.0
-    def typename
-      'BezierEdge'
-    end
-    
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches

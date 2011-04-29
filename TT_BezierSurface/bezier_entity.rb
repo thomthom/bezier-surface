@@ -18,12 +18,13 @@ module TT::Plugins::BezierSurfaceTools
       @valid = true
       @linkables = []
       @linked = {}
+      @typename = self.name.split('::').last.freeze
     end
     
     # @return [String]
     # @since 1.0.0
     def typename
-      'BezierEntity'
+      @typename.dup
     end
     
     # @return [Boolean]

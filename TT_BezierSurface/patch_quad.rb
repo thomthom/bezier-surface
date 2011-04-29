@@ -112,14 +112,6 @@ module TT::Plugins::BezierSurfaceTools
       patch
     end
     
-    # Used when writing the bezier data to attribute dictionaries.
-    #
-    # @return [String]
-    # @since 1.0.0
-    def typename
-      'QuadPatch'
-    end
-    
     # Returns the control points for this BezierPatch.
     #
     # @example:

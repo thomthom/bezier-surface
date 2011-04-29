@@ -28,12 +28,6 @@ module TT::Plugins::BezierSurfaceTools
       @parent = @edge.parent # (i) BezierSurface - Not really required?
     end
     
-    # @return [String]
-    # @since 1.0.0
-    def typename
-      'BezierEdgeUse'
-    end
-    
     # @param [BezierEdge] new_edge
     #
     # @return [BezierEdge]
