@@ -37,3 +37,40 @@
 * Check control-point references validity for BezierEdges.
 
 * Option for control point to not always be visible. Occluded by geometry.
+
+
+// FILE FORMAT /////////////////////////////////////////////////////////////////
+
+SURFACE:
+Mesh Type (BezierSurface)
+Mesh Version
+Subdivisions
+
+Points ( Geom::Point3d )
+
+ControlPoints ( Vertex, Handle, Interior )
+- Refers to Points
+
+(?) Make control points store control point properties and 3d data?
+    Two control points should not have the same Point3d reference.
+
+Edges
+- Refer to ControlPoints
+
+NumberOfPoints ( for validation )
+NumberOfEdges ( for validation )
+NumberOfPatches ( for validation )
+
+PATCHES:
+Type
+InteriorPoints
+- Refer to ControlPoints
+EdgeUses
+- Refers to Edges
+NumberOfEdgeUses
+
+BLOCK:
+2 byte    Unsigned Integer      Block ID size
+? bytes   ASCII Characters      Block ID code
+2 byte    Unsigned Integer      Block size
+? bytes   Base64 data           Block data
