@@ -26,7 +26,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( parent, edge_control_points )
       #TT.debug 'BezierEdge.new'
       super()
-      @linkables = [BezierPatch]
+      @linked[ BezierPatch ] = []
       @parent = parent # BezierSurface
       @patches = []
       @control_points = []

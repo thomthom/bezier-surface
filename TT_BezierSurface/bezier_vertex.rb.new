@@ -17,9 +17,8 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( parent, *args )
       super()
       @parent = parent
-      @linkable = [ BezierEdge, BezierPatch ]
-      @linked[BezierEdge] = []
-      @linked[BezierPatch] = []
+      @linked[ BezierEdge ] = []
+      @linked[ BezierPatch ] = []
       set( *args )
     end
     
@@ -41,14 +40,14 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def edges
       fail_if_invalid()
-      @linked[BezierEdge].dup
+      @linked[ BezierEdge ].dup
     end
     
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
       fail_if_invalid()
-      @linked[BezierPatch].dup
+      @linked[ BezierPatch ].dup
     end
     
     # @return [Geom::Point3d]

@@ -16,7 +16,6 @@ module TT::Plugins::BezierSurfaceTools
     def initialize
       @parent = nil
       @valid = true
-      @linkables = []
       @linked = {}
       @typename = self.name.split('::').last.freeze
     end
@@ -58,7 +57,7 @@ module TT::Plugins::BezierSurfaceTools
     def link( entity )
       fail_if_invalid()
       
-      type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
+      type = @linked.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
@@ -85,7 +84,7 @@ module TT::Plugins::BezierSurfaceTools
     def unlink( entity )
       fail_if_invalid()
       
-      type = @linkables.find { |acceptable| entity.is_a?( acceptable ) }
+      type = @linked.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
