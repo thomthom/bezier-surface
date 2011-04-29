@@ -270,7 +270,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierPatch]
     # @since 1.0.0
     def add_patch( patch )
-      raise ArgumentError, 'Not a BezierPatch.' unless patch.is_a?(BezierPatch)
+      raise ArgumentError, 'Not a BezierPatch.' unless patch.is_a?( BezierPatch )
       @patches << patch
       patch
     end
@@ -695,7 +695,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def inspect
       id = TT.object_id_hex( self )
-      "<#{self.class}:#{id} - Subdivs: #{@subdivs} - Patches: #{@patches.size}>"
+      "#<#{self.class.name}:#{id} - Subdivs: #{@subdivs} - Patches: #{@patches.size}>"
     end
     
     private

@@ -61,6 +61,7 @@ module TT::Plugins::BezierSurfaceTools
         select_tool( tool )
       else
         # Invalid instance or incompatible version
+        puts 'Invalid Bezier Surface or incompatible version.'
         model.close_active # (?)
       end
       true
@@ -73,6 +74,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def select_tool( tool )
+      # (!) Some times other tools, for instance viewport tools, push other
+      #     tools into the stack. This should be accounted for so we get a 
+      #     correctly working tool stack.
       TT.debug( 'BezierSurfaceEditor.select_tool' )
       if @active_tool
         TT.debug( '> Pop active tool...' )
@@ -91,6 +95,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def end_session
+      # (!) Ensure all tools are popped. Some times other tools might have
+      #     pushed a tool into the stack.
       TT.debug( 'BezierSurfaceEditor.end_session' )
       if @active
         TT.debug( '> Ending active tool...' )
@@ -246,7 +252,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [String]
     # @since 1.0.0
     def inspect
-      "#<#{self.class}:#{self.object_id}>"
+      "#<#{self.class.name}:#{TT.object_id_hex( self )}>"
     end
     
     # Creates and displays the bezier surface editing toolbar.

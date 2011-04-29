@@ -115,9 +115,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def inspect
       if @valid
-        "<#{self.class.name}:#{TT.object_id_hex( self )}>"
+        "#<#{self.class.name}:#{TT.object_id_hex( self )}>"
       else
-        "<Deleted:#{self.class.name}:#{TT.object_id_hex( self )}>"
+        "#<Deleted:#{self.class.name}:#{TT.object_id_hex( self )}>"
       end
     end
     
