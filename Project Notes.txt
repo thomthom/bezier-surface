@@ -23,6 +23,17 @@
 * Automatic or Manual interior
 
 
+// TO-DO ///////////////////////////////////////////////////////////////////////
+
+* Implement BezierControlPoints and its subclasses.
+* Write a new data format for attributes where each data chunk is tagged by ID.
+* Selection tool
+* Manipulator gizmo
+* Properties window ( Entity / Selection info )
+...
+Profit?
+ 
+
 // NOTES ///////////////////////////////////////////////////////////////////////
 
 * GUID verification check (of bezier surface group).
@@ -39,7 +50,7 @@
 * Option for control point to not always be visible. Occluded by geometry.
 
 
-// FILE FORMAT /////////////////////////////////////////////////////////////////
+// DATA FORMAT /////////////////////////////////////////////////////////////////
 
 SURFACE:
 Mesh Type (BezierSurface)
