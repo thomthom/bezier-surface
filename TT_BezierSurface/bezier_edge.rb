@@ -26,7 +26,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( parent, edge_control_points )
       #TT.debug 'BezierEdge.new'
       super()
-      @linked[ BezierPatch ] = []
+      @links[ BezierPatch ] = []
       @parent = parent # BezierSurface
       @patches = []
       @control_points = []
@@ -37,7 +37,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def patches
       fail_if_invalid()
-      @linked[BezierPatch].dup
+      @links[BezierPatch].dup
     end
     
     # @return [Array<Geom::Point3d>]

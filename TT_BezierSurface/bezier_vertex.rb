@@ -15,15 +15,15 @@ module TT::Plugins::BezierSurfaceTools
     include TT::Point3d_Ex
     
     def edges
-      @linked ||= {}
-      @linked[BezierEdge] ||= []
-      @linked[BezierEdge].dup
+      @links ||= {}
+      @links[BezierEdge] ||= []
+      @links[BezierEdge].dup
     end
     
     def patches
-      @linked ||= {}
-      @linked[BezierPatch] ||= []
-      @linked[BezierPatch].dup
+      @links ||= {}
+      @links[BezierPatch] ||= []
+      @links[BezierPatch].dup
     end
     
     # Assosiates an entity with the current BezierEdge. Use to keep track of
@@ -38,9 +38,9 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug "BezierVertex.link (#{self.inspect})"
       #TT.debug entity
       if entity.is_a?( BezierPatch ) || entity.is_a?( BezierEdge )
-        @linked ||= {}
-        @linked[ entity.class ] ||= []
-        collection = @linked[ entity.class ]
+        @links ||= {}
+        @links[ entity.class ] ||= []
+        collection = @links[ entity.class ]
         unless collection.include?( entity )
           collection << entity
           #TT.debug "Added! (#{collection.size})"
@@ -60,9 +60,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def unlink( entity )
       if entity.is_a?( BezierPatch ) || entity.is_a?( BezierEdge )
-        @linked ||= {}
-        @linked[ entity.class ] ||= []
-        collection = @linked[ entity.class ]
+        @links ||= {}
+        @links[ entity.class ] ||= []
+        collection = @links[ entity.class ]
         if collection.include?( entity )
           collection.delete( entity )
         else

@@ -16,8 +16,8 @@ module TT::Plugins::BezierSurfaceTools
     def initialize
       @parent = nil
       @valid = true
-      @linked = {}
-      @typename = self.name.split('::').last.freeze
+      @links = {}
+      @typename = self.class.name.split('::').last.freeze
     end
     
     # @return [String]
@@ -42,7 +42,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       # Release any reference to other objects.
       @parent = nil
-      @linked = {}
+      @links = {}
       # The entity is then flagged as invalid.
       @valid = false
     end
@@ -57,13 +57,13 @@ module TT::Plugins::BezierSurfaceTools
     def link( entity )
       fail_if_invalid()
       
-      type = @linked.keys.find { |acceptable| entity.is_a?( acceptable ) }
+      type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
       # Keep record of each entity type in a hash lookup.
-      @linked[ type ] ||= []
-      collection = @linked[ type ]
+      @links[ type ] ||= []
+      collection = @links[ type ]
       # Ensure there's only one entry for each entity.
       # (?) Should the Set class be used? Or does it not give enough performance
       # gain for small arrays?
@@ -84,13 +84,13 @@ module TT::Plugins::BezierSurfaceTools
     def unlink( entity )
       fail_if_invalid()
       
-      type = @linked.keys.find { |acceptable| entity.is_a?( acceptable ) }
+      type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class} with #{entity.class}. Invalid entity type."
       end
       # Look up the entity type in the hash table.
-      @linked[ type ] ||= []
-      collection = @linked[ type ]
+      @links[ type ] ||= []
+      collection = @links[ type ]
       
       if collection.include?( entity )
         collection.delete( entity )
@@ -105,7 +105,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def used_by?( bezier_entity )
       fail_if_invalid()
-      for type, entities in @linked
+      for type, entities in @links
         return true if entities.include?( bezier_entity )
       end
       false
