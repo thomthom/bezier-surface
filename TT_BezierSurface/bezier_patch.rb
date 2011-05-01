@@ -11,7 +11,7 @@ module TT::Plugins::BezierSurfaceTools
   # Mix-in module with core methods used and required by all types of patches.
   #
   # @example
-  #  class QuadPatch
+  #  class QuadPatch < BezierEntity
   #    include BezierPatch
   #    # ...
   #  end
@@ -19,7 +19,6 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   module BezierPatch
     
-    attr_reader( :parent )
     attr_accessor( :reversed ) # (!) Not currently implemented!
     attr_accessor( :edgeuses, :interior_points )
     
