@@ -39,6 +39,84 @@ module TT::Plugins::BezierSurfaceTools
       @links[BezierPatch].dup
     end
     
+    # @return [Array<BezierVertex>]
+    # @since 1.0.0
+    def vertices
+      fail_if_invalid()
+      [ @control_points.first, @control_points.last ]
+    end
+    
+    # @return [Array<BezierHandle>]
+    # @since 1.0.0
+    def handles
+      fail_if_invalid()
+      @control_points[1,2]
+    end
+    
+    # @return [BezierVertex]
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def start
+      fail_if_invalid()
+      @control_points.first
+    end
+    
+    # @return [BezierVertex]
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def end
+      fail_if_invalid()
+      @control_points.last
+    end
+    
+    # @return [BezierHandle]
+    # @since 1.0.0
+    def start_handle
+      fail_if_invalid()
+      @control_points[1]
+    end
+    
+    # @return [BezierHandle]
+    # @since 1.0.0
+    def end_handle
+      fail_if_invalid()
+      @control_points[2]
+    end
+    
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def direction
+      fail_if_invalid()
+      p1 = @control_points.first
+      p2 = @control_points.last
+      p1.vector_to( p2 )
+    end
+    
+    # @return [Length]
+    # @since 1.0.0
+    def length( subdivs )
+      fail_if_invalid()
+      total = 0.0
+      points = segment( subdivs )
+      for index in (0...points.size-1)
+        pt1 = points[index]
+        pt2 = points[index+1]
+        total += pt1.distance( pt2 )
+      end
+      total.to_l
+    end
+    
+    # @param [BezierPatch] subdivs
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def reversed_in?( patch )
+      fail_if_invalid()
+      edgeuse = patch.get_edgeuse( self )
+      # (?) Take into account reversed patch?
+      edgeuse.reversed?
+    end
+    
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def end_control_points
@@ -80,13 +158,20 @@ module TT::Plugins::BezierSurfaceTools
     end
     #alias :to_a :positions
     
-    # @return [Geom::Vector3d]
+    # Returns an array of 3d points representing the bezier curve with the given
+    # sub-division.
+    #
+    # @param [Integer] subdivs
+    #
+    # @return [Array<Geom::Point3d>]
     # @since 1.0.0
-    def direction
+    def segment( subdivs, transformation = nil )
       fail_if_invalid()
-      p1 = @control_points.first
-      p2 = @control_points.last
-      p1.vector_to( p2 )
+      points = TT::Geom3d::Bezier.points( @control_points, subdivs )
+      if transformation
+        points.map! { |point| point.transform!( transformation ) }
+      end
+      points
     end
     
     # @return [QuadPatch]
@@ -169,61 +254,6 @@ module TT::Plugins::BezierSurfaceTools
       new_patch
     end
 
-    # @return [Length]
-    # @since 1.0.0
-    def length( subdivs )
-      fail_if_invalid()
-      total = 0.0
-      points = segment( subdivs )
-      for index in (0...points.size-1)
-        pt1 = points[index]
-        pt2 = points[index+1]
-        total += pt1.distance( pt2 )
-      end
-      total.to_l
-    end
-    
-    # @param [BezierPatch] subdivs
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def reversed_in?( patch )
-      fail_if_invalid()
-      edgeuse = patch.get_edgeuse( self )
-      # (?) Take into account reversed patch?
-      edgeuse.reversed?
-    end
-    
-    # Returns an array of 3d points representing the bezier curve with the given
-    # sub-division.
-    #
-    # @param [Integer] subdivs
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def segment( subdivs, transformation = nil )
-      fail_if_invalid()
-      points = TT::Geom3d::Bezier.points( @control_points, subdivs )
-      if transformation
-        points.map! { |point| point.transform!( transformation ) }
-      end
-      points
-    end
-    
-    # @return [Geom::Vector3d]
-    # @since 1.0.0
-    def start
-      fail_if_invalid()
-      @control_points.first
-    end
-    
-    # @return [Geom::Vector3d]
-    # @since 1.0.0
-    def end
-      fail_if_invalid()
-      @control_points.last
-    end
-    
   end # class BezierEdge
 
 end # module
