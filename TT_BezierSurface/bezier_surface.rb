@@ -375,7 +375,7 @@ module TT::Plugins::BezierSurfaceTools
       view.line_stipple = ''
       view.drawing_color = CLR_CTRL_GRID
       for edge in edges
-        screen_points = edge.control_points.map { |point|
+        screen_points = edge.positions.map { |point|
           view.screen_coords( point.transform(tr) )
         }
         view.draw2d( GL_LINE_STRIP, screen_points )
@@ -419,7 +419,7 @@ module TT::Plugins::BezierSurfaceTools
 
       tr = view.model.edit_transform
       for edge in edges
-        world_points = edge.control_points.map { |point|
+        world_points = edge.positions.map { |point|
           point.transform(tr)
         }
         
@@ -433,8 +433,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       for patch in patches
-        patch.interior_points.each { |point|
-          internal_points << point.transform(tr)
+        patch.interior_points.each { |control_point|
+          internal_points << control_point.position.transform(tr)
         }
       end
       
@@ -552,7 +552,7 @@ module TT::Plugins::BezierSurfaceTools
       view.line_width = 2
       # Prepare points
       #unselected = (control_points - selected).map { |pt| pt.transform(tr) }
-      all_points = control_points.map { |pt| pt.transform(tr) }
+      all_points = control_points.map { |pt| pt.position.transform(tr) }
       selected = selected.map { |pt| pt.transform(tr) }
       # Drawing
       #unless unselected.empty?
@@ -788,12 +788,16 @@ module TT::Plugins::BezierSurfaceTools
       ### Points
       point_data_list = []    # Flattened list of X,Y,Z co-ordinates
       point_indexes = {}      # Lookup hash for quick indexing
-      control_points.each_with_index { |point, index|
+      control_points.each_with_index { |control_point, index|
+        point = control_point.position
         point_data_list << point.x
         point_data_list << point.y
         point_data_list << point.z
-        point_indexes[ point ] = index
+        point_indexes[ control_point ] = index
       }
+      puts "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
+      TT.debug control_points
+      TT.debug point_indexes
       # Double-precision float, network (big-endian) byte order
       binary_point_data = point_data_list.pack('G*')
       binary_point_data = TT::Binary.encode64( binary_point_data )
@@ -802,11 +806,15 @@ module TT::Plugins::BezierSurfaceTools
       ### Edges
       edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
       edge_indexes = {}   # Lookup hash for quick indexing
+      TT.debug '> Edges'
       edges.each_with_index { |edge, index|
-        indexes = edge.control_points.map { |point| point_indexes[point] }
+        TT.debug edge.control_points
+        indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
         edge_data_list.concat( indexes )
         edge_indexes[ edge ] = index
       }
+      TT.debug '> ---'
+      TT.debug edge_data_list
       binary_edge_data = edge_data_list.pack('i*') # Integer
       binary_edge_data = TT::Binary.encode64( binary_edge_data )
       d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )

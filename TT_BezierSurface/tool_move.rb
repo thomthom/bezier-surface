@@ -85,13 +85,13 @@ module TT::Plugins::BezierSurfaceTools
       @mouse_over_vertex = false if @mouse_over_vertex.empty?
       if @mouse_over_vertex
         t = view.model.edit_transform
-        pt = @mouse_over_vertex[0].transform(t)
+        pt = @mouse_over_vertex[0].position.transform(t)
         @ip_mouse = Sketchup::InputPoint.new( pt )
       else
         if @ip_start.valid?
-          @ip_mouse.pick(view, x, y, @ip_start)
+          @ip_mouse.pick( view, x, y, @ip_start )
         else
-          @ip_mouse.pick(view, x, y)
+          @ip_mouse.pick( view, x, y )
         end
       end
       
@@ -102,7 +102,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onLButtonDown(flags, x, y, view)
-      @ip_start.copy!(@ip_mouse)
+      @ip_start.copy!( @ip_mouse )
       @start_over_vertex = @mouse_over_vertex
     end
     
@@ -119,6 +119,7 @@ module TT::Plugins::BezierSurfaceTools
         if offset_vector.valid?
           # Transform selected vertices, or if there is no selection move the
           # vertices the user initially clicked on.
+          # (!) Update
           if @editor.selection.empty?
             vertices = ( @start_over_vertex ) ? @start_over_vertex : []
           else
@@ -130,7 +131,7 @@ module TT::Plugins::BezierSurfaceTools
             pt.transform!( local_transform )
           }
           
-          @editor.model.start_operation('Move Control Points')
+          @editor.model.start_operation( 'Move Control Points' )
           @surface.update( @editor.model.edit_transform )
           @editor.model.commit_operation
           #positions = @surface.mesh_points( @preview, @editor.model.edit_transform )

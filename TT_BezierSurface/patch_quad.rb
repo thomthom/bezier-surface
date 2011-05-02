@@ -30,6 +30,7 @@ module TT::Plugins::BezierSurfaceTools
       }
         raise ArgumentError, 'points must be Point3d objects.'
       end
+      #TT::Point3d.extend_all( points )
       
       # Init superclass. (Extends points into Point3d_Ex.)
       super
@@ -46,9 +47,9 @@ module TT::Plugins::BezierSurfaceTools
       #
       #  x --> X - Rows
       #
-      # +--->---+
+      # +---<---+
       # |   2   |
-      # ^3     1^
+      # v3     1^
       # |   0   |
       # +--->---+
       #   
@@ -73,13 +74,24 @@ module TT::Plugins::BezierSurfaceTools
       edgeuse = BezierEdgeUse.new( self, edge, false )
       @edgeuses << edgeuse
       
+      # (!) Hack - clean up!
+      e0, e1, e2, e3 = edges
+      e1.start = e0.end
+      e1.end = e2.start
+      e3.start = e2.end
+      e3.end = e0.start
+      
       # Interior patch points - indirectly controlled by the edges.
       @interior_points = TT::Dimension.new( [
-        points[5],
-        points[6],
-        points[9],
-        points[10]
+        BezierInteriorPoint.new( parent, points[5] ),
+        BezierInteriorPoint.new( parent, points[6] ),
+        BezierInteriorPoint.new( parent, points[9] ),
+        BezierInteriorPoint.new( parent, points[10] )
       ], 2, 2 )
+      
+      for point in control_points
+        point.link( self )
+      end
     end
     
     # @return [QuadPatch]
@@ -202,6 +214,15 @@ module TT::Plugins::BezierSurfaceTools
       points
     end
     
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def positions
+      fail_if_invalid()
+      control_points.map { |control_point|
+        control_point.position
+      }
+    end
+    
     # Accurate calculation of the number of vertices in the mesh.
     #
     # @param [Integer] subdivs
@@ -235,7 +256,7 @@ module TT::Plugins::BezierSurfaceTools
     def mesh_points( subdiv, transformation )
       fail_if_invalid()
       # Transform to active model space
-      cpoints = control_points()
+      cpoints = positions()
       wpts = cpoints.map { |pt| pt.transform( transformation ) }
       # Calculate Bezier mesh points.
       pass1 = TT::Dimension.new( subdiv+1, 4 )
@@ -312,7 +333,6 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw_control_grid_fill( view )
       fail_if_invalid()
-      cpoints = control_points()
       tr = view.model.edit_transform
       # Fill colour
       if TT::SketchUp.support?( TT::SketchUp::COLOR_GL_POLYGON )
@@ -320,7 +340,7 @@ module TT::Plugins::BezierSurfaceTools
         fill.alpha = 32
         view.drawing_color = fill
         
-        pts3d = cpoints.map { |pt| pt.transform(tr) }       
+        pts3d = positions().map { |pt| pt.transform(tr) }       
         quads = pts3d.to_a.values_at(
            0, 1, 5, 4,
            1, 2, 6, 5,
