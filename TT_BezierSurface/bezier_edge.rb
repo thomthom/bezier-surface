@@ -17,8 +17,6 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEdge < BezierEntity
     
-    attr_accessor( :control_points, :patches )
-    
     # @param [BezierSurface] parent
     # @param [Array<Geom::Point3d>] points Bezier control points
     #
@@ -28,8 +26,14 @@ module TT::Plugins::BezierSurfaceTools
       super()
       @links[ BezierPatch ] = []
       @parent = parent # BezierSurface
-      @patches = []
-      @control_points = []
+      @control_points = [
+        BezierVertex.new( @parent, ORIGIN.clone ),
+        BezierHandle.new( @parent, ORIGIN.clone ),
+        BezierHandle.new( @parent, ORIGIN.clone ),
+        BezierVertex.new( @parent, ORIGIN.clone )
+      ].each { |control_point|
+        control_point.link( self )
+      }
       self.control_points = points
     end
     
@@ -65,14 +69,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def start=( new_vertex )
       fail_if_invalid()
-      unless new_vertex.is_a?( BezierVertex )
-        raise ArgumentError, 'Not a BezierVertex'
-      end
-      start_handle.unlink( @control_points[0] )
-      @control_points[0].invalidate!
-      @control_points[0] = new_vertex
-      start_handle.link( new_vertex )
-      new_vertex.link( self )
+      old_vertex = @control_points[0]
+      @control_points[0] = replace_vertex( old_vertex, new_vertex )
       new_vertex
     end
     
@@ -87,13 +85,30 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def end=( new_vertex )
       fail_if_invalid()
+      old_vertex = @control_points[3]
+      @control_points[3] = replace_vertex( old_vertex, new_vertex )
+      new_vertex
+    end
+    
+    # @private
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def replace_vertex( old_vertex, new_vertex )
       unless new_vertex.is_a?( BezierVertex )
-        raise ArgumentError, 'Not a BezierVertex'
+        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
       end
-      end_handle.unlink( @control_points[3] )
-      @control_points[3].invalidate!
-      @control_points[3] = new_vertex
-      end_handle.link( new_vertex )
+      # Transfer links from old vertex to new
+      for handle in old_vertex.handles
+        # Add reference to new
+        new_vertex.link( handle )
+        handle.link( new_vertex )
+        # Remove reference to old vertex
+        handle.unlink( old_vertex )
+      end
+      # Kill old vertex
+      old_vertex.invalidate!
+      old_vertex = new_vertex
+      # Link new vertex to current edge
       new_vertex.link( self )
       new_vertex
     end
@@ -154,6 +169,8 @@ module TT::Plugins::BezierSurfaceTools
     end
     alias :to_a :control_points
     
+    # (?) Should this be positions= ?
+    #
     # @param [Array<Geom::Point3d>] new_control_points
     #
     # @return [Array<Geom::Point3d>]
@@ -161,18 +178,11 @@ module TT::Plugins::BezierSurfaceTools
     def control_points=( new_control_points )
       fail_if_invalid()
       TT::Point3d.extend_all( new_control_points )
-      @control_points = [
-        BezierVertex.new( @parent, new_control_points[0] ),
-        BezierHandle.new( @parent, new_control_points[1] ),
-        BezierHandle.new( @parent, new_control_points[2] ),
-        BezierVertex.new( @parent, new_control_points[3] )
-      ].each { |cpt|
-        cpt.link( self )
+      # Update positions
+      new_control_points.each_with_index { |point, index|
+        #@control_points[ index ].position = point
+        @control_points[ index ].set( point )
       }
-      self.start_handle.link( self.start )
-      self.start.link( self.start_handle )
-      self.end_handle.link( self.end )
-      self.end.link( self.end_handle )
       @control_points.dup
     end
     
