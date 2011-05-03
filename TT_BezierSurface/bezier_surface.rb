@@ -226,6 +226,7 @@ module TT::Plugins::BezierSurfaceTools
       end # patches
       
       TT.debug( "> Loaded in #{Time.now-debug_time_start}s" )
+      #TT.debug self.control_points
       self
     end
     
@@ -795,9 +796,11 @@ module TT::Plugins::BezierSurfaceTools
         point_data_list << point.z
         point_indexes[ control_point ] = index
       }
-      puts "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
+      TT.debug "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
       TT.debug control_points
+      TT.debug '---'
       TT.debug point_indexes
+      TT.debug '---'
       # Double-precision float, network (big-endian) byte order
       binary_point_data = point_data_list.pack('G*')
       binary_point_data = TT::Binary.encode64( binary_point_data )
@@ -864,7 +867,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def update_mesh( subdivs, transformation )
-      TT.debug( 'Surface.update_mesh' )
+      TT.debug( 'BezierSurface.update_mesh' )
       d = TT::Instance.definition( @instance )
       points = count_mesh_points( subdivs )
       polygons = count_mesh_polygons( subdivs )
