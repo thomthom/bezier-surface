@@ -75,11 +75,7 @@ module TT::Plugins::BezierSurfaceTools
       @edgeuses << edgeuse
       
       # (!) Hack - clean up!
-      e0, e1, e2, e3 = edges
-      e1.start = e0.end
-      e1.end = e2.start
-      e3.start = e2.end
-      e3.end = e0.start
+      merge_vertices()
       
       # Interior patch points - indirectly controlled by the edges.
       @interior_points = TT::Dimension.new( [
@@ -94,9 +90,24 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # @private (protected)
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def merge_vertices
+      # (!) Hack - clean up!
+      e0, e1, e2, e3 = edges
+      e1.start = e0.end
+      e1.end = e2.start
+      e3.start = e2.end
+      e3.end = e0.start
+      nil
+    end
+    
     # @return [QuadPatch]
     # @since 1.0.0
     def self.restore( surface, edgeuses, interior_points, reversed )
+      TT.debug 'QuadPatch.restore'
       # Validate
       unless surface.is_a?( BezierSurface )
         raise ArgumentError, 'Argument not a BezierSurface.'
@@ -121,6 +132,7 @@ module TT::Plugins::BezierSurfaceTools
         edgeuse.edge.link( patch )
         edgeuse.reversed = prototype.reversed?
       }
+      patch.merge_vertices
       patch
     end
     
@@ -184,13 +196,13 @@ module TT::Plugins::BezierSurfaceTools
       points.concat( e0 )
       # Row 2
       points << e3[2]
-      points << interior_points[0]
-      points << interior_points[1]
+      points << @interior_points[0]
+      points << @interior_points[1]
       points << e1[1]
       # Row 3
       points << e3[1]
-      points << interior_points[2]
-      points << interior_points[3]
+      points << @interior_points[2]
+      points << @interior_points[3]
       points << e1[2]
       # Row 4
       points.concat( e2.reverse )
