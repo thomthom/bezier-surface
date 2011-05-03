@@ -150,8 +150,8 @@ module TT::Plugins::BezierSurfaceTools
       aperture = VERTEX_SIZE * 2
       ph = view.pick_helper( x, y, aperture )
       ph.init( x, y, aperture )
-      for pt in positions()
-        picked << pt if ph.test_point( pt.transform(t) )
+      for cpt in control_points()
+        picked << cpt if ph.test_point( cpt.position.transform(t) )
       end
       #( picked.empty? ) ? nil : picked
       picked
