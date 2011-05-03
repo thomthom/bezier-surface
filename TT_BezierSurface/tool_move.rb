@@ -107,6 +107,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onLButtonUp(flags, x, y, view)
+      TT.debug 'MoveTool.onLButtonUp'
       # Get key modifier controlling how the selection should be modified.
       # Using standard SketchUp selection modifier keys.
       key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
@@ -126,10 +127,21 @@ module TT::Plugins::BezierSurfaceTools
             vertices = @editor.selection
           end
           
+          #TT.debug @surface.control_points
+          #for edge in @surface.edges
+          #  TT.debug edge.control_points
+          #end
+          
           local_transform = @editor.local_transformation( offset_vector )
-          vertices.each { |pt|
-            pt.transform!( local_transform )
+          vertices.each { |cpt|
+            cpt.position.transform!( local_transform )
           }
+          
+          #TT.debug '---'
+          #TT.debug @surface.control_points
+          #for edge in @surface.edges
+          #  TT.debug edge.control_points
+          #end
           
           @editor.model.start_operation( 'Move Control Points' )
           @surface.update( @editor.model.edit_transform )
