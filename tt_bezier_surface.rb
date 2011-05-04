@@ -151,7 +151,7 @@ module TT::Plugins::BezierSurfaceTools
         m.add_item('Update') { }
         m.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
         m.add_separator
-        m.add_item('Convert to Editable Mesh') { }
+        m.add_item('Convert to Editable Mesh') { self.convert_selected_to_mesh }
       end
     }
     
