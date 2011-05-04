@@ -35,6 +35,7 @@ module TT::Plugins::BezierSurfaceTools
     def edge=( new_edge )
       fail_if_invalid()
       @edge.unlink( @patch )
+      #@edge.invalidate!
       new_edge.link( @patch )
       @edge = new_edge
       new_edge

@@ -17,26 +17,31 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEdge < BezierEntity
     
-    attr_accessor( :control_points, :patches )
-    
-    # @param [Array<Geom::Point3d>] control_points Bezier control points
+    # @param [BezierSurface] parent
+    # @param [Array<Geom::Point3d>] points Bezier control points
     #
     # @since 1.0.0
-    def initialize( parent, edge_control_points )
+    def initialize( parent, points )
       #TT.debug 'BezierEdge.new'
       super()
       @links[ BezierPatch ] = []
       @parent = parent # BezierSurface
-      @patches = []
-      @control_points = []
-      self.control_points = edge_control_points
+      @control_points = [
+        BezierVertex.new( @parent, ORIGIN.clone ),
+        BezierHandle.new( @parent, ORIGIN.clone ),
+        BezierHandle.new( @parent, ORIGIN.clone ),
+        BezierVertex.new( @parent, ORIGIN.clone )
+      ].each { |control_point|
+        control_point.link( self )
+      }
+      self.control_points = points
     end
     
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
       fail_if_invalid()
-      @links[BezierPatch].dup
+      @links[ BezierPatch ].dup
     end
     
     # @return [Array<BezierVertex>]
@@ -54,7 +59,6 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @return [BezierVertex]
-    # @return [Geom::Point3d]
     # @since 1.0.0
     def start
       fail_if_invalid()
@@ -62,11 +66,78 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @return [BezierVertex]
-    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def start=( new_vertex )
+      fail_if_invalid()
+      old_vertex = @control_points[0]
+      @control_points[0] = replace_vertex( old_vertex, new_vertex )
+      new_vertex
+    end
+    
+    # @return [BezierVertex]
     # @since 1.0.0
     def end
       fail_if_invalid()
       @control_points.last
+    end
+    
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def end=( new_vertex )
+      fail_if_invalid()
+      old_vertex = @control_points[3]
+      @control_points[3] = replace_vertex( old_vertex, new_vertex )
+      new_vertex
+    end
+    
+    # @protected
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def replace_vertex( old_vertex, new_vertex )
+      unless new_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
+      end
+      # Transfer links from old vertex to new
+      for handle in old_vertex.handles
+        # Add reference to new
+        new_vertex.link( handle )
+        handle.link( new_vertex )
+        # Remove reference to old vertex
+        handle.unlink( old_vertex )
+      end
+      # Other edges needs to update their vertex references
+      for edge in old_vertex.edges
+        next if edge == self
+        new_vertex.link( edge )
+        edge.set_vertex!( old_vertex, new_vertex )
+      end
+      # Transfer paatch references
+      for patch in old_vertex.patches
+        new_vertex.link( patch )
+      end
+      # Kill old vertex
+      old_vertex.invalidate!
+      # Link new vertex to current edge
+      new_vertex.link( self )
+      new_vertex
+    end
+    
+    # @protected
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def set_vertex!( old_vertex, new_vertex )
+      unless new_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
+      end
+      # Transfer links from old vertex to new
+      if @control_points[0] == old_vertex
+        @control_points[0] = new_vertex
+      elsif @control_points[3] == old_vertex
+        @control_points[3] = new_vertex
+      else
+        raise ArgumentError, "Vertex not connected to edge. (#{old_vertex})"
+      end
+      new_vertex
     end
     
     # @return [BezierHandle]
@@ -87,8 +158,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def direction
       fail_if_invalid()
-      p1 = @control_points.first
-      p2 = @control_points.last
+      p1 = @control_points.first.position
+      p2 = @control_points.last.position
       p1.vector_to( p2 )
     end
     
@@ -119,32 +190,26 @@ module TT::Plugins::BezierSurfaceTools
     
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
-    def end_control_points
-      fail_if_invalid()
-      [ @control_points.first, @control_points.last ]
-    end
-    
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
     def control_points
       fail_if_invalid()
       @control_points.dup
     end
     alias :to_a :control_points
     
+    # (?) Should this be positions= ?
+    #
     # @param [Array<Geom::Point3d>] new_control_points
     #
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points=( new_control_points )
       fail_if_invalid()
-      @control_points = new_control_points
-      
-      BezierVertex.extend_all( new_control_points )
-      for point in new_control_points
-        point.link( self )
-      end
-      
+      TT::Point3d.extend_all( new_control_points )
+      # Update positions
+      new_control_points.each_with_index { |point, index|
+        #@control_points[ index ].position = point
+        @control_points[ index ].set( point )
+      }
       @control_points.dup
     end
     
@@ -167,7 +232,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def segment( subdivs, transformation = nil )
       fail_if_invalid()
-      points = TT::Geom3d::Bezier.points( @control_points, subdivs )
+      points = TT::Geom3d::Bezier.points( self.positions, subdivs )
       if transformation
         points.map! { |point| point.transform!( transformation ) }
       end
@@ -205,9 +270,9 @@ module TT::Plugins::BezierSurfaceTools
       # </debug>
       
       # Cache the point for quicker access.
-      pts = self.control_points
-      pts_prev = prev_edge.control_points
-      pts_next = next_edge.control_points
+      pts = self.positions
+      pts_prev = prev_edge.positions
+      pts_next = next_edge.positions
       
       # Sort the points in a continuous predictable order.
       pts.reverse! if edge_reversed
@@ -246,7 +311,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Add the patch to the surface and regenerate the mesh.
       model = Sketchup.active_model
-      model.start_operation('Add Quad Patch', true)
+      model.start_operation( 'Add Quad Patch', true )
       surface.add_patch( new_patch )
       surface.update( model.edit_transform )
       model.commit_operation

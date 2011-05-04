@@ -23,19 +23,20 @@ module TT::Plugins::BezierSurfaceTools
     attr_accessor( :edgeuses, :interior_points )
     
     def initialize( parent, points )
-      TT.debug 'BezierPatch.new'
+      #TT.debug 'BezierPatch.new'
       
       super()
       
-      BezierVertex.extend_all( points )
-      
-      for point in points
-        point.link( self )
-      end
+      #BezierVertex.extend_all( points )
+      TT::Point3d.extend_all( points )
       
       @parent = parent # BezierSurface
       @reversed = false
       @edgeuses = []
+      
+      #for point in control_points
+      #  point.link( self )
+      #end
     end
     
     # Subclasses must implement these methods:
@@ -90,38 +91,44 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug( 'BezierPatch.set_edge' )
       #TT.debug( "> #{old_edge.start == new_edge.start}" )
       #TT.debug( "> #{old_edge.start == new_edge.end}" )
-      if old_edge.start == new_edge.end
+      if old_edge.start.position == new_edge.end.position
         TT.debug( '> Reversed!' )
         edgeuse.reversed = !edgeuse.reversed?
+        
+        new_start = new_edge.end
+        new_end = new_edge.start
+      else
+        new_start = new_edge.start
+        new_end = new_edge.end
       end
       
       # (!) Update control points of connected edges.
-      connected_edges = old_edge.start.edges + old_edge.end.edges
-      TT.debug "Connected Edges: #{connected_edges.size}"
-      TT.debug connected_edges.join("\n")
+      # Update the vertices of self with the vertices of the new edge.
       
-      for edge in connected_edges
-        next if edge == new_edge
-        TT.debug "> Connected Edge: #{edge}"
-        new_points = edge.control_points
-        
-        for connected_point in edge.end_control_points          
-          if connected_point == new_edge.start
-            TT.debug "> Merge Start Point with #{connected_point}"
-            new_points[0] = new_edge.start
-          elsif connected_point == new_edge.end
-            TT.debug "> Merge End Point with #{connected_point}"
-            new_points[3] = new_edge.end
-          end
-          edge.control_points = new_points
-        end # for edge.end_control_points
-        
-      end # for connected_edges
+      old_start = old_edge.start
+      for edge in old_start.edges
+        next if edge == old_edge
+        if edge.start == old_start
+          edge.start = new_start
+        else 
+          edge.end = new_start
+        end
+      end
       
-      #for point in new_points
-      #  point.link( new_edge )
-      #end
-      #new_edge.control_points = new_points
+      old_end = old_edge.end
+      for edge in old_end.edges
+        next if edge == old_edge
+        if edge.end == old_end
+          edge.end = new_end
+        else 
+          edge.start = new_end
+        end
+      end
+      
+      new_edge.link( self )
+      for point in new_edge.control_points
+        point.link( self )
+      end
       
       new_edge
     end
@@ -143,8 +150,8 @@ module TT::Plugins::BezierSurfaceTools
       aperture = VERTEX_SIZE * 2
       ph = view.pick_helper( x, y, aperture )
       ph.init( x, y, aperture )
-      for pt in control_points()
-        picked << pt if ph.test_point( pt.transform(t) )
+      for cpt in control_points()
+        picked << cpt if ph.test_point( cpt.position.transform(t) )
       end
       #( picked.empty? ) ? nil : picked
       picked
@@ -208,7 +215,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw_internal_control_grid( view )
       fail_if_invalid()
-      cpoints = control_points()
+      cpoints = positions()
       # Transform to active model space
       tr = view.model.edit_transform
       pts = cpoints.map { |pt|

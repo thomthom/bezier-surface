@@ -165,8 +165,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def transform_selection( transformation )
       @model.start_operation('Edit Bezier Surface', true)
-      for point in @selection
-        point.transform!( transformation )
+      for control_point in @selection
+        control_point.position.transform!( transformation )
       end
       @surface.update( @model.edit_transform )
       @model.commit_operation

@@ -71,7 +71,8 @@ module TT::Plugins::BezierSurfaceTools
       # (!) Get selection center.
       t = @editor.model.edit_transform
  
-      pt = TT::Geom3d.average_point( @editor.selection ).transform( t )
+      selection_points = @editor.selection.map { |cpt| cpt.position }
+      pt = TT::Geom3d.average_point( selection_points ).transform( t )
       xaxis = X_AXIS.transform( t )
       yaxis = Y_AXIS.transform( t )
       zaxis = Z_AXIS.transform( t )
@@ -88,8 +89,8 @@ module TT::Plugins::BezierSurfaceTools
       @gizmo.on_transform { |t_step, t_total|
         et = @editor.model.edit_transform
         local_transform = (et.inverse * t_step) * et
-        @editor.selection.each { |pt|
-          pt.transform!( local_transform )
+        @editor.selection.each { |cpt|
+          cpt.position.transform!( local_transform )
         }
         positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
         @surface.set_vertex_positions( @vertex_cache, positions )
@@ -210,8 +211,8 @@ module TT::Plugins::BezierSurfaceTools
         if @ip_start.valid? && @ip_mouse.valid?
           #TT.debug( '> Rectangle Selection' )
           polygon = selection_polygon()
-          points = @surface.control_points.select { |pt|
-            pt2d = view.screen_coords( pt.transform(t) )
+          points = @surface.control_points.select { |cpt|
+            pt2d = view.screen_coords( cpt.position.transform(t) )
             Geom.point_in_polygon_2D( pt2d, polygon, true )
           }
         end
@@ -230,7 +231,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       # Update Gizmo
-      average = TT::Geom3d.average_point( @editor.selection )
+      selection_points = @editor.selection.map { |cpt| cpt.position }
+      average = TT::Geom3d.average_point( selection_points )
       @gizmo.origin = average.transform(t)
       
       # Reset variables for next mouse action.
@@ -257,10 +259,11 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def draw(view)
+      selection_points = @editor.selection.map { |cpt| cpt.position }
       @surface.draw_internal_grid( view, @preview )
       @surface.draw_edges( view, @surface.edges, CLR_EDGE, 2, @preview )
       @surface.draw_control_grid( view )
-      @surface.draw_control_points( view, @editor.selection.to_a )
+      @surface.draw_control_points( view, selection_points )
       
       case @state
       when S_NORMAL

@@ -116,10 +116,12 @@ module TT::Plugins::BezierSurfaceTools
     # @return [String]
     # @since 1.0.0
     def inspect
+      name = self.class.name.split('::').last
+      hex_id = TT.object_id_hex( self )
       if @valid
-        "#<#{self.class.name}:#{TT.object_id_hex( self )}>"
+        "#<#{name}:#{hex_id}>"
       else
-        "#<Deleted:#{self.class.name}:#{TT.object_id_hex( self )}>"
+        "#<Deleted:#{name}:#{hex_id}>"
       end
     end
     
