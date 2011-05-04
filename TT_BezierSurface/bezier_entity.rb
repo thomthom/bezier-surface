@@ -44,9 +44,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       # Release any reference to other objects.
       @parent = nil
-      @links.each_key { |key|
-        @links[ key ] = []
-      }
+      @links = {}
       # The entity is then flagged as invalid.
       @valid = false
     end
