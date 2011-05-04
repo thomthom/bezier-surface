@@ -25,6 +25,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?
+      fail_if_invalid()
       # Subclass BezierInteriorPoint returns true
       false
     end
@@ -32,6 +33,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def is_handle?
+      fail_if_invalid()
       # Subclass BezierHandle returns true
       false
     end
@@ -98,12 +100,14 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def handles
+      fail_if_invalid()
       @links[ BezierHandle ].dup
     end
     
     # @return [Boolean]
     # @since 1.0.0
     def linked_control_points
+      fail_if_invalid()
       # (!) Find connected BezierHandles and BezierInteriorPoints
     end
   
@@ -124,24 +128,28 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def is_handle?
+      fail_if_invalid()
       true
     end
     
     # @return [Boolean]
     # @since 1.0.0
     def linked?
+      fail_if_invalid()
       # (!) ...
     end
     
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def linked_handles
+      fail_if_invalid()
       # (!) Find connected edges with linked handles
     end
     
     # @return [BezierVertex]
     # @since 1.0.0
     def vertex
+      fail_if_invalid()
       @links[ BezierVertex ].first
     end
   
@@ -163,6 +171,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?
+      fail_if_invalid()
       true
     end
   
