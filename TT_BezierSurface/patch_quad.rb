@@ -74,9 +74,6 @@ module TT::Plugins::BezierSurfaceTools
       edgeuse = BezierEdgeUse.new( self, edge, false )
       @edgeuses << edgeuse
       
-      # (!) Hack - clean up!
-      merge_vertices()
-      
       # Interior patch points - indirectly controlled by the edges.
       @interior_points = TT::Dimension.new( [
         BezierInteriorPoint.new( parent, points[5] ),
@@ -84,6 +81,8 @@ module TT::Plugins::BezierSurfaceTools
         BezierInteriorPoint.new( parent, points[9] ),
         BezierInteriorPoint.new( parent, points[10] )
       ], 2, 2 )
+      
+      merge_vertices()
       
       for point in control_points
         point.link( self )
@@ -95,12 +94,41 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def merge_vertices
-      # (!) Hack - clean up!
-      e0, e1, e2, e3 = edges
-      e1.start = e0.end
-      e1.end = e2.start
-      e3.start = e2.end
-      e3.end = e0.start
+      #TT.debug 'QuadPatch.merge_vertices'
+      e0, e1, e2, e3 = @edgeuses
+      #e1.start = e0.end
+      #e1.end = e2.start
+      #e3.start = e2.end
+      #e3.end = e0.start
+      
+      vertex = (e0.reversed?) ? e0.edge.start : e0.edge.end
+      if e1.reversed?
+        e1.edge.end = vertex
+      else
+        e1.edge.start = vertex
+      end
+      
+      vertex = (e2.reversed?) ? e2.edge.end : e2.edge.start
+      if e1.reversed?
+        e1.edge.start = vertex
+      else
+        e1.edge.end = vertex
+      end
+      
+      vertex = (e2.reversed?) ? e2.edge.start : e2.edge.end
+      if e3.reversed?
+        e3.edge.end = vertex
+      else
+        e3.edge.start = vertex
+      end
+      
+      vertex = (e0.reversed?) ? e0.edge.end : e0.edge.start
+      if e3.reversed?
+        e3.edge.start = vertex
+      else
+        e3.edge.end = vertex
+      end
+      
       nil
     end
     
