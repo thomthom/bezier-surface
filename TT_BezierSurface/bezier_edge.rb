@@ -90,7 +90,7 @@ module TT::Plugins::BezierSurfaceTools
       new_vertex
     end
     
-    # @private
+    # @protected
     # @return [BezierVertex]
     # @since 1.0.0
     def replace_vertex( old_vertex, new_vertex )
@@ -105,11 +105,38 @@ module TT::Plugins::BezierSurfaceTools
         # Remove reference to old vertex
         handle.unlink( old_vertex )
       end
+      # Other edges needs to update their vertex references
+      for edge in old_vertex.edges
+        next if edge == self
+        new_vertex.link( edge )
+        edge.set_vertex!( old_vertex, new_vertex )
+      end
+      # Transfer paatch references
+      for patch in old_vertex.patches
+        new_vertex.link( patch )
+      end
       # Kill old vertex
       old_vertex.invalidate!
-      old_vertex = new_vertex
       # Link new vertex to current edge
       new_vertex.link( self )
+      new_vertex
+    end
+    
+    # @protected
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def set_vertex!( old_vertex, new_vertex )
+      unless new_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
+      end
+      # Transfer links from old vertex to new
+      if @control_points[0] == old_vertex
+        @control_points[0] = new_vertex
+      elsif @control_points[3] == old_vertex
+        @control_points[3] = new_vertex
+      else
+        raise ArgumentError, "Vertex not connected to edge. (#{old_vertex})"
+      end
       new_vertex
     end
     
