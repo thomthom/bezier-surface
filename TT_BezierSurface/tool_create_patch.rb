@@ -104,12 +104,12 @@ module TT::Plugins::BezierSurfaceTools
     
     # @since 1.0.0
     def onMouseMove(flags, x, y, view)
-      view.invalidate if @ip_mouse.pick(view, x, y)
+      view.invalidate if @ip_mouse.pick( view, x, y )
       view.tooltip = @ip_mouse.tooltip
     end
     
     # @since 1.0.0
-    def onLButtonUp(flags, x, y, view)
+    def onLButtonUp( flags, x, y, view )
       if @ip_start.valid?
         # Validate input data.
         points = corner_points()
@@ -131,9 +131,10 @@ module TT::Plugins::BezierSurfaceTools
         controlpoints = interpolate_points( [p1, p2, p3, p4] )
         
         # Create Patch
-        TT::Model.start_operation('Create Bezier Surface')
+        TT::Model.start_operation( 'Create Bezier Surface' )
         group = view.model.active_entities.add_group
         group.name = 'Bezier Surface'
+        group.entities.parent.name = 'Bezier Surface'
         group.transformation = Geom::Transformation.new( origin, x_axis, y_axis )
         surface = BezierSurface.new( group )
         patch = QuadPatch.new( surface, controlpoints )
