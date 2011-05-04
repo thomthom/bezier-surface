@@ -25,13 +25,14 @@
 
 // TO-DO ///////////////////////////////////////////////////////////////////////
 
-* Implement BezierControlPoints and its subclasses.
 * Write a new data format for attributes where each data chunk is tagged by ID.
 * Selection tool
 * Manipulator gizmo
 * Properties window ( Entity / Selection info )
 ...
-Profit?
+* Refactor / clean up
+* Speed Optimization
+* Profit?
  
 
 // NOTES ///////////////////////////////////////////////////////////////////////
