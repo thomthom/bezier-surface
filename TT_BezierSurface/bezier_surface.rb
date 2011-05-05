@@ -816,15 +816,15 @@ module TT::Plugins::BezierSurfaceTools
       ### Edges
       edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
       edge_indexes = {}   # Lookup hash for quick indexing
-      TT.debug '> Edges'
+      #TT.debug '> Edges'
       edges.each_with_index { |edge, index|
-        TT.debug edge.control_points
+        #TT.debug edge.control_points
         indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
         edge_data_list.concat( indexes )
         edge_indexes[ edge ] = index
       }
-      TT.debug '> ---'
-      TT.debug edge_data_list
+      #TT.debug '> ---'
+      #TT.debug edge_data_list
       binary_edge_data = edge_data_list.pack('i*') # Integer
       binary_edge_data = TT::Binary.encode64( binary_edge_data )
       d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
