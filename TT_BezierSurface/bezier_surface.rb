@@ -802,8 +802,8 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug point_indexes
       #TT.debug '---'
       # Double-precision float, network (big-endian) byte order
-      binary_point_data = point_data_list.pack('G*')
-      binary_point_data = TT::Binary.encode64( binary_point_data )
+      bp_points = BinaryParser.new( BinaryParser::FLOAT )
+      binary_point_data = bp_points.write( point_data_list )
       d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, binary_point_data )
       
       TT.debug( "> Points written #{Time.now-debug_time_start}s" )
@@ -825,8 +825,8 @@ module TT::Plugins::BezierSurfaceTools
       }
       #TT.debug '> ---'
       #TT.debug edge_data_list
-      binary_edge_data = edge_data_list.pack('i*') # Integer
-      binary_edge_data = TT::Binary.encode64( binary_edge_data )
+      bp_edges = BinaryParser.new( BinaryParser::INT )
+      binary_edge_data = bp_edges.write( edge_data_list )
       d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
       
       TT.debug( "> Edges written #{Time.now-debug_time_start}s" )
@@ -849,20 +849,20 @@ module TT::Plugins::BezierSurfaceTools
         # Each patch is written to a separate attribute dictionary
         section = "BezierPatch#{i}"
         # Edgeuses
-        edgeuses_data = []
+        bp_edgeuses = BinaryParser.new( BinaryParser::INT, BinaryParser::BOOL )
         for edgeuse in patch.edgeuses
-          edgeuses_data << edge_indexes[ edgeuse.edge ]    # i - Integer
-          edgeuses_data << ( (edgeuse.reversed?) ? 1 : 0 ) # C - Unsigned char
+          bp_edgeuses.insert( [
+            edge_indexes[ edgeuse.edge ],
+            ( (edgeuse.reversed?) ? 1 : 0 )
+          ] )
         end
-        pattern = 'iC' * ( edgeuses_data.size / 2 )
-        binary_edgeuses_data = edgeuses_data.pack( pattern )
-        binary_edgeuses_data = TT::Binary.encode64( binary_edgeuses_data )
+        binary_edgeuses_data = bp_edgeuses.write
         # Interior Points
         interior_points = patch.interior_points.map { |control_point|
           point_indexes[control_point]
         }.to_a
-        binary_interior_points = interior_points.pack('i*') # Integer
-        binary_interior_points = TT::Binary.encode64( binary_interior_points )
+        bp_interior_points = BinaryParser.new( BinaryParser::INT )
+        binary_interior_points = bp_interior_points.write( interior_points )
         # Properties
         d.set_attribute( section, ATTR_TYPE,          patch.typename )
         d.set_attribute( section, ATTR_REVERSED,      patch.reversed )
