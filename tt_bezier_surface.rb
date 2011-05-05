@@ -260,6 +260,8 @@ module TT::Plugins::BezierSurfaceTools
   # @return [Integer]
   # @since 1.0.0
   def self.reload( tt_lib = false )
+    original_verbose = $VERBOSE
+    $VERBOSE = nil
     TT::Lib.reload if tt_lib
     # Core file (this)
     load __FILE__
@@ -268,6 +270,8 @@ module TT::Plugins::BezierSurfaceTools
       load file
     }
     x.length
+  ensure
+    $VERBOSE = original_verbose
   end
 
 end # module
