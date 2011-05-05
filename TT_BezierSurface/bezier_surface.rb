@@ -796,15 +796,22 @@ module TT::Plugins::BezierSurfaceTools
         point_data_list << point.z
         point_indexes[ control_point ] = index
       }
-      TT.debug "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
-      TT.debug control_points
-      TT.debug '---'
-      TT.debug point_indexes
-      TT.debug '---'
+      #TT.debug "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
+      #TT.debug control_points
+      #TT.debug '---'
+      #TT.debug point_indexes
+      #TT.debug '---'
       # Double-precision float, network (big-endian) byte order
       binary_point_data = point_data_list.pack('G*')
       binary_point_data = TT::Binary.encode64( binary_point_data )
       d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, binary_point_data )
+      
+      TT.debug( "> Points written #{Time.now-debug_time_start}s" )
+      
+      # (!) Write out control points relationships and properties. (Linked etc.)
+      # (!) BezierVertex
+      # (!) BezierHandle
+      # (!) BezierInteriorPoint ?
       
       ### Edges
       edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
@@ -822,8 +829,22 @@ module TT::Plugins::BezierSurfaceTools
       binary_edge_data = TT::Binary.encode64( binary_edge_data )
       d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
       
+      TT.debug( "> Edges written #{Time.now-debug_time_start}s" )
+      
       ### Patches
-      # (!) Remove old patch attributes
+      # Remove old patch attributes. If the surface previously had more patches
+      # the data should not linger around and clutter the model.
+      dictionaries = d.attribute_dictionaries
+      if dictionaries
+        pattern = /^BezierPatch\d*$/
+        for dictionary in dictionaries
+          if dictionary.name =~ pattern
+            dictionaries.delete( dictionary )
+          end
+        end
+      end
+      
+      # Write new data
       @patches.each_with_index { |patch, i|
         # Each patch is written to a separate attribute dictionary
         section = "BezierPatch#{i}"
@@ -837,8 +858,8 @@ module TT::Plugins::BezierSurfaceTools
         binary_edgeuses_data = edgeuses_data.pack( pattern )
         binary_edgeuses_data = TT::Binary.encode64( binary_edgeuses_data )
         # Interior Points
-        interior_points = patch.interior_points.map { |point|
-          point_indexes[point]
+        interior_points = patch.interior_points.map { |control_point|
+          point_indexes[control_point]
         }.to_a
         binary_interior_points = interior_points.pack('i*') # Integer
         binary_interior_points = TT::Binary.encode64( binary_interior_points )
@@ -849,6 +870,8 @@ module TT::Plugins::BezierSurfaceTools
         d.set_attribute( section, ATTR_EDGEUSES,      binary_edgeuses_data )
         d.set_attribute( section, ATTR_NUM_EDGEUSES,  patch.edgeuses.size )
       }
+      
+      TT.debug( "> Patches written #{Time.now-debug_time_start}s" )
       
       ### Validation Data
       d.set_attribute( ATTR_ID, ATTR_NUM_POINTS,  point_indexes.size )
