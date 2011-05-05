@@ -106,7 +106,8 @@ module TT::Plugins::BezierSurfaceTools
         pattern = "#{@template.join}*"
       end
       raw_data = TT::Binary.decode64( base64data )
-      raw_data.unpack( pattern )
+      flat_data = raw_data.unpack( pattern )
+      split_array( flat_data, @template.size )
     end
     
     # @param [Array] dataset If not spesified, the internal dataset if used.
@@ -117,12 +118,23 @@ module TT::Plugins::BezierSurfaceTools
         dataset = @dataset
       end
       if @template.size > 1
-        pattern = @template.join * @dataset.size
+        pattern = @template.join * dataset.size
       else
         pattern = "#{@template.join}*"
       end
       binary_data = dataset.flatten.pack( pattern )
       TT::Binary.encode64( binary_data )
+    end
+    
+    private
+    
+    def split_array( array, size )
+      new_array = []
+      array.each_with_index { |x,i|
+        new_array << [] if i % size == 0
+        new_array.last << x
+      }
+      new_array
     end
     
   end # class BinaryParser
