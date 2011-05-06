@@ -44,7 +44,7 @@ module TT::Plugins::BezierSurfaceTools
   
   # Attribute dictionary values
   MESH_TYPE    = 'BezierSurface'.freeze
-  MESH_VERSION = TT::Version.new(1,0,2).freeze
+  MESH_VERSION = TT::Version.new(1,0,3).freeze
   
   # Subdivision range limit
   SUBDIVS_MIN     = 1
