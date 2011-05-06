@@ -134,7 +134,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # @return [QuadPatch]
     # @since 1.0.0
-    def self.restore( surface, edgeuses, interior_points, reversed )
+    def self.restore( surface, edgeuses, interior_points )
       TT.debug 'QuadPatch.restore'
       # Validate
       unless surface.is_a?( BezierSurface )
@@ -153,7 +153,6 @@ module TT::Plugins::BezierSurfaceTools
       dummy_points[9]  = interior_points[2]
       dummy_points[10] = interior_points[3]
       patch = self.new( surface, dummy_points )
-      patch.reversed = reversed
       patch.edgeuses.each_with_index { |edgeuse, index|
         prototype = edgeuses[ index ]
         edgeuse.edge = prototype.edge

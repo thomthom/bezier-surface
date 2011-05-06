@@ -144,10 +144,11 @@ module TT::Plugins::BezierSurfaceTools
       end
       TT.debug "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
       
-      # Read Edges
+      # Read Patches
+      valid_patches = %w{ QuadPatch }
       raw_patches = d.get_attribute( ATTR_ID, ATTR_PATCHES )
       for raw_patch_data in raw_patches
-        patch_data = Hash[ raw_patch_data ]
+        patch_data = TT.array_to_hash(  raw_patch_data )
         
         # Read Properties
         type            = patch_data[ 'Type' ]
@@ -171,7 +172,7 @@ module TT::Plugins::BezierSurfaceTools
         # EdgeUses
         edgeuses_set = []
         for raw_edgeuse in edgeuses
-          edgeuse_data = Hash[ raw_edgeuse ]
+          edgeuse_data = TT.array_to_hash( raw_edgeuse )
           # Read Properties
           edge_index    = edgeuse_data[ 'Edge' ]
           edge_reversed = edgeuse_data[ 'Reversed' ]
@@ -182,7 +183,7 @@ module TT::Plugins::BezierSurfaceTools
         TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
         
         # Add patch
-        patch = patchtype.restore( self, edgeuses_set, interior_points, patch_reversed )
+        patch = patchtype.restore( self, edgeuses_set, interior_points )
         self.add_patch( patch )
       end
       
@@ -743,7 +744,9 @@ module TT::Plugins::BezierSurfaceTools
       d = TT::Instance.definition( @instance )
       
       # Remove old data
-      d.attribute_dictionaries.delete( ATTR_ID )
+      if d.attribute_dictionaries
+        d.attribute_dictionaries.delete( ATTR_ID )
+      end
       
       # Write Surface data
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )

@@ -36,7 +36,6 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_EDGES          = 'Edges'.freeze
   ATTR_EDGEUSES       = 'EdgeUses'.freeze
   ATTR_PATCHES        = 'Patches'.freeze
-  ATTR_POINTS         = 'Points'.freeze
   ATTR_REVERSED       = 'Reversed'.freeze
   
   # Attribute dictionary values
