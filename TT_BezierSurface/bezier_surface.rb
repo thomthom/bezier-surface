@@ -787,24 +787,15 @@ module TT::Plugins::BezierSurfaceTools
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
       
       ### Points
-      point_data_list = []    # Flattened list of X,Y,Z co-ordinates
+      point_data = []
       point_indexes = {}      # Lookup hash for quick indexing
       control_points.each_with_index { |control_point, index|
-        point = control_point.position
-        point_data_list << point.x
-        point_data_list << point.y
-        point_data_list << point.z
+        # Index Point
         point_indexes[ control_point ] = index
+        # Add point to dataset
+        point_data << control_point.position.to_a
       }
-      #TT.debug "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
-      #TT.debug control_points
-      #TT.debug '---'
-      #TT.debug point_indexes
-      #TT.debug '---'
-      # Double-precision float, network (big-endian) byte order
-      binary_point_data = point_data_list.pack('G*')
-      binary_point_data = TT::Binary.encode64( binary_point_data )
-      d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, binary_point_data )
+      d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, point_data )
       
       TT.debug( "> Points written #{Time.now-debug_time_start}s" )
       
@@ -814,20 +805,17 @@ module TT::Plugins::BezierSurfaceTools
       # (!) BezierInteriorPoint ?
       
       ### Edges
-      edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
+      edge_data = []
       edge_indexes = {}   # Lookup hash for quick indexing
       TT.debug '> Edges'
       edges.each_with_index { |edge, index|
-        TT.debug edge.control_points
-        indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
-        edge_data_list.concat( indexes )
+        # Index Edge
         edge_indexes[ edge ] = index
+        # Add edge to dataset. Array of control points.
+        indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
+        edge_data << indexes
       }
-      TT.debug '> ---'
-      TT.debug edge_data_list
-      binary_edge_data = edge_data_list.pack('i*') # Integer
-      binary_edge_data = TT::Binary.encode64( binary_edge_data )
-      d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
+      d.set_attribute( ATTR_ID, ATTR_EDGES, edge_data )
       
       TT.debug( "> Edges written #{Time.now-debug_time_start}s" )
       
@@ -851,23 +839,19 @@ module TT::Plugins::BezierSurfaceTools
         # Edgeuses
         edgeuses_data = []
         for edgeuse in patch.edgeuses
-          edgeuses_data << edge_indexes[ edgeuse.edge ]    # i - Integer
-          edgeuses_data << ( (edgeuse.reversed?) ? 1 : 0 ) # C - Unsigned char
+          edgeuses_data << {
+            'Edge'      => edge_indexes[ edgeuse.edge ],
+            'Reversed'  => edgeuse.reversed?
+          }.to_a
         end
-        pattern = 'iC' * ( edgeuses_data.size / 2 )
-        binary_edgeuses_data = edgeuses_data.pack( pattern )
-        binary_edgeuses_data = TT::Binary.encode64( binary_edgeuses_data )
         # Interior Points
         interior_points = patch.interior_points.map { |control_point|
           point_indexes[control_point]
         }.to_a
-        binary_interior_points = interior_points.pack('i*') # Integer
-        binary_interior_points = TT::Binary.encode64( binary_interior_points )
         # Properties
         d.set_attribute( section, ATTR_TYPE,          patch.typename )
-        d.set_attribute( section, ATTR_REVERSED,      patch.reversed )
-        d.set_attribute( section, ATTR_POINTS,        binary_interior_points )
-        d.set_attribute( section, ATTR_EDGEUSES,      binary_edgeuses_data )
+        d.set_attribute( section, ATTR_POINTS,        interior_points )
+        d.set_attribute( section, ATTR_EDGEUSES,      edgeuses_data )
         d.set_attribute( section, ATTR_NUM_EDGEUSES,  patch.edgeuses.size )
       }
       
