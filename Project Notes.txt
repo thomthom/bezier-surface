@@ -50,6 +50,8 @@
 
 * Option for control point to not always be visible. Occluded by geometry.
 
+* Write object count in attributes for read validation?
+
 
 // DATA FORMAT /////////////////////////////////////////////////////////////////
 
