@@ -35,10 +35,7 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_CONTROL_POINTS = 'ControlPoints'.freeze
   ATTR_EDGES          = 'Edges'.freeze
   ATTR_EDGEUSES       = 'EdgeUses'.freeze
-  ATTR_NUM_EDGES      = 'NumEdges'.freeze
-  ATTR_NUM_EDGEUSES   = 'NumEdgeUses'.freeze
-  ATTR_NUM_PATCHES    = 'NumPatches'.freeze
-  ATTR_NUM_POINTS     = 'NumPoints'.freeze
+  ATTR_PATCHES        = 'Patches'.freeze
   ATTR_POINTS         = 'Points'.freeze
   ATTR_REVERSED       = 'Reversed'.freeze
   
