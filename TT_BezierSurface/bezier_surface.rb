@@ -686,7 +686,70 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurface.update_attributes' )
       debug_time_start = Time.now
       
-      # ### DATA FORMAT ###
+    # ### DATA FORMAT ###
+    #
+    # Data is stored in an dictionary named: ATTR_ID ('TT_Mesh')
+    #   In case of future alternative mesh types this attribute is used to
+    #   identify the type of mesh. This is to reduce the number of dictionary
+    #   names used.
+    #
+    # KEY: ATTR_TYPE ('Type')
+    #   VALUE: MESH_TYPE ('BezierSurface')
+    #
+    #
+    # KEY: ATTR_VERSION ('Version')
+    #   VALUE: MESH_VERSION.to_s ('n.n.n')
+    #
+    #   Identifies the data format version.
+    #
+    #
+    # KEY: ATTR_SUBDIVS ('Subdivs')
+    #   VALUE: n (Integer)
+    #
+    #   Number of subdivisions.
+    #
+    #
+    # KEY: ATTR_POSITIONS ('Positions')
+    #   VALUE: Array< Point3d >
+    #
+    #   Array of 3d positions for each control point in the mesh.
+    #   Array is 1:1 mapping of surface.control_points.
+    #
+    #
+    # KEY: 'Vertices'
+    #   VALUE: Array< {
+    #     'Position' => POINT_INDEX,
+    #     'Links' => 你RRAY_LINKS
+    #   }.to_a >
+    #
+    #   Array of BezierVertex objects mapped to a property hash.
+    #   The property hash is converted to an array before it's stored in the
+    #   dictionary because SketchUp store Hash object as Nil.
+    #
+    #
+    # KEY: 'Handles'
+    #   VALUE: Array< {
+    #     'Position' => POINT_INDEX,
+    #     'Links' => 你RRAY_LINKS
+    #   }.to_a >
+    #
+    #   Array of BezierHandle objects mapped to a property hash.
+    #
+    #
+    # KEY: 'InteriorPoints'
+    #   VALUE: Array< {
+    #     'Position' => POINT_INDEX,
+    #     'Links' => 你RRAY_LINKS
+    #   }.to_a >
+    #
+    #   Array of BezierInteriorPoint objects mapped to a property hash.
+    #
+    #
+    # 你RRAY_LINKS
+      #
+      #
+      #
+      # --- OLD FORMAT ---
       #
       # SURFACE
       # Surface properties written to attribute:
@@ -703,21 +766,34 @@ module TT::Plugins::BezierSurfaceTools
       # 
       # CONTROL POINTS
       # All the control points in the surface is added to a hash lookup table.
-      # Ex: hash { point3d => index, ... }
+      # Ex: hash { BezierControlPoint => index, ... }
       #
-      # The control points are added to a flat array of XYZ values.
-      # Ex: [ x1, y1, z1, x2, y2, z2 ... ]
-      # This is packed into a binary string which has to be run through base64
-      # in order to maintain intact when stored in SketchUp's attributes.
+      # POSITIONS
+      # Attribute key: 'Positions'
+      # Content: Array<Geom::Point3d>
+      # The positions array is mapped from surface.control_points - 1:1 mapping
+      # of all the BezierControlPoints in the surface.
+      #
+      # VERTEX
+      # Attribute key: 'Vertices'
+      # Content:
+      # Array<
+      #   {
+      #     'Position' => POINT3D_INDEX,
+      #     'Links' => Array<
+      #       {
+      #         'Handles' => Array<INDEXES>
+      #       }
+      #     >
+      #   }
+      # >
       #
       # EDGES
       # The edges is also indexed in a lookup table.
-      # Ex: hash { point3d => index, ... }
+      # Ex: hash = { point3d => index, ... }
       #
-      # Then the edges are turned into a flat array of control points.
-      # Indexes is used to reference the points.
-      # Ex: [ e1, e1, e1, e1, e2, e2, e2, e2, e3, e3, e3, e3, ... ]
-      #     array = edge1.control_points + edge2.control_points ...
+      # Then the edges are turned into arrays of control point indexes.
+      # Ex: edge = [ cpt1, cpt2, cpt3, cpt4 ]
       #
       # PATCHES
       # Each patch is stored to a separate attribute dictionary because they
@@ -727,9 +803,8 @@ module TT::Plugins::BezierSurfaceTools
       # PATCH
       # Each patch contains the patch properties:
       # * Type ( QuadPatch | TriPatch | ... )
-      # * Reversed flag
       # * EdgeUse count
-      # * EdgeUse objects (Serialized)
+      # * EdgeUse objects
       # * Interior Points - Required Control Points not part of the edges.
       #
       # VALIDATION
