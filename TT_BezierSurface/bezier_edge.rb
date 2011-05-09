@@ -34,6 +34,13 @@ module TT::Plugins::BezierSurfaceTools
       ].each { |control_point|
         control_point.link( self )
       }
+      # Link vertices with handles
+      self.start.link( self.start_handle )
+      self.end.link( self.end_handle )
+      # Link handles with vertices
+      self.start_handle.link( self.start )
+      self.end_handle.link( self.end )
+      # Update positions
       self.control_points = points
     end
     

@@ -12,7 +12,7 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierEntity
     
-    attr_reader( :parent )
+    attr_reader( :parent, :links )
     
     # @since 1.0.0
     def initialize

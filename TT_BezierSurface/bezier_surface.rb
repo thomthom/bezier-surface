@@ -122,12 +122,11 @@ module TT::Plugins::BezierSurfaceTools
       self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
       
       # Read Points
-      point_data = d.get_attribute( ATTR_ID, ATTR_CONTROL_POINTS )
-      cpoints = []
-      for raw_point in point_data
-        point = Geom::Point3d.new( raw_point )
+      cpoints = d.get_attribute( ATTR_ID, ATTR_POSITIONS )
+      # (!) Validate array
+      for point in cpoints
+        # (!) Validate Point3d
         point.extend( TT::Point3d_Ex )
-        cpoints << point
       end
       TT.debug "> cpoints: #{cpoints.size} (#{cpoints.nitems})"
       
@@ -753,23 +752,56 @@ module TT::Plugins::BezierSurfaceTools
       d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION.to_s )
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
       
-      ### Points
-      point_data = []
-      point_indexes = {}      # Lookup hash for quick indexing
-      control_points.each_with_index { |control_point, index|
-        # Index Point
-        point_indexes[ control_point ] = index
+      ### Control Points
+      # Control points are added to a hash table for quick indexing and their
+      # positions are gathered and stored.
+      cpoints = control_points() # Array<BezierControlPoint>
+      point_index = {}  # Lookup hash for quick cpoint => position indexing.
+      point_data = []   # 3D point data set. Array<[x,y,z]>
+      cpoints.each_with_index { |control_point, index|
+        # Index Control point
+        point_index[ control_point ] = index
         # Add point to dataset
-        point_data << control_point.position.to_a
+        point_data << control_point.position
       }
-      d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, point_data )
+      d.set_attribute( ATTR_ID, ATTR_POSITIONS, point_data )
       
       TT.debug( "> Points written #{Time.now-debug_time_start}s" )
       
-      # (!) Write out control points relationships and properties. (Linked etc.)
-      # (!) BezierVertex
-      # (!) BezierHandle
-      # (!) BezierInteriorPoint ?
+      # BezierControlPoints relationship and properties
+      cpoint_data = {
+        BezierVertex => [],
+        BezierHandle => [],
+        BezierInteriorPoint => []
+      }
+      keys = {
+        BezierVertex => 'Vertices',
+        BezierHandle => 'Handles',
+        BezierInteriorPoint => 'InteriorPoints'
+      }
+      for control_point in cpoints
+        # Map linked BezierControlPoints to their indexes.
+        links = {}
+        for type, entities in control_point.links
+          key = keys[ type ]
+          next unless key
+          links[ key ] ||= []
+          for entity in entities
+            if entity.is_a?( BezierControlPoint )
+              links[ key ] << point_index[ entity ]
+            end
+          end
+        end
+        cpoint_data[ control_point.class ] << {
+          'Position' => point_index[ control_point ],
+          'Links' => links.to_a
+        }.to_a
+      end
+      d.set_attribute( ATTR_ID, 'Vertices', cpoint_data[ BezierVertex ] )
+      d.set_attribute( ATTR_ID, 'Handles', cpoint_data[ BezierHandle ] )
+      d.set_attribute( ATTR_ID, 'InteriorPoints', cpoint_data[ BezierInteriorPoint ] )
+      
+      TT.debug( "> Control Points written #{Time.now-debug_time_start}s" )
       
       ### Edges
       edge_data = []
@@ -779,7 +811,7 @@ module TT::Plugins::BezierSurfaceTools
         # Index Edge
         edge_indexes[ edge ] = index
         # Add edge to dataset. Array of control points.
-        indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
+        indexes = edge.control_points.map { |cpoint| point_index[cpoint] }
         edge_data << indexes
       }
       d.set_attribute( ATTR_ID, ATTR_EDGES, edge_data )
@@ -799,7 +831,7 @@ module TT::Plugins::BezierSurfaceTools
         end
         # Interior Points
         interior_points = patch.interior_points.map { |control_point|
-          point_indexes[control_point]
+          point_index[control_point]
         }.to_a
         # Patch Data
         patch_data << {
