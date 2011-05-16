@@ -122,21 +122,62 @@ module TT::Plugins::BezierSurfaceTools
       self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
       
       # Read Points
-      cpoints = d.get_attribute( ATTR_ID, ATTR_POSITIONS )
+      positions = d.get_attribute( ATTR_ID, ATTR_POSITIONS )
       # (!) Validate array
-      for point in cpoints
+      for point in positions
         # (!) Validate Point3d
         point.extend( TT::Point3d_Ex )
       end
-      TT.debug "> cpoints: #{cpoints.size} (#{cpoints.nitems})"
+      TT.debug "> positions: #{positions.size} (#{positions.nitems})"
+      unless positions.size == positions.nitems
+        raise TypeError, 'Invalid Point3d data'
+      end
       
-      # (!) Read ControlPoints
+      # Read ControlPoints
+      cp_index = {}
+      # Vertices
+      data = d.get_attribute( ATTR_ID, ATTR_VERTICES )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierVertex.new( self, positions[ index ] )
+        cp_index[ index ] = cpt
+      }
+      # Handles
+      data = d.get_attribute( ATTR_ID, ATTR_HANDLES )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierHandle.new( self, positions[ index ] )
+        cpt.linked = prop[ 'Linked' ]
+        cp_index[ index ] = cpt
+      }
+      # InteriorPoint
+      data = d.get_attribute( ATTR_ID, ATTR_INTERIORPOINTS )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierInteriorPoint.new( self, positions[ index ] )
+        cp_index[ index ] = cpt
+      }
+      # Index ControlPoints to match positions
+      cpoints = []
+      for index in ( 0...positions.size )
+        cpoints << cp_index[ index ]
+      end
+      TT.debug "> controlpoints: #{cpoints.size} (#{cpoints.nitems})"
+      unless cpoints.size == cpoints.nitems
+        raise TypeError, 'Invalid Control Point data'
+      end
+      unless cpoints.size == positions.size
+        raise TypeError, 'Missing Control Point data'
+      end
       
       # Read Edges
       edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )     
       edge_sets = []
       for indexes in edge_data
-        points = indexes.map { |index| cpoints[index] }
+        points = indexes.map { |index| positions[index] }
         unless points.nitems == 4
           raise 'Invalid control points.'
         end
@@ -144,6 +185,9 @@ module TT::Plugins::BezierSurfaceTools
         edge_sets << edge
       end
       TT.debug "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
+      unless edge_sets.size == edge_sets.nitems
+        raise TypeError, 'Invalid Edge data'
+      end
       
       # Read Patches
       valid_patches = %w{ QuadPatch }
@@ -166,7 +210,7 @@ module TT::Plugins::BezierSurfaceTools
         patchtype = eval( type )
         
         # Interior Points
-        interior_points.map! { |index| cpoints[index] }
+        interior_points.map! { |index| positions[index] }
         unless interior_points.nitems == 4
           raise 'Invalid interior points'
         end
@@ -183,6 +227,9 @@ module TT::Plugins::BezierSurfaceTools
           edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed ) # Temp
         end
         TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
+        unless edgeuses_set.size == edgeuses_set.nitems
+          raise TypeError, 'Invalid EdgeUse data'
+        end
         
         # Add patch
         patch = patchtype.restore( self, edgeuses_set, interior_points ) # (!) hash
@@ -870,9 +917,9 @@ module TT::Plugins::BezierSurfaceTools
         #
         cpoint_data[ control_point.class ] << properties.to_a
       end
-      d.set_attribute( ATTR_ID, 'Vertices', cpoint_data[ BezierVertex ] )
-      d.set_attribute( ATTR_ID, 'Handles', cpoint_data[ BezierHandle ] )
-      d.set_attribute( ATTR_ID, 'InteriorPoints', cpoint_data[ BezierInteriorPoint ] )
+      d.set_attribute( ATTR_ID, ATTR_VERTICES, cpoint_data[ BezierVertex ] )
+      d.set_attribute( ATTR_ID, ATTR_HANDLES, cpoint_data[ BezierHandle ] )
+      d.set_attribute( ATTR_ID, ATTR_INTERIORPOINTS, cpoint_data[ BezierInteriorPoint ] )
       
       TT.debug( "> Control Points written #{Time.now-debug_time_start}s" )
       

@@ -34,6 +34,9 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_SUBDIVS        = 'Subdivs'.freeze
   ATTR_POSITIONS      = 'Positions'.freeze
   ATTR_CONTROL_POINTS = 'ControlPoints'.freeze
+  ATTR_VERTICES       = 'Vertices'.freeze
+  ATTR_HANDLES        = 'Handles'.freeze
+  ATTR_INTERIORPOINTS = 'InteriorPoints'.freeze
   ATTR_EDGES          = 'Edges'.freeze
   ATTR_EDGEUSES       = 'EdgeUses'.freeze
   ATTR_PATCHES        = 'Patches'.freeze
