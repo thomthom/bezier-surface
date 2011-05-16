@@ -53,15 +53,10 @@ module TT::Plugins::BezierSurfaceTools
     # (?) Check for "Bezier Surface" in case user set custom name?
     instance.name = ''
     d.name = 'Editable Mesh'
-    # Fetch number of patches. The number of patches is required
-    # because there is an attribute dictionary for each patch.
-    num_patches  = d.get_attribute( ATTR_ID, ATTR_NUM_PATCHES )
     # Remove attributes
     TT::Model.start_operation( 'Convert to Mesh' )
-    d.attribute_dictionaries.delete( ATTR_ID )
-    for index in (0...num_patches)
-      section = "BezierPatch#{index}"
-      d.attribute_dictionaries.delete( section )
+    if d.attribute_dictionaries
+      d.attribute_dictionaries.delete( ATTR_ID )
     end
     model.commit_operation
     # Clear the selection so there is some kind of user feedback of an event.

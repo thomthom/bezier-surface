@@ -32,19 +32,19 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_TYPE           = 'Type'.freeze
   ATTR_VERSION        = 'Version'.freeze
   ATTR_SUBDIVS        = 'Subdivs'.freeze
+  ATTR_POSITIONS      = 'Positions'.freeze
   ATTR_CONTROL_POINTS = 'ControlPoints'.freeze
+  ATTR_VERTICES       = 'Vertices'.freeze
+  ATTR_HANDLES        = 'Handles'.freeze
+  ATTR_INTERIORPOINTS = 'InteriorPoints'.freeze
   ATTR_EDGES          = 'Edges'.freeze
   ATTR_EDGEUSES       = 'EdgeUses'.freeze
-  ATTR_NUM_EDGES      = 'NumEdges'.freeze
-  ATTR_NUM_EDGEUSES   = 'NumEdgeUses'.freeze
-  ATTR_NUM_PATCHES    = 'NumPatches'.freeze
-  ATTR_NUM_POINTS     = 'NumPoints'.freeze
-  ATTR_POINTS         = 'Points'.freeze
+  ATTR_PATCHES        = 'Patches'.freeze
   ATTR_REVERSED       = 'Reversed'.freeze
   
   # Attribute dictionary values
   MESH_TYPE    = 'BezierSurface'.freeze
-  MESH_VERSION = TT::Version.new(1,0,2).freeze
+  MESH_VERSION = TT::Version.new(1,0,3).freeze
   
   # Subdivision range limit
   SUBDIVS_MIN     = 1

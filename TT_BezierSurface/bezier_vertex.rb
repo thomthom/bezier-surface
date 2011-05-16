@@ -108,7 +108,14 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def linked_control_points
       fail_if_invalid()
-      # (!) Find connected BezierHandles and BezierInteriorPoints
+      cpoints = @links[ BezierHandle ].dup
+      for patch in patches
+        next unless patch.automatic?
+        for cpoint in patch.interior_points
+          cpoints << cpoint if self.used_by?( cpoint )
+        end
+      end
+      cpoints
     end
   
   end # class BezierInteriorPoint
@@ -123,6 +130,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( *args )
       super
       @links[ BezierVertex ] = []
+      @linked = true
     end
     
     # @return [Boolean]
@@ -136,14 +144,21 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def linked?
       fail_if_invalid()
-      # (!) ...
+      @linked == true
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def linked=( is_linked )
+      fail_if_invalid()
+      @linked = ( is_linked == true )
     end
     
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def linked_handles
       fail_if_invalid()
-      # (!) Find connected edges with linked handles
+      @links[ BezierVertex ].handles.select { |handle| handle.linked? }
     end
     
     # @return [BezierVertex]

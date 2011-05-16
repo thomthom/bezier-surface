@@ -120,71 +120,86 @@ module TT::Plugins::BezierSurfaceTools
       
       # Read properties
       self.subdivs = d.get_attribute( ATTR_ID, ATTR_SUBDIVS )
-      num_points   = d.get_attribute( ATTR_ID, ATTR_NUM_POINTS )
-      num_edges    = d.get_attribute( ATTR_ID, ATTR_NUM_EDGES )
-      num_patches  = d.get_attribute( ATTR_ID, ATTR_NUM_PATCHES )
-      
-      TT.debug "> ControlPoints: #{num_points}"
-      TT.debug "> Edges: #{num_edges}"
-      TT.debug "> Patches: #{num_patches}"
       
       # Read Points
-      binary_point_data = d.get_attribute( ATTR_ID, ATTR_CONTROL_POINTS )
-      binary_point_data = TT::Binary.decode64( binary_point_data )
-      point_data = binary_point_data.unpack('G*')
-      unless point_data.size == num_points * 3 # 3 = Size of X, Y, Z
-        raise 'Corrupt or Invalid data. Control-points size validation failed.'
-      end
-      cpoints = []
-      (0...point_data.size).step(3) { |i|
-        point = Geom::Point3d.new( point_data[i, 3] )
+      positions = d.get_attribute( ATTR_ID, ATTR_POSITIONS )
+      # (!) Validate array
+      for point in positions
+        # (!) Validate Point3d
         point.extend( TT::Point3d_Ex )
-        cpoints << point
+      end
+      TT.debug "> positions: #{positions.size} (#{positions.nitems})"
+      unless positions.size == positions.nitems
+        raise TypeError, 'Invalid Point3d data'
+      end
+      
+      # Read ControlPoints
+      cp_index = {}
+      # Vertices
+      data = d.get_attribute( ATTR_ID, ATTR_VERTICES )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierVertex.new( self, positions[ index ] )
+        cp_index[ index ] = cpt
       }
-      TT.debug "> cpoints: #{cpoints.size} (#{cpoints.nitems})"
+      # Handles
+      data = d.get_attribute( ATTR_ID, ATTR_HANDLES )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierHandle.new( self, positions[ index ] )
+        cpt.linked = prop[ 'Linked' ]
+        cp_index[ index ] = cpt
+      }
+      # InteriorPoint
+      data = d.get_attribute( ATTR_ID, ATTR_INTERIORPOINTS )
+      data.each { |properties_data|
+        prop = TT.array_to_hash( properties_data )
+        index = prop[ 'Position' ]
+        cpt = BezierInteriorPoint.new( self, positions[ index ] )
+        cp_index[ index ] = cpt
+      }
+      # Index ControlPoints to match positions
+      cpoints = []
+      for index in ( 0...positions.size )
+        cpoints << cp_index[ index ]
+      end
+      TT.debug "> controlpoints: #{cpoints.size} (#{cpoints.nitems})"
+      unless cpoints.size == cpoints.nitems
+        raise TypeError, 'Invalid Control Point data'
+      end
+      unless cpoints.size == positions.size
+        raise TypeError, 'Missing Control Point data'
+      end
       
       # Read Edges
-      binary_edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )
-      binary_edge_data = TT::Binary.decode64( binary_edge_data )
-      edge_data = binary_edge_data.unpack('i*')
-      unless edge_data.size == num_edges * 4 # 4 = Number of control points
-        raise 'Corrupt or Invalid data. Edges size validation failed.'
-      end
+      edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )     
       edge_sets = []
-      (0...edge_data.size).step(4) { |i|
-        indexes = edge_data[i, 4]
+      for indexes in edge_data
         points = indexes.map { |index| cpoints[index] }
         unless points.nitems == 4
-          raise 'Invalid control points'
+          raise 'Invalid control points.'
         end
         edge = BezierEdge.new( self, points )
         edge_sets << edge
-      }
+      end
       TT.debug "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
+      unless edge_sets.size == edge_sets.nitems
+        raise TypeError, 'Invalid Edge data'
+      end
       
       # Read Patches
-      valid_patches = ['QuadPatch']
-      @patches.clear
-      for index in (0...num_patches)
-        # Fetch attribute dictionary
-        section = "BezierPatch#{index}"
-        attributes = d.attribute_dictionaries[ section ]
-        if attributes.nil?
-          raise 'Missing patch data.'
-        end
-        
-        TT.debug "> #{section}"
+      valid_patches = %w{ QuadPatch }
+      raw_patches = d.get_attribute( ATTR_ID, ATTR_PATCHES )
+      for raw_patch_data in raw_patches
+        patch_data = TT.array_to_hash(  raw_patch_data )
         
         # Read Properties
-        type            = d.get_attribute( section, ATTR_TYPE )
-        patch_reversed  = d.get_attribute( section, ATTR_REVERSED )
-        num_edgeuses    = d.get_attribute( section, ATTR_NUM_EDGEUSES )
-        binary_edgeuses = d.get_attribute( section, ATTR_EDGEUSES )
-        binary_cpoints  = d.get_attribute( section, ATTR_POINTS )
-        
-        TT.debug "  > Type: #{type}"
-        TT.debug "  > Reversed: #{patch_reversed}"
-        TT.debug "  > EdgeUses: #{num_edgeuses}"
+        type            = patch_data[ 'Type' ]
+        edgeuses        = patch_data[ 'EdgeUses' ]
+        interior_points = patch_data[ 'InteriorPoints' ]
+        automatic       = patch_data[ 'Automatic' ]
         
         # The patch type string is eval'ed into a Class object which is then
         # used to load the patch data. The patch is left with the resonsibility
@@ -195,38 +210,34 @@ module TT::Plugins::BezierSurfaceTools
         patchtype = eval( type )
         
         # Interior Points
-        binary_cpoints = TT::Binary.decode64( binary_cpoints )
-        interior_points = binary_cpoints.unpack('i*')
-        interior_points.map! { |index| cpoints[index] }
-        
-        TT.debug "  > interior_points: #{interior_points.size} (#{interior_points.nitems})"
+        interior_points.map! { |index| positions[index] }
         unless interior_points.nitems == 4
           raise 'Invalid interior points'
         end
         
         # EdgeUses
-        edgeuses_data = TT::Binary.decode64( binary_edgeuses )
-        edgeuses_data = edgeuses_data.unpack( 'iC' * num_edgeuses )
-        TT.debug "  > edgeuses_data: #{edgeuses_data.size} (#{edgeuses_data.nitems})"
         edgeuses_set = []
-        (0...edgeuses_data.size).step(2) { |i|
-          # Load EdgeUse properties
-          edge_index, edge_reversed = edgeuses_data[i, 2]
+        for raw_edgeuse in edgeuses
+          edgeuse_data = TT.array_to_hash( raw_edgeuse )
+          # Read Properties
+          edge_index    = edgeuse_data[ 'Edge' ]
+          edge_reversed = edgeuse_data[ 'Reversed' ]
+          # Recreate objects
           edge = edge_sets[edge_index]
-          edge_reversed = !( edge_reversed == 0 ) # 0 = False - Everything else = True
-          # Create temporaty EdgeUse
-          edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed )
-        }
-        
+          edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed ) # Temp
+        end
         TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
+        unless edgeuses_set.size == edgeuses_set.nitems
+          raise TypeError, 'Invalid EdgeUse data'
+        end
         
         # Add patch
-        patch = patchtype.restore( self, edgeuses_set, interior_points, patch_reversed )
+        patch = patchtype.restore( self, edgeuses_set, interior_points ) # (!) hash
+        patch.automatic = automatic
         self.add_patch( patch )
-      end # patches
+      end
       
       TT.debug( "> Loaded in #{Time.now-debug_time_start}s" )
-      #TT.debug self.control_points
       self
     end
     
@@ -553,8 +564,8 @@ module TT::Plugins::BezierSurfaceTools
       view.line_width = 2
       # Prepare points
       #unselected = (control_points - selected).map { |pt| pt.transform(tr) }
-      all_points = control_points.map { |pt| pt.position.transform(tr) }
-      selected = selected.map { |pt| pt.transform(tr) }
+      all_points = control_points.map { |cpt| cpt.position.transform(tr) }
+      selected = selected.map { |cpt| cpt.position.transform(tr) }
       # Drawing
       #unless unselected.empty?
       #  view.draw_points( unselected, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
@@ -728,6 +739,69 @@ module TT::Plugins::BezierSurfaceTools
       
       # ### DATA FORMAT ###
       #
+      # Data is stored in an dictionary named: ATTR_ID ('TT_Mesh')
+      #   In case of future alternative mesh types this attribute is used to
+      #   identify the type of mesh. This is to reduce the number of dictionary
+      #   names used.
+      #
+      # KEY: ATTR_TYPE ('Type')
+      #   VALUE: MESH_TYPE ('BezierSurface')
+      #
+      #
+      # KEY: ATTR_VERSION ('Version')
+      #   VALUE: MESH_VERSION.to_s ('n.n.n')
+      #
+      #   Identifies the data format version.
+      #
+      #
+      # KEY: ATTR_SUBDIVS ('Subdivs')
+      #   VALUE: n (Integer)
+      #
+      #   Number of subdivisions.
+      #
+      #
+      # KEY: ATTR_POSITIONS ('Positions')
+      #   VALUE: Array< Point3d >
+      #
+      #   Array of 3d positions for each control point in the mesh.
+      #   Array is 1:1 mapping of surface.control_points.
+      #
+      #
+      # KEY: 'Vertices'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierVertex objects mapped to a property hash.
+      #   The property hash is converted to an array before it's stored in the
+      #   dictionary because SketchUp store Hash object as Nil.
+      #
+      #
+      # KEY: 'Handles'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierHandle objects mapped to a property hash.
+      #
+      #
+      # KEY: 'InteriorPoints'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierInteriorPoint objects mapped to a property hash.
+      #
+      #
+      # 你RRAY_LINKS
+      #
+      #
+      #
+      # --- OLD FORMAT ---
+      #
       # SURFACE
       # Surface properties written to attribute:
       # * Type ( BezierSurface )
@@ -743,21 +817,34 @@ module TT::Plugins::BezierSurfaceTools
       # 
       # CONTROL POINTS
       # All the control points in the surface is added to a hash lookup table.
-      # Ex: hash { point3d => index, ... }
+      # Ex: hash { BezierControlPoint => index, ... }
       #
-      # The control points are added to a flat array of XYZ values.
-      # Ex: [ x1, y1, z1, x2, y2, z2 ... ]
-      # This is packed into a binary string which has to be run through base64
-      # in order to maintain intact when stored in SketchUp's attributes.
+      # POSITIONS
+      # Attribute key: 'Positions'
+      # Content: Array<Geom::Point3d>
+      # The positions array is mapped from surface.control_points - 1:1 mapping
+      # of all the BezierControlPoints in the surface.
+      #
+      # VERTEX
+      # Attribute key: 'Vertices'
+      # Content:
+      # Array<
+      #   {
+      #     'Position' => POINT3D_INDEX,
+      #     'Links' => Array<
+      #       {
+      #         'Handles' => Array<INDEXES>
+      #       }
+      #     >
+      #   }
+      # >
       #
       # EDGES
       # The edges is also indexed in a lookup table.
-      # Ex: hash { point3d => index, ... }
+      # Ex: hash = { point3d => index, ... }
       #
-      # Then the edges are turned into a flat array of control points.
-      # Indexes is used to reference the points.
-      # Ex: [ e1, e1, e1, e1, e2, e2, e2, e2, e3, e3, e3, e3, ... ]
-      #     array = edge1.control_points + edge2.control_points ...
+      # Then the edges are turned into arrays of control point indexes.
+      # Ex: edge = [ cpt1, cpt2, cpt3, cpt4 ]
       #
       # PATCHES
       # Each patch is stored to a separate attribute dictionary because they
@@ -767,9 +854,8 @@ module TT::Plugins::BezierSurfaceTools
       # PATCH
       # Each patch contains the patch properties:
       # * Type ( QuadPatch | TriPatch | ... )
-      # * Reversed flag
       # * EdgeUse count
-      # * EdgeUse objects (Serialized)
+      # * EdgeUse objects
       # * Interior Points - Required Control Points not part of the edges.
       #
       # VALIDATION
@@ -781,102 +867,103 @@ module TT::Plugins::BezierSurfaceTools
       #     'cleaner'?
       
       d = TT::Instance.definition( @instance )
+      
+      # Remove old data
+      if d.attribute_dictionaries
+        d.attribute_dictionaries.delete( ATTR_ID )
+      end
+      
       # Write Surface data
       d.set_attribute( ATTR_ID, ATTR_TYPE, MESH_TYPE )
       d.set_attribute( ATTR_ID, ATTR_VERSION, MESH_VERSION.to_s )
       d.set_attribute( ATTR_ID, ATTR_SUBDIVS, @subdivs )
       
-      ### Points
-      point_data_list = []    # Flattened list of X,Y,Z co-ordinates
-      point_indexes = {}      # Lookup hash for quick indexing
-      control_points.each_with_index { |control_point, index|
-        point = control_point.position
-        point_data_list << point.x
-        point_data_list << point.y
-        point_data_list << point.z
-        point_indexes[ control_point ] = index
+      ### Control Points
+      # Control points are added to a hash table for quick indexing and their
+      # positions are gathered and stored.
+      cpoints = control_points() # Array<BezierControlPoint>
+      point_index = {}  # Lookup hash for quick cpoint => position indexing.
+      point_data = []   # 3D point data set. Array<[x,y,z]>
+      cpoints.each_with_index { |control_point, index|
+        # Index Control point
+        point_index[ control_point ] = index
+        # Add point to dataset
+        point_data << control_point.position
       }
-      #TT.debug "Control Points: #{control_points.size} - Indexes: #{point_indexes.size}"
-      #TT.debug control_points
-      #TT.debug '---'
-      #TT.debug point_indexes
-      #TT.debug '---'
-      # Double-precision float, network (big-endian) byte order
-      binary_point_data = point_data_list.pack('G*')
-      binary_point_data = TT::Binary.encode64( binary_point_data )
-      d.set_attribute( ATTR_ID, ATTR_CONTROL_POINTS, binary_point_data )
+      d.set_attribute( ATTR_ID, ATTR_POSITIONS, point_data )
       
       TT.debug( "> Points written #{Time.now-debug_time_start}s" )
       
-      # (!) Write out control points relationships and properties. (Linked etc.)
-      # (!) BezierVertex
-      # (!) BezierHandle
-      # (!) BezierInteriorPoint ?
+      # BezierControlPoints relationship and properties
+      cpoint_data = {
+        BezierVertex => [],
+        BezierHandle => [],
+        BezierInteriorPoint => []
+      }
+      keys = {
+        BezierVertex => 'Vertices',
+        BezierHandle => 'Handles',
+        BezierInteriorPoint => 'InteriorPoints'
+      }
+      for control_point in cpoints
+        # Generic properties
+        properties = {
+          'Position' => point_index[ control_point ]
+        }
+        # BezierHandle
+        if control_point.is_a?( BezierHandle )
+          properties['Linked'] = control_point.linked?
+        end
+        #
+        cpoint_data[ control_point.class ] << properties.to_a
+      end
+      d.set_attribute( ATTR_ID, ATTR_VERTICES, cpoint_data[ BezierVertex ] )
+      d.set_attribute( ATTR_ID, ATTR_HANDLES, cpoint_data[ BezierHandle ] )
+      d.set_attribute( ATTR_ID, ATTR_INTERIORPOINTS, cpoint_data[ BezierInteriorPoint ] )
+      
+      TT.debug( "> Control Points written #{Time.now-debug_time_start}s" )
       
       ### Edges
-      edge_data_list = [] # Flattened list of edge's point indexes (4 per edge)
+      edge_data = []
       edge_indexes = {}   # Lookup hash for quick indexing
       TT.debug '> Edges'
       edges.each_with_index { |edge, index|
-        TT.debug edge.control_points
-        indexes = edge.control_points.map { |cpoint| point_indexes[cpoint] }
-        edge_data_list.concat( indexes )
+        # Index Edge
         edge_indexes[ edge ] = index
+        # Add edge to dataset. Array of control points.
+        indexes = edge.control_points.map { |cpoint| point_index[cpoint] }
+        edge_data << indexes
       }
-      TT.debug '> ---'
-      TT.debug edge_data_list
-      binary_edge_data = edge_data_list.pack('i*') # Integer
-      binary_edge_data = TT::Binary.encode64( binary_edge_data )
-      d.set_attribute( ATTR_ID, ATTR_EDGES, binary_edge_data )
+      d.set_attribute( ATTR_ID, ATTR_EDGES, edge_data )
       
       TT.debug( "> Edges written #{Time.now-debug_time_start}s" )
       
       ### Patches
-      # Remove old patch attributes. If the surface previously had more patches
-      # the data should not linger around and clutter the model.
-      dictionaries = d.attribute_dictionaries
-      if dictionaries
-        pattern = /^BezierPatch\d*$/
-        for dictionary in dictionaries
-          if dictionary.name =~ pattern
-            dictionaries.delete( dictionary )
-          end
-        end
-      end
-      
-      # Write new data
-      @patches.each_with_index { |patch, i|
-        # Each patch is written to a separate attribute dictionary
-        section = "BezierPatch#{i}"
+      patch_data = []
+      for patch in patches
         # Edgeuses
         edgeuses_data = []
         for edgeuse in patch.edgeuses
-          edgeuses_data << edge_indexes[ edgeuse.edge ]    # i - Integer
-          edgeuses_data << ( (edgeuse.reversed?) ? 1 : 0 ) # C - Unsigned char
+          edgeuses_data << {
+            'Edge'      => edge_indexes[ edgeuse.edge ],
+            'Reversed'  => edgeuse.reversed?
+          }.to_a
         end
-        pattern = 'iC' * ( edgeuses_data.size / 2 )
-        binary_edgeuses_data = edgeuses_data.pack( pattern )
-        binary_edgeuses_data = TT::Binary.encode64( binary_edgeuses_data )
         # Interior Points
         interior_points = patch.interior_points.map { |control_point|
-          point_indexes[control_point]
+          point_index[control_point]
         }.to_a
-        binary_interior_points = interior_points.pack('i*') # Integer
-        binary_interior_points = TT::Binary.encode64( binary_interior_points )
-        # Properties
-        d.set_attribute( section, ATTR_TYPE,          patch.typename )
-        d.set_attribute( section, ATTR_REVERSED,      patch.reversed )
-        d.set_attribute( section, ATTR_POINTS,        binary_interior_points )
-        d.set_attribute( section, ATTR_EDGEUSES,      binary_edgeuses_data )
-        d.set_attribute( section, ATTR_NUM_EDGEUSES,  patch.edgeuses.size )
-      }
+        # Patch Data
+        patch_data << {
+          'Type'            => patch.typename,
+          'EdgeUses'        => edgeuses_data,
+          'InteriorPoints'  => interior_points,
+          'Automatic'       => patch.automatic?
+        }.to_a
+      end
+      d.set_attribute( ATTR_ID, ATTR_PATCHES, patch_data )
       
       TT.debug( "> Patches written #{Time.now-debug_time_start}s" )
-      
-      ### Validation Data
-      d.set_attribute( ATTR_ID, ATTR_NUM_POINTS,  point_indexes.size )
-      d.set_attribute( ATTR_ID, ATTR_NUM_EDGES,   edge_indexes.size )
-      d.set_attribute( ATTR_ID, ATTR_NUM_PATCHES, @patches.size )
       
       TT.debug( "> Written in #{Time.now-debug_time_start}s" )
       true
