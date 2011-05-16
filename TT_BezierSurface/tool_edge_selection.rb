@@ -97,6 +97,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_edges( view, unselected, CLR_CTRL_GRID )
       # Debug
       @surface.draw_edge_directions( view )
+      @surface.draw_control_handles( view )
     end
     
     def onSetCursor

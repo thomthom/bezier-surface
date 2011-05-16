@@ -52,19 +52,34 @@ module TT::Plugins::BezierSurfaceTools
       key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
       
       # Pick entities
-      #edges = @surface.pick_edges( @surface.subdivs, x, y, view )
+      entities = []
+      
+      vertices = @surface.pick_vertices( x, y, view )
+      if vertices.empty?
+        edges = @surface.pick_edges( @surface.subdivs, x, y, view )
+      else
+        edges = []
+      end
+      
+      entities.concat( vertices )
+      entities.concat( edges )
+      
+      #puts "Selected Vertices: #{vertices.size}"
+      #puts "Selected Edges: #{edges.size}"
       
       # Update selection
       if key_ctrl && key_shift
-        @editor.selection.remove( edges )
+        @editor.selection.remove( entities )
       elsif key_ctrl
-        @editor.selection.add( edges )
+        @editor.selection.add( entities )
       elsif key_shift
-        @editor.selection.toggle( edges )
+        @editor.selection.toggle( entities )
       else
         @editor.selection.clear
-        @editor.selection.add( edges )
+        @editor.selection.add( entities )
       end
+      
+      #puts "Selection: #{@editor.selection.size}"
       
       view.invalidate
     end
@@ -84,9 +99,27 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def draw( view )
+      tr = view.model.edit_transform
+      
+      selected_vertices = []
+      selected_edges = []
+      for entity in @editor.selection
+        if entity.is_a?( BezierVertex )
+          selected_vertices << entity
+        elsif entity.is_a?( BezierEdge )
+          selected_edges << entity
+        end
+      end
+      
+      unselected_vertices = @surface.vertices - selected_vertices
+      unselected_edges = @surface.edges - selected_edges
+      
       @surface.draw_internal_grid( view )
-      @surface.draw_edges( view, @surface.edges, CLR_EDGE, 2 )
-      @surface.draw_control_handles( view )
+      @surface.draw_edges( view, unselected_edges, CLR_EDGE, 2 )
+      @surface.draw_edges( view, selected_edges, CLR_CTRL_GRID, 5 )
+      @surface.draw_vertices( view, unselected_vertices )
+      @surface.draw_vertices( view, selected_vertices, true )
+      @surface.draw_vertex_handles( view, selected_vertices )
     end
     
     def onSetCursor

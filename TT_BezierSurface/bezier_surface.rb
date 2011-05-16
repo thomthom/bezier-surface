@@ -337,6 +337,17 @@ module TT::Plugins::BezierSurfaceTools
       pts
     end
     
+    # @return [Array<BezierVertex>]
+    # @since 1.0.0
+    def vertices
+      cpts = []
+      for patch in @patches
+        cpts.concat( patch.vertices )
+      end
+      cpts.uniq!
+      cpts
+    end
+    
     # Returns the picked control points for the given x, y screen co-ordinates.
     #
     # (!) Currently returns an array - might be multiple points returned if they
@@ -356,6 +367,23 @@ module TT::Plugins::BezierSurfaceTools
         picked.concat( points ) unless points.nil?
       end
       #( picked.empty? ) ? nil : picked.uniq
+      picked.uniq
+    end
+    
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<BezierVertex>]
+    # @since 1.0.0
+    def pick_vertices( x, y, view )
+      tr = view.model.edit_transform
+      ph = view.pick_helper
+      ph.init( x, y, VERTEX_SIZE )
+      picked = []
+      for vertex in vertices
+        picked << vertex if ph.test_point( vertex.position.transform( tr ) )
+      end
       picked.uniq
     end
     
@@ -494,6 +522,89 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
       nil
+    end
+    
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_vertices( view, vertices, selected = false )
+      return false if vertices.empty?
+      tr = view.model.edit_transform
+      
+      view.line_width = 2
+      view.line_stipple = ''
+      view.drawing_color = CLR_VERTEX
+      
+      vector = view.camera.direction
+      vx1 = view.camera.xaxis
+      vx2 = vx1.reverse
+      vy1 = view.camera.yaxis
+      vy2 = vy1.reverse
+      
+      if selected
+        size = VERTEX_SIZE
+      else
+        size = VERTEX_SIZE - 1.0 # Account for line width
+      end
+      
+      radius = size / 2.0
+      
+      view.line_stipple = ''
+      view.line_width = 2
+      view.drawing_color = CLR_VERTEX
+      
+      for vertex in vertices
+        point = vertex.position.transform( tr )
+        screen_size = view.pixels_to_model( size, point )
+        screen_size_half = view.pixels_to_model( radius, point )
+        
+        pt = point.offset( vx1, screen_size_half )
+        
+        pt1 = pt.offset( vy1, screen_size_half )
+        pt2 = pt1.offset( vx2, screen_size )
+        pt3 = pt2.offset( vy2, screen_size )
+        pt4 = pt3.offset( vx1, screen_size )
+        
+        marker_points = [ pt1, pt2, pt3, pt4 ]
+        if selected
+          view.draw( GL_QUADS, marker_points )
+        else
+          view.draw( GL_LINE_LOOP, marker_points )
+        end
+      end
+      true
+    end
+    
+    # @param [Sketchup::View] view
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_vertex_handles( view, vertices )
+      return false if vertices.empty?
+      tr = view.model.edit_transform
+      
+      arms = []
+      points = []
+      
+      for vertex in vertices
+        vertex_position = vertex.position.transform( tr )
+        for handle in vertex.handles
+          next unless handle.linked?
+          handle_position = handle.position.transform( tr )
+          arms << vertex_position
+          arms << handle_position
+          points << handle_position
+        end
+      end
+      
+      view.line_stipple = ''
+      view.line_width = 2
+      view.drawing_color = 'orange'
+      view.draw( GL_LINES, arms )
+      
+      draw_circles( view, points, 'green' )
+      true
     end
     
     # @param [Sketchup::View] view
