@@ -737,66 +737,66 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurface.update_attributes' )
       debug_time_start = Time.now
       
-    # ### DATA FORMAT ###
-    #
-    # Data is stored in an dictionary named: ATTR_ID ('TT_Mesh')
-    #   In case of future alternative mesh types this attribute is used to
-    #   identify the type of mesh. This is to reduce the number of dictionary
-    #   names used.
-    #
-    # KEY: ATTR_TYPE ('Type')
-    #   VALUE: MESH_TYPE ('BezierSurface')
-    #
-    #
-    # KEY: ATTR_VERSION ('Version')
-    #   VALUE: MESH_VERSION.to_s ('n.n.n')
-    #
-    #   Identifies the data format version.
-    #
-    #
-    # KEY: ATTR_SUBDIVS ('Subdivs')
-    #   VALUE: n (Integer)
-    #
-    #   Number of subdivisions.
-    #
-    #
-    # KEY: ATTR_POSITIONS ('Positions')
-    #   VALUE: Array< Point3d >
-    #
-    #   Array of 3d positions for each control point in the mesh.
-    #   Array is 1:1 mapping of surface.control_points.
-    #
-    #
-    # KEY: 'Vertices'
-    #   VALUE: Array< {
-    #     'Position' => POINT_INDEX,
-    #     'Links' => 你RRAY_LINKS
-    #   }.to_a >
-    #
-    #   Array of BezierVertex objects mapped to a property hash.
-    #   The property hash is converted to an array before it's stored in the
-    #   dictionary because SketchUp store Hash object as Nil.
-    #
-    #
-    # KEY: 'Handles'
-    #   VALUE: Array< {
-    #     'Position' => POINT_INDEX,
-    #     'Links' => 你RRAY_LINKS
-    #   }.to_a >
-    #
-    #   Array of BezierHandle objects mapped to a property hash.
-    #
-    #
-    # KEY: 'InteriorPoints'
-    #   VALUE: Array< {
-    #     'Position' => POINT_INDEX,
-    #     'Links' => 你RRAY_LINKS
-    #   }.to_a >
-    #
-    #   Array of BezierInteriorPoint objects mapped to a property hash.
-    #
-    #
-    # 你RRAY_LINKS
+      # ### DATA FORMAT ###
+      #
+      # Data is stored in an dictionary named: ATTR_ID ('TT_Mesh')
+      #   In case of future alternative mesh types this attribute is used to
+      #   identify the type of mesh. This is to reduce the number of dictionary
+      #   names used.
+      #
+      # KEY: ATTR_TYPE ('Type')
+      #   VALUE: MESH_TYPE ('BezierSurface')
+      #
+      #
+      # KEY: ATTR_VERSION ('Version')
+      #   VALUE: MESH_VERSION.to_s ('n.n.n')
+      #
+      #   Identifies the data format version.
+      #
+      #
+      # KEY: ATTR_SUBDIVS ('Subdivs')
+      #   VALUE: n (Integer)
+      #
+      #   Number of subdivisions.
+      #
+      #
+      # KEY: ATTR_POSITIONS ('Positions')
+      #   VALUE: Array< Point3d >
+      #
+      #   Array of 3d positions for each control point in the mesh.
+      #   Array is 1:1 mapping of surface.control_points.
+      #
+      #
+      # KEY: 'Vertices'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierVertex objects mapped to a property hash.
+      #   The property hash is converted to an array before it's stored in the
+      #   dictionary because SketchUp store Hash object as Nil.
+      #
+      #
+      # KEY: 'Handles'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierHandle objects mapped to a property hash.
+      #
+      #
+      # KEY: 'InteriorPoints'
+      #   VALUE: Array< {
+      #     'Position' => POINT_INDEX,
+      #     'Links' => 你RRAY_LINKS
+      #   }.to_a >
+      #
+      #   Array of BezierInteriorPoint objects mapped to a property hash.
+      #
+      #
+      # 你RRAY_LINKS
       #
       #
       #
