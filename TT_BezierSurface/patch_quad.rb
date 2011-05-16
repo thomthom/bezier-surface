@@ -30,7 +30,6 @@ module TT::Plugins::BezierSurfaceTools
       }
         raise ArgumentError, 'points must be Point3d objects.'
       end
-      #TT::Point3d.extend_all( points )
       
       # Init superclass. (Extends points into Point3d_Ex.)
       super
@@ -87,6 +86,12 @@ module TT::Plugins::BezierSurfaceTools
       for point in control_points
         point.link( self )
       end
+      
+      verts = vertices
+      @interior_points[0].link( verts[0] )
+      @interior_points[1].link( verts[1] )
+      @interior_points[2].link( verts[3] )
+      @interior_points[3].link( verts[2] )
     end
     
     # @private (protected)
@@ -252,6 +257,30 @@ module TT::Plugins::BezierSurfaceTools
       end
       points
     end
+
+    # Returns an array of +BezierEdge+ objects in clock-wise order.
+    #
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
+    def edges
+      fail_if_invalid()
+      @edgeuses.map { |edgeuse| edgeuse.edge }
+    end
+    
+    # Returns an array of +BezierEdge+ objects in clock-wise order.
+    #
+    # @return [Array<BezierVertex>]
+    # @since 1.0.0
+    def vertices
+      fail_if_invalid()
+      edge1 = @edgeuses[0].edge
+      edge2 = @edgeuses[2].edge
+      v1 = edge1.vertices
+      v2 = edge2.vertices
+      v1.reverse! if edge1.reversed_in?( self )
+      v2.reverse! if edge2.reversed_in?( self )
+      v1 + v2.reverse
+    end
     
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
@@ -307,15 +336,6 @@ module TT::Plugins::BezierSurfaceTools
         points.set_column( index, TT::Geom3d::Bezier.points(column, subdiv) )
       }
       points
-    end
-    
-    # Returns an array of +BezierEdge+ objects in clock-wise order.
-    #
-    # @return [Array<BezierEdge>]
-    # @since 1.0.0
-    def edges
-      fail_if_invalid()
-      @edgeuses.map { |edgeuse| edgeuse.edge }
     end
     
     # (?) Private
