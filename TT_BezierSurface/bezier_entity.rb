@@ -107,6 +107,16 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def used_by?( bezier_entity )
       fail_if_invalid()
+      for type, entities in bezier_entity.links
+        return true if entities.include?( self )
+      end
+      false
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def links_to?( bezier_entity )
+      fail_if_invalid()
       for type, entities in @links
         return true if entities.include?( bezier_entity )
       end

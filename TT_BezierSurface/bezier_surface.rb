@@ -130,6 +130,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       TT.debug "> cpoints: #{cpoints.size} (#{cpoints.nitems})"
       
+      # (!) Read ControlPoints
+      
       # Read Edges
       edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )     
       edge_sets = []
@@ -153,6 +155,7 @@ module TT::Plugins::BezierSurfaceTools
         type            = patch_data[ 'Type' ]
         edgeuses        = patch_data[ 'EdgeUses' ]
         interior_points = patch_data[ 'InteriorPoints' ]
+        automatic       = patch_data[ 'Automatic' ]
         
         # The patch type string is eval'ed into a Class object which is then
         # used to load the patch data. The patch is left with the resonsibility
@@ -182,7 +185,8 @@ module TT::Plugins::BezierSurfaceTools
         TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
         
         # Add patch
-        patch = patchtype.restore( self, edgeuses_set, interior_points )
+        patch = patchtype.restore( self, edgeuses_set, interior_points ) # (!) hash
+        patch.automatic = automatic
         self.add_patch( patch )
       end
       
@@ -855,22 +859,16 @@ module TT::Plugins::BezierSurfaceTools
         BezierInteriorPoint => 'InteriorPoints'
       }
       for control_point in cpoints
-        # Map linked BezierControlPoints to their indexes.
-        links = {}
-        for type, entities in control_point.links
-          key = keys[ type ]
-          next unless key
-          links[ key ] ||= []
-          for entity in entities
-            if entity.is_a?( BezierControlPoint )
-              links[ key ] << point_index[ entity ]
-            end
-          end
+        # Generic properties
+        properties = {
+          'Position' => point_index[ control_point ]
+        }
+        # BezierHandle
+        if control_point.is_a?( BezierHandle )
+          properties['Linked'] = control_point.linked?
         end
-        cpoint_data[ control_point.class ] << {
-          'Position' => point_index[ control_point ],
-          'Links' => links.to_a
-        }.to_a
+        #
+        cpoint_data[ control_point.class ] << properties.to_a
       end
       d.set_attribute( ATTR_ID, 'Vertices', cpoint_data[ BezierVertex ] )
       d.set_attribute( ATTR_ID, 'Handles', cpoint_data[ BezierHandle ] )
@@ -912,7 +910,8 @@ module TT::Plugins::BezierSurfaceTools
         patch_data << {
           'Type'            => patch.typename,
           'EdgeUses'        => edgeuses_data,
-          'InteriorPoints'  => interior_points
+          'InteriorPoints'  => interior_points,
+          'Automatic'       => patch.automatic?
         }.to_a
       end
       d.set_attribute( ATTR_ID, ATTR_PATCHES, patch_data )

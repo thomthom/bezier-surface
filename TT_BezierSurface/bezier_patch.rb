@@ -19,7 +19,6 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   module BezierPatch
     
-    attr_accessor( :reversed ) # (!) Not currently implemented!
     attr_accessor( :edgeuses, :interior_points )
     
     def initialize( parent, points )
@@ -27,16 +26,23 @@ module TT::Plugins::BezierSurfaceTools
       
       super()
       
-      #BezierVertex.extend_all( points )
       TT::Point3d.extend_all( points )
       
       @parent = parent # BezierSurface
-      @reversed = false
+      @automatic = true
       @edgeuses = []
-      
-      #for point in control_points
-      #  point.link( self )
-      #end
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def automatic?
+      @automatic ==  true
+    end
+    
+    # @return [Boolean]
+    # @since 1.0.0
+    def automatic=( is_automatic )
+      @automatic = ( is_automatic == true )
     end
     
     # Subclasses must implement these methods:
@@ -63,7 +69,7 @@ module TT::Plugins::BezierSurfaceTools
     def set_edge( old_edge, new_edge )
       fail_if_invalid()
       # Ensure the old edge belongs to this patch.
-      unless old_edge.used_by?( self )
+      unless old_edge.links_to?( self )
         raise ArgumentError, 'Edge not related to Patch.'
       end
       
