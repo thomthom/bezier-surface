@@ -177,7 +177,7 @@ module TT::Plugins::BezierSurfaceTools
       edge_data = d.get_attribute( ATTR_ID, ATTR_EDGES )     
       edge_sets = []
       for indexes in edge_data
-        points = indexes.map { |index| positions[index] }
+        points = indexes.map { |index| cpoints[index] }
         unless points.nitems == 4
           raise 'Invalid control points.'
         end

@@ -164,7 +164,7 @@ module TT::Plugins::BezierSurfaceTools
         edgeuse.edge.link( patch )
         edgeuse.reversed = prototype.reversed?
       }
-      patch.merge_vertices
+      #patch.merge_vertices
       patch
     end
     
@@ -460,8 +460,7 @@ module TT::Plugins::BezierSurfaceTools
     def add_to_mesh( mesh, subdiv, transformation )
       fail_if_invalid()
       triangulate = false # (?) Instance variable
-      #inversed = false # (?) Instance variable
-      inversed = self.reversed # (!)
+      inversed = false
 
       pts = mesh_points( subdiv, transformation )
       

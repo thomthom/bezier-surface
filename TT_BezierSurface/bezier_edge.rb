@@ -18,7 +18,7 @@ module TT::Plugins::BezierSurfaceTools
   class BezierEdge < BezierEntity
     
     # @param [BezierSurface] parent
-    # @param [Array<Geom::Point3d>] points Bezier control points
+    # @param [Array<Geom::Point3d>|Array<BezierControlPoint>] points
     #
     # @since 1.0.0
     def initialize( parent, points )
@@ -26,12 +26,27 @@ module TT::Plugins::BezierSurfaceTools
       super()
       @links[ BezierPatch ] = []
       @parent = parent # BezierSurface
-      @control_points = [
-        BezierVertex.new( @parent, ORIGIN.clone ),
-        BezierHandle.new( @parent, ORIGIN.clone ),
-        BezierHandle.new( @parent, ORIGIN.clone ),
-        BezierVertex.new( @parent, ORIGIN.clone )
-      ].each { |control_point|
+      if points.all? { |pt| pt.is_a?( BezierControlPoint ) }
+        p1, p2, p3, p4 = points
+        unless  p1.is_a?( BezierVertex ) &&
+                p2.is_a?( BezierHandle ) &&
+                p3.is_a?( BezierHandle ) &&
+                p4.is_a?( BezierVertex )
+          raise ArgumentError, 'Invalid ControlPoint'
+        end
+        @control_points = points.dup
+      else
+        @control_points = [
+          BezierVertex.new( @parent, ORIGIN.clone ),
+          BezierHandle.new( @parent, ORIGIN.clone ),
+          BezierHandle.new( @parent, ORIGIN.clone ),
+          BezierVertex.new( @parent, ORIGIN.clone )
+        ]
+        # Update positions
+        self.control_points = points
+      end
+      # Link Control points with Edge
+      @control_points.each { |control_point|
         control_point.link( self )
       }
       # Link vertices with handles
@@ -40,8 +55,6 @@ module TT::Plugins::BezierSurfaceTools
       # Link handles with vertices
       self.start_handle.link( self.start )
       self.end_handle.link( self.end )
-      # Update positions
-      self.control_points = points
     end
     
     # @return [Array<BezierPatch>]
@@ -312,7 +325,6 @@ module TT::Plugins::BezierSurfaceTools
       }
       # Create the BezierPatch entity, add all entity assosiations.
       new_patch = QuadPatch.new( surface, points )
-      new_patch.reversed = true if patch.reversed
       new_patch.set_edge( new_patch.edges.last, self )
       self.link( new_patch )
       
