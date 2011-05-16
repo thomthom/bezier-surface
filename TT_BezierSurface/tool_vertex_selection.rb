@@ -154,14 +154,12 @@ module TT::Plugins::BezierSurfaceTools
     
     def onMouseMove(flags, x, y, view)
       @mouse_over_vertex = false
-      if @gizmo.onMouseMove(flags, x, y, view)
-        #view.invalidate
+      if @state == S_NORMAL && @gizmo.onMouseMove(flags, x, y, view)
       else
         @ip_mouse.pick(view, x, y)
         @screen_mouse = Geom::Point3d.new( x, y, 0 )
         if flags & MK_LBUTTON == MK_LBUTTON
           @state = S_DRAG
-          #view.invalidate
         else
           @mouse_over_vertex = @surface.pick_control_points(x, y, view)
           @mouse_over_vertex = false if @mouse_over_vertex.empty?
@@ -259,11 +257,10 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def draw(view)
-      selection_points = @editor.selection.map { |cpt| cpt.position }
       @surface.draw_internal_grid( view, @preview )
       @surface.draw_edges( view, @surface.edges, CLR_EDGE, 2, @preview )
       @surface.draw_control_grid( view )
-      @surface.draw_control_points( view, selection_points )
+      @surface.draw_control_points( view, @editor.selection )
       
       case @state
       when S_NORMAL

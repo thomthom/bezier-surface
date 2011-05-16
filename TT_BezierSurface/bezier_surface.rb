@@ -513,8 +513,8 @@ module TT::Plugins::BezierSurfaceTools
       view.line_width = 2
       # Prepare points
       #unselected = (control_points - selected).map { |pt| pt.transform(tr) }
-      all_points = control_points.map { |pt| pt.position.transform(tr) }
-      selected = selected.map { |pt| pt.transform(tr) }
+      all_points = control_points.map { |cpt| cpt.position.transform(tr) }
+      selected = selected.map { |cpt| cpt.position.transform(tr) }
       # Drawing
       #unless unselected.empty?
       #  view.draw_points( unselected, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
