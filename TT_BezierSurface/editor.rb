@@ -286,20 +286,10 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'Select_24.png' )
         @toolbar.add_control( button )
         
-        # Select Edge
-        button = TT::GUI::ToolbarButton.new('Select Edges') {
-          puts 'Tool: Select Edges'
-          tool = EdgeSelectionTool.new( self )
-          select_tool( tool )
-          TT::SketchUp.activate_main_window
-        }
-        button.icon = File.join( PATH_ICONS, 'Select_24.png' )
-        @toolbar.add_control( button )
-        
-        # Select Handles
-        button = TT::GUI::ToolbarButton.new('Select Handles') {
-          puts 'Tool: Select Handles'
-          tool = BezierHandleTool.new( self )
+        # Select
+        button = TT::GUI::ToolbarButton.new('Select') {
+          puts 'Tool: Select'
+          tool = SelectionTool.new( self )
           select_tool( tool )
           TT::SketchUp.activate_main_window
         }

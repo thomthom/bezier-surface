@@ -8,7 +8,7 @@
 
 module TT::Plugins::BezierSurfaceTools
   
-  class BezierHandleTool
+  class SelectionTool
     
     def initialize( editor )
       @editor = editor
@@ -133,6 +133,6 @@ module TT::Plugins::BezierSurfaceTools
       UI.set_cursor( cursor )
     end
     
-  end # class BezierHandleTool
+  end # class SelectionTool
 
 end # module
