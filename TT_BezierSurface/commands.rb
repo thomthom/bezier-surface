@@ -20,6 +20,7 @@ module TT::Plugins::BezierSurfaceTools
     return false unless editor.selection.size == 1
     edge = editor.selection[0]
     return false unless edge.is_a?( BezierEdge )
+    return false if edge.patches.size > 1
     edge.extrude_quad_patch
     true
   end
