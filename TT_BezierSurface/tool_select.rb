@@ -10,21 +10,18 @@ module TT::Plugins::BezierSurfaceTools
   
   class SelectionTool
     
-    S_NORMAL  = 0
-    S_DRAG    = 1
+    STATE_NORMAL  = 0
+    STATE_DRAG    = 1
     
     def initialize( editor )
       @editor = editor
       @surface = editor.surface
       
-      #@ip_start = Sketchup::InputPoint.new
-      #@ip_mouse = Sketchup::InputPoint.new
-      
       @selection_rectangle = SelectionRectangle.new( @surface )
       
       # Tool state.
-      # Set to S_DRAG when a selection box is active.
-      @state = S_NORMAL
+      # Set to STATE_DRAG when a selection box is active.
+      @state = STATE_NORMAL
       
       # Used by onSetCursor
       @key_ctrl = false
@@ -57,11 +54,11 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
     end
     
-    def deactivate(view)
+    def deactivate( view )
       view.invalidate
     end
     
-    def resume(view)
+    def resume( view )
       view.invalidate
       update_ui()
     end
@@ -79,11 +76,11 @@ module TT::Plugins::BezierSurfaceTools
     
     def onMouseMove( flags, x, y, view )
       if flags & MK_LBUTTON == MK_LBUTTON
-        @state = S_DRAG
+        @state = STATE_DRAG
         @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
         view.invalidate
       else
-        @state = S_NORMAL
+        @state = STATE_NORMAL
         result = @surface.pick_vertices( x, y, view )
         @mouse_over_vertex = !result.empty?
       end
@@ -93,7 +90,7 @@ module TT::Plugins::BezierSurfaceTools
       @selection_rectangle.start = Geom::Point3d.new( x, y, 0 )
     end
     
-    def onLButtonUp(flags, x, y, view)      
+    def onLButtonUp( flags, x, y, view )      
       # Get key modifier controlling how the selection should be modified.
       # Using standard SketchUp selection modifier keys.
       key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
@@ -101,7 +98,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Pick entities.
       entities = []
-      if @state == S_NORMAL
+      if @state == STATE_NORMAL
         # Pick priority:
         # * Control Points
         # * Edges
@@ -131,7 +128,7 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.add( entities )
       end
       
-      @state = S_NORMAL
+      @state = STATE_NORMAL
       @selection_rectangle.reset
       view.invalidate
     end
