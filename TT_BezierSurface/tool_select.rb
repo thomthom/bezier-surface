@@ -63,6 +63,13 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
     end
     
+    def getMenu( menu )
+      menu.add_item( 'Select All' ) { puts '01' }
+      menu.add_item( 'Select None' ) { puts '02' }
+      menu.add_item( 'Invert Selection' ) { puts '03' }
+      @editor.context_menu( menu )
+    end
+    
     def onUserText( text, view )
       subdivs = text.to_i
       if SUBDIVS_RANGE.include?( subdivs )

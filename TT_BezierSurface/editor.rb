@@ -67,6 +67,23 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # Adds standard context menu items.
+    #
+    # @param [Sketchup::Menu] instance
+    #
+    # @return [Sketchup::Menu]
+    # @since 1.0.0
+    def context_menu( menu )
+      menu.add_separator
+      menu.add_item( 'Show All Handles' ) { puts 'n01' }
+      menu.add_item( 'Show Interior' ) { puts 'n02' }
+      menu.add_separator
+      menu.add_item( 'Close Instance' ) {
+        end_session()
+      }
+      menu
+    end
+    
     # Activates a bezier editing tool - pushing it into SketchUp's tool stack.
     #
     # @param [Sketchup::Tool] tool
