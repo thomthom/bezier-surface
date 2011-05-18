@@ -163,12 +163,17 @@ module TT::Plugins::BezierSurfaceTools
       unselected_vertices = @surface.vertices - selected_vertices
       unselected_edges = @surface.edges - selected_edges
       
+      edge_vertices = selected_edges.map { |edge| edge.vertices }
+      edge_vertices.flatten!
+      
+      active_vertices = selected_vertices + edge_vertices
+      
       @surface.draw_internal_grid( view )
       @surface.draw_edges( view, unselected_edges, CLR_EDGE, 2 )
       @surface.draw_edges( view, selected_edges, CLR_CTRL_GRID, 5 )
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
-      @surface.draw_vertex_handles( view, selected_vertices )
+      @surface.draw_vertex_handles( view, active_vertices )
       
       @selection_rectangle.draw( view )
     end
