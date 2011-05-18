@@ -64,9 +64,15 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def getMenu( menu )
-      menu.add_item( 'Select All' ) { puts '01' }
-      menu.add_item( 'Select None' ) { puts '02' }
-      menu.add_item( 'Invert Selection' ) { puts '03' }
+      m = menu.add_item( 'Select All' ) { puts '01' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
+      m = menu.add_item( 'Select None' ) { puts '02' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
+      m = menu.add_item( 'Invert Selection' ) { puts '03' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
       @editor.context_menu( menu )
     end
     
@@ -182,13 +188,15 @@ module TT::Plugins::BezierSurfaceTools
       patch_vertices.flatten!
       active_vertices = selected_vertices + edge_vertices + patch_vertices
       
+      # Draw patches last because it uses transparent colour. SketchUp seem to
+      # cull out any opaque drawing that happens after transparent drawing.
       @surface.draw_internal_grid( view )
-      @surface.draw_patches( view, selected_patches )
       @surface.draw_edges( view, unselected_edges, CLR_EDGE, 2 )
       @surface.draw_edges( view, selected_edges, CLR_EDGE_SELECTED, 5 )
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
       @surface.draw_vertex_handles( view, active_vertices )
+      @surface.draw_patches( view, selected_patches )
       
       @selection_rectangle.draw( view )
     end

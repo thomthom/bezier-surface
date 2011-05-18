@@ -75,12 +75,17 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def context_menu( menu )
       menu.add_separator
-      menu.add_item( 'Show All Handles' ) { puts 'n01' }
-      menu.add_item( 'Show Interior' ) { puts 'n02' }
+      
+      m = menu.add_item( 'Show All Handles' ) { puts 'n01' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
+      m = menu.add_item( 'Show Interior' ) { puts 'n02' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
       menu.add_separator
-      menu.add_item( 'Close Instance' ) {
-        end_session()
-      }
+      
+      menu.add_item( 'Close Instance' ) { end_session() }
+      
       menu
     end
     
