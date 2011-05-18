@@ -20,12 +20,18 @@ module TT::Plugins::BezierSurfaceTools
       # Used by onSetCursor
       @key_ctrl = false
       @key_shift = false
+      @mouse_over_vertex = false
       
-      @cursor         = TT::Cursor.get_id(:select)
-      @cursor_add     = TT::Cursor.get_id(:select_add)
-      @cursor_remove  = TT::Cursor.get_id(:select_remove)
-      @cursor_toggle  = TT::Cursor.get_id(:select_toggle)
-    end
+      @cursor         = TT::Cursor.get_id( :select )
+      @cursor_add     = TT::Cursor.get_id( :select_add )
+      @cursor_remove  = TT::Cursor.get_id( :select_remove )
+      @cursor_toggle  = TT::Cursor.get_id( :select_toggle )
+      
+      @cursor_vertex        = TT::Cursor.get_id( :vertex )
+      @cursor_vertex_add    = TT::Cursor.get_id( :vertex_add )
+      @cursor_vertex_remove = TT::Cursor.get_id( :vertex_remove )
+      @cursor_vertex_toggle = TT::Cursor.get_id( :vertex_toggle )
+    end    
     
     def update_ui
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
@@ -43,6 +49,11 @@ module TT::Plugins::BezierSurfaceTools
     def resume(view)
       view.invalidate
       update_ui()
+    end
+    
+    def onMouseMove(flags, x, y, view)
+      result = @surface.pick_vertices( x, y, view )
+      @mouse_over_vertex = !result.empty?
     end
     
     def onLButtonUp(flags, x, y, view)      
@@ -122,13 +133,13 @@ module TT::Plugins::BezierSurfaceTools
     
     def onSetCursor
       if @key_ctrl && @key_shift
-        cursor = @cursor_remove
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
       elsif @key_ctrl
-        cursor = @cursor_add
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_add : @cursor_add
       elsif @key_shift
-        cursor = @cursor_toggle
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_toggle : @cursor_toggle
       else
-        cursor = @cursor
+        cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
       end
       UI.set_cursor( cursor )
     end
