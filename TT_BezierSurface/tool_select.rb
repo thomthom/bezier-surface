@@ -10,12 +10,21 @@ module TT::Plugins::BezierSurfaceTools
   
   class SelectionTool
     
+    S_NORMAL  = 0
+    S_DRAG    = 1
+    
     def initialize( editor )
       @editor = editor
       @surface = editor.surface
       
       #@ip_start = Sketchup::InputPoint.new
       #@ip_mouse = Sketchup::InputPoint.new
+      
+      @selection_rectangle = SelectionRectangle.new( @surface )
+      
+      # Tool state.
+      # Set to S_DRAG when a selection box is active.
+      @state = S_NORMAL
       
       # Used by onSetCursor
       @key_ctrl = false
@@ -68,9 +77,20 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
     end
     
-    def onMouseMove(flags, x, y, view)
-      result = @surface.pick_vertices( x, y, view )
-      @mouse_over_vertex = !result.empty?
+    def onMouseMove( flags, x, y, view )
+      if flags & MK_LBUTTON == MK_LBUTTON
+        @state = S_DRAG
+        @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
+        view.invalidate
+      else
+        @state = S_NORMAL
+        result = @surface.pick_vertices( x, y, view )
+        @mouse_over_vertex = !result.empty?
+      end
+    end
+    
+    def onLButtonDown( flags, x, y, view )
+      @selection_rectangle.start = Geom::Point3d.new( x, y, 0 )
     end
     
     def onLButtonUp(flags, x, y, view)      
@@ -80,20 +100,24 @@ module TT::Plugins::BezierSurfaceTools
       key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
       
       # Pick entities.
-      #
-      # Pick priority:
-      # * Control Points
-      # * Edges
-      # * Patches
       entities = []
-      vertices = @surface.pick_vertices( x, y, view )
-      if vertices.empty?
-        edges = @surface.pick_edges( @surface.subdivs, x, y, view )
+      if @state == S_NORMAL
+        # Pick priority:
+        # * Control Points
+        # * Edges
+        # * Patches
+        vertices = @surface.pick_vertices( x, y, view )
+        if vertices.empty?
+          edges = @surface.pick_edges( @surface.subdivs, x, y, view )
+        else
+          edges = []
+        end
+        entities.concat( vertices )
+        entities.concat( edges )
       else
-        edges = []
+        availible = @surface.vertices + @surface.edges
+        entities = @selection_rectangle.selected_entities( view, availible )
       end
-      entities.concat( vertices )
-      entities.concat( edges )
       
       # Update selection.
       if key_ctrl && key_shift
@@ -107,6 +131,8 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.add( entities )
       end
       
+      @state = S_NORMAL
+      @selection_rectangle.reset
       view.invalidate
     end
     
@@ -146,6 +172,8 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
       @surface.draw_vertex_handles( view, selected_vertices )
+      
+      @selection_rectangle.draw( view )
     end
     
     def onSetCursor

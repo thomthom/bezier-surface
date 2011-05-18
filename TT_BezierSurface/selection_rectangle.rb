@@ -13,9 +13,16 @@ module TT::Plugins::BezierSurfaceTools
     attr_accessor( :start, :end )
     
     # @since 1.0.0
-    def initialize
+    def initialize( surface )
+      @surface = surface
       @start = nil  # Geom::Point3d
       @end = nil    # Geom::Point3d
+    end
+    
+    # @since 1.0.0
+    def reset
+      @start = nil
+      @end = nil
     end
     
     # @return [Boolean]
@@ -49,9 +56,11 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Boolean]
     # @since 1.0.0
-    def selected?( view, point_or_segment )
+    def selected?( view, entity )
       return false unless valid?
-      is_selected?( view, point_or_segment, selection_polygon() )
+      polygon = selection_polygon()
+      transformation = view.model.edit_transform
+      is_selected?( view, entity, transformation, polygon )
     end
     
     # @param [Sketchup::View] view
@@ -59,11 +68,12 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Mixed]
     # @since 1.0.0
-    def selected_items( view, points_or_segments )
-      return false unless valid?
+    def selected_entities( view, entities )
+      return [] unless valid?
       polygon = selection_polygon()
-      points_or_segments.select { |item|
-        is_selected?( view, point_or_segment, polygon )
+      transformation = view.model.edit_transform
+      entities.select { |entity|
+        is_selected?( view, entity, transformation, polygon )
       }
     end
     
@@ -74,13 +84,15 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Boolean]
     # @since 1.0.0
-    def is_selected?( view, point_or_segment, polygon )
-      if point_or_segment.is_a?( Geom::Point3d )
-        in_polygon?( view, [item], polygon )
-      elsif point_or_segment.is_a?( Array )
-        in_polygon?( view, item, polygon )
+    def is_selected?( view, entity, transformation, polygon )
+      if entity.is_a?( BezierControlPoint )
+        point = entity.position.transform( transformation )
+        in_polygon?( view, [point], polygon )
+      elsif entity.is_a?( BezierEdge )
+        segment = entity.segment( @surface.subdivs, transformation )
+        in_polygon?( view, segment, polygon )
       else
-        raise ArgumentError, 'Argument must be Point3d or a segment.'
+        raise ArgumentError, 'Argument must be BezierControlPoint or a BezierEdge.'
       end
     end
     
