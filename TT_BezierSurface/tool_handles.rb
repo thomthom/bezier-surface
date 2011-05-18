@@ -14,12 +14,12 @@ module TT::Plugins::BezierSurfaceTools
       @editor = editor
       @surface = editor.surface
       
-      @ip_start = Sketchup::InputPoint.new			
-			@ip_mouse = Sketchup::InputPoint.new
+      #@ip_start = Sketchup::InputPoint.new			
+			#@ip_mouse = Sketchup::InputPoint.new
       
       # Used by onSetCursor
-      @select_ctrl = false
-      @select_shift = false
+      @key_ctrl = false
+      @key_shift = false
       
       @cursor         = TT::Cursor.get_id(:select)
       @cursor_add     = TT::Cursor.get_id(:select_add)
@@ -28,7 +28,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def update_ui
-      Sketchup.status_text = 'Click an handle to manipulate it.'
+      Sketchup.status_text = 'Click an entity to select and manipulate it.'
     end
     
     def activate    
@@ -51,23 +51,23 @@ module TT::Plugins::BezierSurfaceTools
       key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
       key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
       
-      # Pick entities
+      # Pick entities.
+      #
+      # Pick priority:
+      # * Control Points
+      # * Edges
+      # * Patches
       entities = []
-      
       vertices = @surface.pick_vertices( x, y, view )
       if vertices.empty?
         edges = @surface.pick_edges( @surface.subdivs, x, y, view )
       else
         edges = []
       end
-      
       entities.concat( vertices )
       entities.concat( edges )
       
-      #puts "Selected Vertices: #{vertices.size}"
-      #puts "Selected Edges: #{edges.size}"
-      
-      # Update selection
+      # Update selection.
       if key_ctrl && key_shift
         @editor.selection.remove( entities )
       elsif key_ctrl
@@ -79,21 +79,19 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.add( entities )
       end
       
-      #puts "Selection: #{@editor.selection.size}"
-      
       view.invalidate
     end
     
     def onKeyDown(key, repeat, flags, view)
-      @select_ctrl  = true if key == COPY_MODIFIER_KEY
-      @select_shift = true if key == CONSTRAIN_MODIFIER_KEY
+      @key_ctrl  = true if key == COPY_MODIFIER_KEY
+      @key_shift = true if key == CONSTRAIN_MODIFIER_KEY
       onSetCursor() # This blocks the VCB. (But "p onSetCursor()" does not.. ? )
       false # The VCB is not blocked as long as onSetCursor isn't the last call.
     end
     
     def onKeyUp(key, repeat, flags, view)
-      @select_ctrl  = false if key == COPY_MODIFIER_KEY
-      @select_shift = false if key == CONSTRAIN_MODIFIER_KEY
+      @key_ctrl  = false if key == COPY_MODIFIER_KEY
+      @key_shift = false if key == CONSTRAIN_MODIFIER_KEY
       onSetCursor()
       false
     end
@@ -123,11 +121,11 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onSetCursor
-      if @select_ctrl && @select_shift
+      if @key_ctrl && @key_shift
         cursor = @cursor_remove
-      elsif @select_ctrl
+      elsif @key_ctrl
         cursor = @cursor_add
-      elsif @select_shift
+      elsif @key_shift
         cursor = @cursor_toggle
       else
         cursor = @cursor
