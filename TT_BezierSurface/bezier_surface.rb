@@ -404,6 +404,35 @@ module TT::Plugins::BezierSurfaceTools
       picked.uniq
     end
     
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [BezierPatch|Nil]
+    # @since 1.0.0
+    def pick_patch( x, y, view )
+      ph = view.pick_helper
+      ph.do_pick( x, y )
+      face = ph.picked_face
+      return nil unless face
+      # Find patch related to face.
+      subdivs = self.subdivs
+      transformation = view.model.edit_transform
+      positions = face.vertices.map { |vertex| vertex.position }
+      TT::Point3d.extend_all( positions )
+      for patch in @patches
+        points = patch.mesh_points( subdivs, transformation ).to_a
+        c = 0
+        for point in points
+          for position in positions
+            c += 1 if position == point
+          end
+        end
+        return patch if positions.size == c
+      end
+      nil
+    end
+    
     # @param [Sketchup::View] view
     #
     # @return [Nil]
@@ -520,6 +549,35 @@ module TT::Plugins::BezierSurfaceTools
         else
           patch.draw_internal_grid( @subdivs, view )
         end
+      end
+      nil
+    end
+    
+    # @param [Sketchup::View] view
+    # @param [Array<BezierPatch>] patches
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def draw_patches( view, patches )
+      tr = view.model.edit_transform
+      subd = @subdivs
+      view.drawing_color = CLR_PATCH
+      for patch in patches
+        points = patch.mesh_points( subd, tr )
+        quads = []
+        for y in (0...points.height-1)
+          for x in (0...points.width-1)
+            row = y * points.width
+            indexes = [
+              x+row,
+              x+1+row,
+              x+points.width+1+row,
+              x+points.width+row
+            ]
+            quads.concat( indexes.map { |i| points[i] } )
+          end
+        end
+        view.draw( GL_QUADS, quads )
       end
       nil
     end

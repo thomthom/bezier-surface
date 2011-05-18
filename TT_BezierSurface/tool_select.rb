@@ -106,18 +106,19 @@ module TT::Plugins::BezierSurfaceTools
       # Pick entities.
       entities = []
       if @state == STATE_NORMAL
-        # Pick priority:
-        # * Control Points
-        # * Edges
-        # * Patches
-        vertices = @surface.pick_vertices( x, y, view )
-        if vertices.empty?
-          edges = @surface.pick_edges( @surface.subdivs, x, y, view )
-        else
-          edges = []
+        # Control Points
+        picked = @surface.pick_vertices( x, y, view )
+        entities.concat( picked )
+        # Edges
+        if entities.empty?
+          picked = @surface.pick_edges( @surface.subdivs, x, y, view )
+          entities.concat( picked )
         end
-        entities.concat( vertices )
-        entities.concat( edges )
+        # Patch
+        if entities.empty?
+          picked = @surface.pick_patch( x, y, view )
+          entities << picked if picked
+        end
       else
         availible = @surface.vertices + @surface.edges
         entities = @selection_rectangle.selected_entities( view, availible )
@@ -159,11 +160,14 @@ module TT::Plugins::BezierSurfaceTools
       
       selected_vertices = []
       selected_edges = []
+      selected_patches = []
       for entity in @editor.selection
         if entity.is_a?( BezierVertex )
           selected_vertices << entity
         elsif entity.is_a?( BezierEdge )
           selected_edges << entity
+        elsif entity.is_a?( BezierPatch )
+          selected_patches << entity
         end
       end
       
@@ -174,9 +178,12 @@ module TT::Plugins::BezierSurfaceTools
       # for each vertex.
       edge_vertices = selected_edges.map { |edge| edge.vertices }
       edge_vertices.flatten!
-      active_vertices = selected_vertices + edge_vertices
+      patch_vertices = selected_patches.map { |patch| patch.vertices }
+      patch_vertices.flatten!
+      active_vertices = selected_vertices + edge_vertices + patch_vertices
       
       @surface.draw_internal_grid( view )
+      @surface.draw_patches( view, selected_patches )
       @surface.draw_edges( view, unselected_edges, CLR_EDGE, 2 )
       @surface.draw_edges( view, selected_edges, CLR_EDGE_SELECTED, 5 )
       @surface.draw_vertices( view, unselected_vertices )
