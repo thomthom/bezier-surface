@@ -171,7 +171,7 @@ module TT::Plugins::BezierSurfaceTools
       
       @surface.draw_internal_grid( view )
       @surface.draw_edges( view, unselected_edges, CLR_EDGE, 2 )
-      @surface.draw_edges( view, selected_edges, CLR_CTRL_GRID, 5 )
+      @surface.draw_edges( view, selected_edges, CLR_EDGE_SELECTED, 5 )
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
       @surface.draw_vertex_handles( view, active_vertices )

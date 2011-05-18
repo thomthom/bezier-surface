@@ -65,11 +65,18 @@ module TT::Plugins::BezierSurfaceTools
   CTRL_GRID_LINE_WIDTH    = 3
   CTRL_GRID_BORDER_WIDTH  = 3
   
-  CLR_VERTEX    = Sketchup::Color.new( 255,   0,   0 )
-  CLR_EDGE      = Sketchup::Color.new(  64,  64, 128 )
-  CLR_MESH_GRID = Sketchup::Color.new( 128, 128, 128 )
-  CLR_CTRL_GRID = Sketchup::Color.new( 255, 165,   0 )
-  CLR_SELECTION = Sketchup::Color.new(  64,  64,  64 )
+  # Colours
+  
+  CLR_VERTEX        = Sketchup::Color.new( 255,   0,   0 )
+  CLR_HANDLE_POINT  = Sketchup::Color.new(   0, 128,   0 )
+  CLR_HANDLE_ARM    = Sketchup::Color.new(   0, 192,   0 )
+  CLR_EDGE          = Sketchup::Color.new(  64,  64, 128 )
+  CLR_EDGE_SELECTED = Sketchup::Color.new( 255, 165,   0 )
+  
+  CLR_MESH_GRID     = Sketchup::Color.new( 128, 128, 128 )
+  CLR_CTRL_GRID     = Sketchup::Color.new( 255, 165,   0 )
+  
+  CLR_SELECTION     = Sketchup::Color.new(  64,  64,  64 )
   
   CLR_PREVIEW_FILL    = Sketchup::Color.new( 128, 0, 255, 32 )
   CLR_PREVIEW_BORDER  = Sketchup::Color.new( 128, 0, 255 )

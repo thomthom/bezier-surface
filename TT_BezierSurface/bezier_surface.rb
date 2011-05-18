@@ -600,10 +600,10 @@ module TT::Plugins::BezierSurfaceTools
       
       view.line_stipple = ''
       view.line_width = 2
-      view.drawing_color = 'orange'
+      view.drawing_color = CLR_HANDLE_ARM
       view.draw( GL_LINES, arms )
       
-      draw_circles( view, points, 'green' )
+      draw_circles( view, points, CLR_HANDLE_POINT )
       true
     end
     
