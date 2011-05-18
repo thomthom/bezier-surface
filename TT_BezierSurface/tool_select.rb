@@ -14,8 +14,8 @@ module TT::Plugins::BezierSurfaceTools
       @editor = editor
       @surface = editor.surface
       
-      #@ip_start = Sketchup::InputPoint.new			
-			#@ip_mouse = Sketchup::InputPoint.new
+      #@ip_start = Sketchup::InputPoint.new
+      #@ip_mouse = Sketchup::InputPoint.new
       
       # Used by onSetCursor
       @key_ctrl = false
@@ -31,10 +31,16 @@ module TT::Plugins::BezierSurfaceTools
       @cursor_vertex_add    = TT::Cursor.get_id( :vertex_add )
       @cursor_vertex_remove = TT::Cursor.get_id( :vertex_remove )
       @cursor_vertex_toggle = TT::Cursor.get_id( :vertex_toggle )
-    end    
+    end
+
+    def enableVCB?
+      true
+    end
     
     def update_ui
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
+      Sketchup.vcb_label = 'Subdivisions'
+      Sketchup.vcb_value = @surface.subdivs
     end
     
     def activate    
@@ -47,6 +53,17 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def resume(view)
+      view.invalidate
+      update_ui()
+    end
+    
+    def onUserText( text, view )
+      subdivs = text.to_i
+      if SUBDIVS_RANGE.include?( subdivs )
+        @editor.change_subdivisions( subdivs )
+      else
+        UI.beep
+      end
       view.invalidate
       update_ui()
     end
