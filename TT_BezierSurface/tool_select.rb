@@ -163,9 +163,10 @@ module TT::Plugins::BezierSurfaceTools
       unselected_vertices = @surface.vertices - selected_vertices
       unselected_edges = @surface.edges - selected_edges
       
+      # Get selected vertices and selected entities' vertices. Display handles
+      # for each vertex.
       edge_vertices = selected_edges.map { |edge| edge.vertices }
       edge_vertices.flatten!
-      
       active_vertices = selected_vertices + edge_vertices
       
       @surface.draw_internal_grid( view )
