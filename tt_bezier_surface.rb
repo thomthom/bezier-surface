@@ -151,15 +151,27 @@ module TT::Plugins::BezierSurfaceTools
       model = Sketchup.active_model
       sel = model.selection
       if sel.length == 1 && BezierSurface.is?( sel[0] )
-        m = context_menu.add_submenu( PLUGIN_NAME )
-        m.add_item('Clone') { }
-        m.add_item('Select Clones') { }
-        m.add_item('Replace Clones') { }
-        m.add_separator
-        m.add_item('Update') { }
-        m.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
-        m.add_separator
-        m.add_item('Convert to Editable Mesh') { self.convert_selected_to_mesh }
+        menu = context_menu.add_submenu( PLUGIN_NAME )
+        
+        m = menu.add_item('Clone') { }
+        menu.set_validation_proc( m ) { MF_GRAYED }
+        
+        m = menu.add_item('Select Clones') { }
+        menu.set_validation_proc( m ) { MF_GRAYED }
+        
+        m = menu.add_item('Replace Clones') { }
+        menu.set_validation_proc( m ) { MF_GRAYED }
+        
+        menu.add_separator
+        
+        m = menu.add_item('Update') { }
+        menu.set_validation_proc( m ) { MF_GRAYED }
+        
+        menu.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
+        
+        menu.add_separator
+        
+        menu.add_item('Convert to Editable Mesh') { self.convert_selected_to_mesh }
       end
     }
     
