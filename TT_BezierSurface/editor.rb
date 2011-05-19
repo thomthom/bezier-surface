@@ -139,8 +139,11 @@ module TT::Plugins::BezierSurfaceTools
         types[ e.class ] << e
       end
       names = {
+        PLUGIN::BezierVertex => 'Vertices',
+        PLUGIN::BezierHandle => 'Handles',
+        PLUGIN::BezierInteriorPoint => 'InteriorPoints',
         PLUGIN::BezierEdge => 'Edges',
-        Geom::Point3d => 'Control Points'
+        PLUGIN::QuadPatch => 'Patches'
       }
       info = "Entity Info\n"
       types.each { |type, entities|

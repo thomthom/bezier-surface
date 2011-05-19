@@ -142,6 +142,8 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.add( entities )
       end
       
+      @editor.update_properties
+      
       @state = STATE_NORMAL
       @selection_rectangle.reset
       view.invalidate
