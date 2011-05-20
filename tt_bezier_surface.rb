@@ -43,8 +43,10 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_REVERSED       = 'Reversed'.freeze
   
   # Attribute dictionary values
-  MESH_TYPE    = 'BezierSurface'.freeze
-  MESH_VERSION = TT::Version.new(1,0,3).freeze
+  MESH_TYPE         = 'BezierSurface'.freeze
+  MESH_VERSION_R0   = TT::Version.new(1,0,3).freeze
+  MESH_VERSION_MIN  = MESH_VERSION_R0
+  MESH_VERSION      = MESH_VERSION_R0
   
   # Subdivision range limit
   SUBDIVS_MIN     = 1
