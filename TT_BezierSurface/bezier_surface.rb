@@ -245,6 +245,22 @@ module TT::Plugins::BezierSurfaceTools
       edges
     end
     
+    # @param [Geom::Transformation] transformation
+    # @param [Array<BezierEntity>] entities
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def transform_entities( transformation, entities )
+      return false if entities.empty?
+      local_transform = local_transformation( transformation )
+      # (!) Collect related vertices
+      for control_point in controlpoints
+        control_point.position.transform!( local_transform )
+      end
+      # (!) Update automatic patches
+      true
+    end
+    
     # Returns all the 3d points for the surface mesh.
     #
     # @param [Integer] subdivs
@@ -797,6 +813,25 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     private
+    
+    # Converts a transformation for the global space into a transformation
+    # within the local space.
+    #
+    # Use when editing a bezier surface. The group will be open and the
+    # co-ordinate system in SketchUp is working in world space.
+    #
+    # @param [Geom::Transformation] transformation
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def local_transformation( transformation )
+      # Cast Vector3d into Transformation.
+      if transformation.is_a?( Geom::Vector3d )
+        transformation = Geom::Transformation.new( transformation )
+      end
+      et = @instance.model.edit_transform
+      local_transform = (et.inverse * transformation) * et
+    end
     
     # Returns all vertices for the surface unordered.
     #
