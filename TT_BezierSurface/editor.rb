@@ -179,6 +179,8 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # (!) Private method in BezierSurface
+    #
     # Converts a transformation for the global space into a transformation
     # within the local space.
     #
