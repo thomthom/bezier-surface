@@ -34,9 +34,51 @@ module TT::Plugins::BezierSurfaceTools
       # Init superclass. (Extends points into Point3d_Ex.)
       super
       
-      # Create edges and assosiate them with this patch.
-      grid = TT::Dimension.new( points, 4, 4 )
+      # Create control points and assosiate them with this patch. 
+      #
+      # 12--13--14--15
+      # |   |   |   |
+      # 8---9---10--11
+      # |   |   |   |
+      # 4---5---6---7
+      # |   |   |   |
+      # 0---1---2---3
+      #
+      grid = TT::Dimension.new( [
+        BezierVertex.new( parent, points[0] ),
+        BezierHandle.new( parent, points[1] ),
+        BezierHandle.new( parent, points[2] ),
+        BezierVertex.new( parent, points[3] ),
+        
+        BezierHandle.new( parent, points[4] ),
+        BezierInteriorPoint.new( parent, points[5] ),
+        BezierInteriorPoint.new( parent, points[6] ),
+        BezierHandle.new( parent, points[7] ),
+        
+        BezierHandle.new( parent, points[8] ),
+        BezierInteriorPoint.new( parent, points[9] ),
+        BezierInteriorPoint.new( parent, points[10] ),
+        BezierHandle.new( parent, points[11] ),
+        
+        BezierVertex.new( parent, points[12] ),
+        BezierHandle.new( parent, points[13] ),
+        BezierHandle.new( parent, points[14] ),
+        BezierVertex.new( parent, points[15] )
+      ], 4, 4 )
+      # Link Control Points to each other.
+      for control_point in grid
+        control_point.link( self )
+      end
+      # Link Interior Points to Vertices.
+      grid[ 5].link( grid[ 0] )
+      grid[ 6].link( grid[ 3] )
+      grid[ 9].link( grid[12] )
+      grid[10].link( grid[15] )
       
+      interiorpoints = [ grid[5], grid[6], grid[9], grid[10] ]
+      @interior_points = TT::Dimension.new( interiorpoints, 2, 2 )
+      
+      # Create edges and assosiate them with this patch.     
       # Order of edges and direction of their control points.
       #
       #  Y - Columns
@@ -46,95 +88,41 @@ module TT::Plugins::BezierSurfaceTools
       #
       #  x --> X - Rows
       #
+      # +--->---+
+      # |   2   |
+      # ^3     1^
+      # |   0   |
+      # +--->---+
+      #   
+      # Edge 2 and 3 is initially reversed.
+      #
       # +---<---+
       # |   2   |
       # v3     1^
       # |   0   |
       # +--->---+
-      #   
-      # Edge 2 and 3 is initially reversed.
+      #
+      # Points are reversed to return edges that run in the same direction
+      # around the patch.
       edge = BezierEdge.new( parent, grid.row(0) )
       edge.link( self )
-      edgeuse = BezierEdgeUse.new( self, edge, false )
+      edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
       
       edge = BezierEdge.new( parent, grid.column(3) )
       edge.link( self )
-      edgeuse = BezierEdgeUse.new( self, edge, false )
+      edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
       
       edge = BezierEdge.new( parent, grid.row(3).reverse )
       edge.link( self )
-      edgeuse = BezierEdgeUse.new( self, edge, false )
+      edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
       
       edge = BezierEdge.new( parent, grid.column(0).reverse )
       edge.link( self )
-      edgeuse = BezierEdgeUse.new( self, edge, false )
+      edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
-      
-      # Interior patch points - indirectly controlled by the edges.
-      @interior_points = TT::Dimension.new( [
-        BezierInteriorPoint.new( parent, points[5] ),
-        BezierInteriorPoint.new( parent, points[6] ),
-        BezierInteriorPoint.new( parent, points[9] ),
-        BezierInteriorPoint.new( parent, points[10] )
-      ], 2, 2 )
-      
-      merge_vertices()
-      
-      for point in control_points
-        point.link( self )
-      end
-      
-      verts = vertices
-      @interior_points[0].link( verts[0] )
-      @interior_points[1].link( verts[1] )
-      @interior_points[2].link( verts[3] )
-      @interior_points[3].link( verts[2] )
-    end
-    
-    # @private (protected)
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def merge_vertices
-      #TT.debug 'QuadPatch.merge_vertices'
-      e0, e1, e2, e3 = @edgeuses
-      #e1.start = e0.end
-      #e1.end = e2.start
-      #e3.start = e2.end
-      #e3.end = e0.start
-      
-      vertex = (e0.reversed?) ? e0.edge.start : e0.edge.end
-      if e1.reversed?
-        e1.edge.end = vertex
-      else
-        e1.edge.start = vertex
-      end
-      
-      vertex = (e2.reversed?) ? e2.edge.end : e2.edge.start
-      if e1.reversed?
-        e1.edge.start = vertex
-      else
-        e1.edge.end = vertex
-      end
-      
-      vertex = (e2.reversed?) ? e2.edge.start : e2.edge.end
-      if e3.reversed?
-        e3.edge.end = vertex
-      else
-        e3.edge.start = vertex
-      end
-      
-      vertex = (e0.reversed?) ? e0.edge.end : e0.edge.start
-      if e3.reversed?
-        e3.edge.start = vertex
-      else
-        e3.edge.end = vertex
-      end
-      
-      nil
     end
     
     # @return [QuadPatch]
@@ -164,7 +152,6 @@ module TT::Plugins::BezierSurfaceTools
         edgeuse.edge.link( patch )
         edgeuse.reversed = prototype.reversed?
       }
-      #patch.merge_vertices
       patch
     end
     
@@ -183,14 +170,6 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def control_points
       fail_if_invalid()
-      #
-      # X---X---X---X
-      # |   |   |   |
-      # X---X---X---X
-      # |   |   |   |
-      # X---X---X---X
-      # |   |   |   |
-      # X---X---X---X
       #
       # POINTS:
       #
@@ -240,22 +219,6 @@ module TT::Plugins::BezierSurfaceTools
       points.concat( e2.reverse )
       points
       TT::Dimension.new( points, 4, 4 )
-    end
-    
-    # @private
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def ordered_edge_control_points
-      points = []
-      for edgeuse in edgeuses
-        if edgeuse.reversed?
-          points << edgeuse.edge.control_points.reverse!
-        else
-          points << edgeuse.edge.control_points
-        end
-      end
-      points
     end
 
     # Returns an array of +BezierEdge+ objects in clock-wise order.
@@ -338,22 +301,6 @@ module TT::Plugins::BezierSurfaceTools
       points
     end
     
-    # (?) Private
-    #
-    # @param [Array<Geom::Point3d] points
-    #
-    # @return [Array<Geom::Point3d>]
-    # @since 1.0.0
-    def get_control_grid_interior( points )
-      fail_if_invalid()
-      [
-        points.row(1),
-        points.row(2),
-        points.column(1),
-        points.column(2)
-      ]
-    end
-    
     # Draws the patch's internal grid with the given sub-division.
     #
     # @param [Integer] subdivs
@@ -374,11 +321,9 @@ module TT::Plugins::BezierSurfaceTools
         view.line_width = MESH_GRID_LINE_WIDTH
         view.line_stipple = ''
         pts.rows[1...pts.width-1].each { |row|
-        #pts.each_row { |row|
           view.draw( GL_LINE_STRIP, row )
         }
         pts.columns[1...pts.height-1].each { |col|
-        #pts.each_column { |col|
           view.draw( GL_LINE_STRIP, col )
         }
       end
@@ -503,6 +448,39 @@ module TT::Plugins::BezierSurfaceTools
         end # x
       end # y
       mesh
+    end
+    
+    private
+    
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def ordered_edge_control_points
+      points = []
+      for edgeuse in edgeuses
+        if edgeuse.reversed?
+          points << edgeuse.edge.control_points.reverse!
+        else
+          points << edgeuse.edge.control_points
+        end
+      end
+      points
+    end
+    
+    # Returns an array of segments for the interior grid - exluding the edge
+    # segments.
+    #
+    # @param [Array<Geom::Point3d] points
+    #
+    # @return [Array<Geom::Point3d>]
+    # @since 1.0.0
+    def get_control_grid_interior( points )
+      fail_if_invalid()
+      [
+        points.row(1),
+        points.row(2),
+        points.column(1),
+        points.column(2)
+      ]
     end
     
   end # class QuadPatch
