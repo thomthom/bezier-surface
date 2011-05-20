@@ -179,24 +179,6 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
-    # (!) Move to BezierSurface ?
-    #
-    # Applies a transformation to the selected control-points to the active
-    # surface and commits it.
-    #
-    # @param [Geom::Transformation] transformation
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def transform_selection( transformation )
-      @model.start_operation('Edit Bezier Surface', true)
-      for control_point in @selection
-        control_point.position.transform!( transformation )
-      end
-      @surface.update( @model.edit_transform )
-      @model.commit_operation
-    end
-    
     # Converts a transformation for the global space into a transformation
     # within the local space.
     #
@@ -214,22 +196,6 @@ module TT::Plugins::BezierSurfaceTools
       end
       et = @model.edit_transform
       local_transform = (et.inverse * transformation) * et
-    end
-    
-    # Moves the selected control points by the given vector.
-    #
-    # @param [Geom::Vector3d] vector
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def move_selection( vector )
-      if vector.valid? && @selection.size > 0
-        t = Geom::Transformation.new( vector )
-        transform_selection( t )
-        true
-      else
-        false
-      end
     end
     
     # Checks if the current model context is a bezier surface.
