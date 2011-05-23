@@ -64,21 +64,6 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def getMenu( menu )
-      # (!) Only display if patches are selected.
-      m = menu.add_item( 'Automatic Interior' ) { toggle_automatic_patch() }
-      menu.set_validation_proc( m ) { validate_automatic_patch() }
-      
-      menu.add_separator
-      
-      m = menu.add_item( 'Select All' ) { puts '01' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
-      
-      m = menu.add_item( 'Select None' ) { puts '02' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
-      
-      m = menu.add_item( 'Invert Selection' ) { puts '03' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
-      
       @editor.context_menu( menu )
     end
     
@@ -100,7 +85,7 @@ module TT::Plugins::BezierSurfaceTools
         view.invalidate
       else
         @state = STATE_NORMAL
-        result = @surface.pick_vertices( x, y, view )
+        result = @surface.pick_control_points_ex( x, y, view )
         @mouse_over_vertex = !result.empty?
       end
     end
@@ -119,7 +104,7 @@ module TT::Plugins::BezierSurfaceTools
       entities = []
       if @state == STATE_NORMAL
         # Control Points
-        picked = @surface.pick_vertices( x, y, view )
+        picked = @surface.pick_control_points_ex( x, y, view )
         entities.concat( picked )
         # Edges
         if entities.empty?
@@ -132,7 +117,8 @@ module TT::Plugins::BezierSurfaceTools
           entities << picked if picked
         end
       else
-        availible = @surface.vertices + @surface.edges
+        s = @surface
+        availible = s.vertices + s.manual_interior_points + s.edges
         entities = @selection_rectangle.selected_entities( view, availible )
       end
       
@@ -173,11 +159,14 @@ module TT::Plugins::BezierSurfaceTools
       tr = view.model.edit_transform
       
       selected_vertices = []
+      selected_interior = []
       selected_edges = []
       selected_patches = []
       for entity in @editor.selection
         if entity.is_a?( BezierVertex )
           selected_vertices << entity
+        elsif entity.is_a?( BezierInteriorPoint )
+          selected_interior << entity
         elsif entity.is_a?( BezierEdge )
           selected_edges << entity
         elsif entity.is_a?( BezierPatch )
@@ -186,6 +175,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       unselected_vertices = @surface.vertices - selected_vertices
+      unselected_interior = @surface.manual_interior_points - selected_interior
       unselected_edges = @surface.edges - selected_edges
       
       # Get selected vertices and selected entities' vertices. Display handles
@@ -196,14 +186,6 @@ module TT::Plugins::BezierSurfaceTools
       patch_vertices.flatten!
       active_vertices = selected_vertices + edge_vertices + patch_vertices
       
-      # Get manual interiorpoints
-      interior = []
-      for patch in @surface.patches
-        next if patch.automatic?
-        interior.concat( patch.interior_points.to_a )
-      end
-      interior.map! { |cpt| cpt.position.transform( tr ) }
-      
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
       @surface.draw_internal_grid( view )
@@ -212,7 +194,8 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
       @surface.draw_vertex_handles( view, active_vertices )
-      @surface.draw_markers( view, interior, 'black' )
+      @surface.draw_vertices( view, unselected_interior )
+      @surface.draw_vertices( view, selected_interior, true )
       @surface.draw_patches( view, selected_patches )
       
       @selection_rectangle.draw( view )
@@ -229,32 +212,6 @@ module TT::Plugins::BezierSurfaceTools
         cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
       end
       UI.set_cursor( cursor )
-    end
-    
-    private
-    
-    # @since 1.0.0
-    def toggle_automatic_patch
-      automatic = ( validate_automatic_patch == MF_CHECKED ) ? false : true
-      for entity in @editor.selection
-        next unless entity.is_a?( BezierPatch )
-        entity.automatic = automatic
-      end
-      model = @editor.model
-      TT::Model.start_operation( 'Automatic Interior' )
-      @surface.update( model.edit_transform )
-      model.commit_operation
-    end
-    
-    # Returns MF_CHECKED if any patch in selection has automatic interior.
-    #
-    # @since 1.0.0
-    def validate_automatic_patch
-      for entity in @editor.selection
-        next unless entity.is_a?( BezierPatch )
-        return MF_CHECKED if entity.automatic?
-      end
-      MF_UNCHECKED
     end
     
   end # class SelectionTool

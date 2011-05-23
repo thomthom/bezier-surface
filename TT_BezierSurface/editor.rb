@@ -74,6 +74,27 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Sketchup::Menu]
     # @since 1.0.0
     def context_menu( menu )
+      patches_selected = @selection.any?{ |e|
+        e.is_a?( BezierPatch )
+      }
+      
+      # Patches
+      if patches_selected
+        m = menu.add_item( 'Automatic Interior' ) { toggle_automatic_patch() }
+        menu.set_validation_proc( m ) { validate_automatic_patch() }
+        
+        menu.add_separator
+      end
+      
+      m = menu.add_item( 'Select All' ) { puts '01' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
+      m = menu.add_item( 'Select None' ) { puts '02' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
+      m = menu.add_item( 'Invert Selection' ) { puts '03' }
+      menu.set_validation_proc( m ) { MF_GRAYED }
+      
       menu.add_separator
       
       m = menu.add_item( 'Show All Handles' ) { puts 'n01' }
@@ -380,6 +401,37 @@ module TT::Plugins::BezierSurfaceTools
         TT.debug( '> Closing active context' )
         view.model.close_active
       end
+    end
+    
+    private
+    
+    # @since 1.0.0
+    def toggle_automatic_patch
+      automatic = ( validate_automatic_patch == MF_CHECKED ) ? false : true
+      for entity in @selection.to_a
+        next unless entity.is_a?( BezierPatch )
+        entity.automatic = automatic
+        # Remove selected interior points from selection when making patch
+        # automatic since the user should not be interacting with these points.
+        if automatic
+          @selection.remove( entity.interior_points )
+        end
+      end
+      model = @model
+      TT::Model.start_operation( 'Automatic Interior' )
+      @surface.update( model.edit_transform )
+      model.commit_operation
+    end
+    
+    # Returns MF_CHECKED if any patch in selection has automatic interior.
+    #
+    # @since 1.0.0
+    def validate_automatic_patch
+      for entity in @selection
+        next unless entity.is_a?( BezierPatch )
+        return MF_CHECKED if entity.automatic?
+      end
+      MF_UNCHECKED
     end
     
   end # class BezierSurfaceEditor
