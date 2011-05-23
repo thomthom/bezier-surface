@@ -64,6 +64,12 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def getMenu( menu )
+      # (!) Only display if patches are selected.
+      m = menu.add_item( 'Automatic Interior' ) { toggle_automatic_patch() }
+      menu.set_validation_proc( m ) { validate_automatic_patch() }
+      
+      menu.add_separator
+      
       m = menu.add_item( 'Select All' ) { puts '01' }
       menu.set_validation_proc( m ) { MF_GRAYED }
       
@@ -194,9 +200,9 @@ module TT::Plugins::BezierSurfaceTools
       interior = []
       for patch in @surface.patches
         next if patch.automatic?
-        interior.concat( patch.interior_points )
+        interior.concat( patch.interior_points.to_a )
       end
-      interior.map! { |cpt| cpt.position }
+      interior.map! { |cpt| cpt.position.transform( tr ) }
       
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
@@ -223,6 +229,32 @@ module TT::Plugins::BezierSurfaceTools
         cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
       end
       UI.set_cursor( cursor )
+    end
+    
+    private
+    
+    # @since 1.0.0
+    def toggle_automatic_patch
+      automatic = ( validate_automatic_patch == MF_CHECKED ) ? false : true
+      for entity in @editor.selection
+        next unless entity.is_a?( BezierPatch )
+        entity.automatic = automatic
+      end
+      model = @editor.model
+      TT::Model.start_operation( 'Automatic Interior' )
+      @surface.update( model.edit_transform )
+      model.commit_operation
+    end
+    
+    # Returns MF_CHECKED if any patch in selection has automatic interior.
+    #
+    # @since 1.0.0
+    def validate_automatic_patch
+      for entity in @editor.selection
+        next unless entity.is_a?( BezierPatch )
+        return MF_CHECKED if entity.automatic?
+      end
+      MF_UNCHECKED
     end
     
   end # class SelectionTool
