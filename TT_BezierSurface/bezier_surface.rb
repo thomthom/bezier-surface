@@ -232,6 +232,17 @@ module TT::Plugins::BezierSurfaceTools
       cpts
     end
     
+    # @return [Array<BezierInteriorPoint>]
+    # @since 1.0.0
+    def manual_interior_points
+      cpts = []
+      for patch in @patches
+        next if patch.automatic?
+        cpts.concat( patch.interior_points.to_a )
+      end
+      cpts
+    end
+    
     # Returns all the +BezierEdge+ entities for the surface.
     #
     # @return [Array<BezierEdge>]
@@ -355,6 +366,28 @@ module TT::Plugins::BezierSurfaceTools
         picked.concat( points ) unless points.nil?
       end
       #( picked.empty? ) ? nil : picked.uniq
+      picked.uniq
+    end
+    
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<BezierVertex|BezierIntriorPoint>]
+    # @since 1.0.0
+    def pick_control_points_ex( x, y, view )
+      tr = view.model.edit_transform
+      ph = view.pick_helper
+      ph.init( x, y, VERTEX_SIZE )
+      picked = []
+      for vertex in vertices
+        picked << vertex if ph.test_point( vertex.position.transform( tr ) )
+      end
+      for patch in patches
+        for point in patch.interior_points
+          picked << point if ph.test_point( point.position.transform( tr ) )
+        end
+      end
       picked.uniq
     end
     
