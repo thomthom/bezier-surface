@@ -208,7 +208,7 @@ module TT::Plugins::BezierSurfaceTools
       (@model.active_path.nil?) ? false : @model.active_path.last == @surface.instance
     end
     
-    # Called by the BP_ModelObserver observer when something is undone or
+    # Called by the BST_ModelObserver observer when something is undone or
     # redone.
     #
     # When editing is active the mesh is refreshed, otherwise the active 

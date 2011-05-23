@@ -13,21 +13,21 @@ module TT::Plugins::BezierSurfaceTools
   # opens a Bezier Surface for editing.
   #
   # @since 1.0.0
-  class BP_AppObserver < Sketchup::AppObserver
+  class BST_AppObserver < Sketchup::AppObserver
   
     # @since 1.0.0
     def onNewModel(model)
-      #TT.debug( 'BP_AppObserver.onNewModel' )
+      #TT.debug( 'BST_AppObserver.onNewModel' )
       PLUGIN.observe_model( model )
     end
     
     # @since 1.0.0
     def onOpenModel(model)
-      #TT.debug( 'BP_AppObserver.onOpenModel' )
+      #TT.debug( 'BST_AppObserver.onOpenModel' )
       PLUGIN.observe_model( model )
     end
 
-  end # class BP_AppObserver
+  end # class BST_AppObserver
   
   
   # When the user opens a Group/ComponentInstance containing a Bezier Surface
@@ -37,7 +37,7 @@ module TT::Plugins::BezierSurfaceTools
   # edit session is ended.
   #
   # @since 1.0.0
-  class BP_ModelObserver < Sketchup::ModelObserver
+  class BST_ModelObserver < Sketchup::ModelObserver
   
     # @since 1.0.0
     def onActivePathChanged( model )
@@ -49,19 +49,19 @@ module TT::Plugins::BezierSurfaceTools
       # Not noticed this again. Maybe the issue is gone. Or it was an observer
       # reload issue.
       
-      #TT.debug( 'BP_ModelObserver.onActivePathChanged' )
+      #TT.debug( 'BST_ModelObserver.onActivePathChanged' )
       check_active_path( model )
     end
     
     # @since 1.0.0
     def onTransactionUndo( model )
-      TT.debug( 'BP_ModelObserver.onTransactionUndo' )
+      TT.debug( 'BST_ModelObserver.onTransactionUndo' )
       check_active_path( model, true )
     end
     
     # @since 1.0.0
     def onTransactionRedo( model )
-      TT.debug( 'BP_ModelObserver.onTransactionRedo' )
+      TT.debug( 'BST_ModelObserver.onTransactionRedo' )
       check_active_path( model, true )
     end
     
@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def check_active_path( model, undo_redo = false )
-      TT.debug( 'BP_ModelObserver.check_active_path' )
+      TT.debug( 'BST_ModelObserver.check_active_path' )
       instance = (model.active_path) ? model.active_path.last : nil
       editor = PLUGIN.get_editor( model )
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
@@ -98,7 +98,7 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-  end # class BP_ModelObserver
+  end # class BST_ModelObserver
 
   
 end # TT::Plugins::BezierSurfaceTools

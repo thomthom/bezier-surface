@@ -107,7 +107,7 @@ module TT::Plugins::BezierSurfaceTools
   # @return [Nil]
   # @since 1.0.0
   def self.observe_model( model )
-    model.add_observer( BP_ModelObserver.new )
+    model.add_observer( BST_ModelObserver.new )
     editor = BezierSurfaceEditor.new( model )
     @editors[model] = editor
     
@@ -187,7 +187,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # Observers
-    Sketchup.add_observer( BP_AppObserver.new )
+    Sketchup.add_observer( BST_AppObserver.new )
     self.observe_model( Sketchup.active_model )
   end 
   
