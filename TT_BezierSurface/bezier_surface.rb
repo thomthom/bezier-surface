@@ -758,6 +758,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_circles( view, points, color, size = VERTEX_SIZE, line_width = 2 )
+      return false if points.empty?
+      
       # private?
       vector = view.camera.direction.reverse
       radius = size / 2.0
@@ -770,7 +772,7 @@ module TT::Plugins::BezierSurfaceTools
         circle_points = TT::Geom3d.circle( point, vector, screen_size, 8 )
         view.draw( GL_LINE_LOOP, circle_points )
       end
-      nil
+      true
     end
     
     # @param [Sketchup::View] view
@@ -782,6 +784,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_markers( view, points, color, size = VERTEX_SIZE, line_width = 2 )
+      return false if points.empty?
+      
       # private?
       vector = view.camera.direction.reverse
       vx1 = view.camera.xaxis
@@ -802,7 +806,7 @@ module TT::Plugins::BezierSurfaceTools
         marker_points << point.offset( vy2, screen_size )
         view.draw( GL_LINES, marker_points )
       end
-      nil
+      true
     end
     
     # @return [String]

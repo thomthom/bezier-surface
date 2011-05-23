@@ -190,6 +190,14 @@ module TT::Plugins::BezierSurfaceTools
       patch_vertices.flatten!
       active_vertices = selected_vertices + edge_vertices + patch_vertices
       
+      # Get manual interiorpoints
+      interior = []
+      for patch in @surface.patches
+        next if patch.automatic?
+        interior.concat( patch.interior_points )
+      end
+      interior.map! { |cpt| cpt.position }
+      
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
       @surface.draw_internal_grid( view )
@@ -198,6 +206,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, unselected_vertices )
       @surface.draw_vertices( view, selected_vertices, true )
       @surface.draw_vertex_handles( view, active_vertices )
+      @surface.draw_markers( view, interior, 'black' )
       @surface.draw_patches( view, selected_patches )
       
       @selection_rectangle.draw( view )
