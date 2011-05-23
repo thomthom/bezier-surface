@@ -17,6 +17,15 @@ module TT::Plugins::BezierSurfaceTools
       @editor = editor
       @surface = editor.surface
       
+      # Drawing Performance Test ( 23.05.2011 )
+      #   14 Patches - 12 Subdivisions
+      #
+      #   Without Cache: ~0.100s
+      #   With Cache:    ~0.005s
+      #
+      # In addition to the raw numbers, the user experience felt much smoother
+      # with the cache.
+      @draw_cache = DrawCache.new( @editor.model.active_view )
       @selection_rectangle = SelectionRectangle.new( @surface )
       
       # Tool state.
@@ -44,6 +53,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def update_ui
+      update_draw_cache()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
@@ -133,6 +143,7 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.clear
         @editor.selection.add( entities )
       end
+      update_draw_cache()
       
       @editor.update_properties
       
@@ -159,6 +170,35 @@ module TT::Plugins::BezierSurfaceTools
       # <debug>
       t_start = Time.now
       # </debug>
+      
+      @draw_cache.render
+      @selection_rectangle.draw( view )
+      
+      # <debug>
+      elapsed = Time.now - t_start
+      view.draw_text( [20,20,0], "Last Frame: #{elapsed}s" )
+      # </debug>
+    end
+    
+    def onSetCursor
+      if @key_ctrl && @key_shift
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
+      elsif @key_ctrl
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_add : @cursor_add
+      elsif @key_shift
+        cursor = (@mouse_over_vertex) ? @cursor_vertex_toggle : @cursor_toggle
+      else
+        cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
+      end
+      UI.set_cursor( cursor )
+    end
+    
+    private
+    
+    # @since 1.0.0
+    def update_draw_cache
+      @draw_cache.clear
+      view = @draw_cache
       
       tr = view.model.edit_transform
       
@@ -201,26 +241,6 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, unselected_interior )
       @surface.draw_vertices( view, selected_interior, true )
       @surface.draw_patches( view, selected_patches )
-      
-      @selection_rectangle.draw( view )
-      
-      # <debug>
-      elapsed = Time.now - t_start
-      view.draw_text( [20,20,0], "Last Frame: #{elapsed}s" )
-      # </debug>
-    end
-    
-    def onSetCursor
-      if @key_ctrl && @key_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
-      elsif @key_ctrl
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_add : @cursor_add
-      elsif @key_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_toggle : @cursor_toggle
-      else
-        cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
-      end
-      UI.set_cursor( cursor )
     end
     
   end # class SelectionTool
