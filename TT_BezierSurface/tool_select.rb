@@ -156,6 +156,10 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def draw( view )
+      # <debug>
+      t_start = Time.now
+      # </debug>
+      
       tr = view.model.edit_transform
       
       selected_vertices = []
@@ -199,6 +203,11 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_patches( view, selected_patches )
       
       @selection_rectangle.draw( view )
+      
+      # <debug>
+      elapsed = Time.now - t_start
+      view.draw_text( [20,20,0], "Last Frame: #{elapsed}s" )
+      # </debug>
     end
     
     def onSetCursor
