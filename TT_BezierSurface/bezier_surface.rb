@@ -661,16 +661,23 @@ module TT::Plugins::BezierSurfaceTools
     
     # @param [Sketchup::View] view
     # @param [Array<BezierEdge>] edges
-    # @param [Sketchup::Color] color
-    # @param [Integer] width
+    # @param [Boolean] selected
     # @param [Boolean] preview
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_edges( view, edges, color = CLR_EDGE, width = 5, preview = false )
+    def draw_edges( view, edges, selected = false, preview = false )
       return false if edges.empty?
       tr = view.model.edit_transform
       subdivs = (preview) ? preview : @subdivs
+      
+      if selected
+        color = CLR_EDGE_SELECTED
+        width = 5
+      else
+        color = CLR_EDGE
+        width = 2
+      end
       
       view.line_width = width
       view.line_stipple = ''
