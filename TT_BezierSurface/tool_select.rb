@@ -128,7 +128,7 @@ module TT::Plugins::BezierSurfaceTools
         end
       else
         s = @surface
-        availible = s.vertices + s.manual_interior_points + s.edges
+        availible = s.vertices + s.manual_interior_points + s.edges + s.patches
         entities = @selection_rectangle.selected_entities( view, availible )
       end
       

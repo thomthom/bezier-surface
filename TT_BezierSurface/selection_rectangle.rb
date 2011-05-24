@@ -10,6 +10,8 @@ module TT::Plugins::BezierSurfaceTools
   
   class SelectionRectangle
     
+    SUBDIVS = 6
+    
     attr_accessor( :start, :end )
     
     # @since 1.0.0
@@ -89,8 +91,11 @@ module TT::Plugins::BezierSurfaceTools
         point = entity.position.transform( transformation )
         in_polygon?( view, [point], polygon )
       elsif entity.is_a?( BezierEdge )
-        segment = entity.segment( @surface.subdivs, transformation )
+        segment = entity.segment( SUBDIVS, transformation )
         in_polygon?( view, segment, polygon )
+      elsif entity.is_a?( BezierPatch )
+        points = entity.mesh_points( SUBDIVS, transformation )
+        in_polygon?( view, points, polygon )
       else
         raise ArgumentError, 'Argument must be BezierControlPoint or a BezierEdge.'
       end
