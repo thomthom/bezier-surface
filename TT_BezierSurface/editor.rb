@@ -417,7 +417,9 @@ module TT::Plugins::BezierSurfaceTools
           @selection.remove( entity.interior_points )
         end
       end
+      @active_tool.update_ui
       model = @model
+      model.active_view.refresh
       TT::Model.start_operation( 'Automatic Interior' )
       @surface.update( model.edit_transform )
       model.commit_operation
