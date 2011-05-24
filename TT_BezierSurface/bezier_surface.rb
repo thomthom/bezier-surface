@@ -383,10 +383,8 @@ module TT::Plugins::BezierSurfaceTools
       for vertex in vertices
         picked << vertex if ph.test_point( vertex.position.transform( tr ) )
       end
-      for patch in patches
-        for point in patch.interior_points
-          picked << point if ph.test_point( point.position.transform( tr ) )
-        end
+      for point in manual_interior_points
+        picked << point if ph.test_point( point.position.transform( tr ) )
       end
       picked.uniq
     end
