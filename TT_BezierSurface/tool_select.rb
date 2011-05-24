@@ -176,7 +176,10 @@ module TT::Plugins::BezierSurfaceTools
       
       # <debug>
       elapsed = Time.now - t_start
-      view.draw_text( [20,20,0], "Last Frame: #{elapsed}s" )
+      view.draw_text( [20,20,0], sprintf( 'Last Frame: %.4fs', elapsed ) )
+      
+      view.draw_text( [20,50,0], sprintf( 'Last Refresh Time: %.4fs', view.last_refresh_time ) )
+      view.draw_text( [20,65,0], sprintf( 'Average Refresh Time: %.4fs', view.average_refresh_time ) )
       # </debug>
     end
     
