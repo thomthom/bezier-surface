@@ -275,7 +275,10 @@ module TT::Plugins::BezierSurfaceTools
   
   ### DEBUG ### ----------------------------------------------------------------
   
-  # TT::Plugins::BezierSurfaceTools.reload
+  # @note Debug method to reload the plugin.
+  #
+  # @example
+  #   TT::Plugins::BezierSurfaceTools.reload
   #
   # @param [Boolean] tt_lib
   #

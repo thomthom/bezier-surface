@@ -176,7 +176,8 @@ module TT::Plugins::BezierSurfaceTools
     
     # Estimates the number of vertices in the BezierSurface.
     #
-    # (!) Is not accurate - does not take into account patches that share points.
+    # @note Returned value is not accurate. The method does not take into
+    #   account patches that share control points.
     #
     # @param [Integer] subdivs
     #
@@ -192,9 +193,9 @@ module TT::Plugins::BezierSurfaceTools
     
     # Estimates the number of polygons (triangles) in the BezierSurface.
     #
-    # (!) Is not accurate - does not take into account patches that share polygon
-    # edges. Also - if the mesh is not always triangulated there might be less
-    # polygons.
+    # @note Returned value is not accurate. The method does not take into
+    #   account patches that share polygon edges. Also - if the mesh is not
+    #   always triangulated there might be less polygons.
     #
     # @param [Integer] subdivs
     #
@@ -293,7 +294,7 @@ module TT::Plugins::BezierSurfaceTools
     # Returns all the vertices for the surface mesh in the same order as
     # #mesh_points.
     #
-    # (!) Optimize
+    # @todo Optimize!
     #
     # @param [Integer] subdivs
     # @param [Geom::Transformation] tranformation
@@ -349,9 +350,9 @@ module TT::Plugins::BezierSurfaceTools
     
     # Returns the picked control points for the given x, y screen co-ordinates.
     #
-    # (!) Currently returns an array - might be multiple points returned if they
-    # occupy similar screen co-ordinates. This should perhaps return only one
-    # point.
+    # @note Currently returns an array - might be multiple points returned if
+    #   they occupy similar screen co-ordinates. This should perhaps return only
+    #   one point.
     #
     # @param [Integer] x
     # @param [Integer] y
@@ -373,7 +374,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Integer] y
     # @param [Sketchup::View] view
     #
-    # @return [Array<BezierVertex|BezierIntriorPoint>]
+    # @return [Array<BezierVertex|BezierInteriorPoint>]
     # @since 1.0.0
     def pick_control_points_ex( x, y, view )
       tr = view.model.edit_transform
@@ -788,10 +789,10 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @param [Sketchup::View] view
-    # @param [Array<Geom::Point3d>] selected
-    # @param [Sketchup::Color>] color
-    # @param [Numeric>] size
-    # @param [Numeric>] line_width
+    # @param [Array<Geom::Point3d>] points
+    # @param [Sketchup::Color] color
+    # @param [Numeric] size
+    # @param [Numeric] line_width
     #
     # @return [Nil]
     # @since 1.0.0
@@ -814,10 +815,10 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @param [Sketchup::View] view
-    # @param [Array<Geom::Point3d>] selected
-    # @param [Sketchup::Color>] color
-    # @param [Numeric>] size
-    # @param [Numeric>] line_width
+    # @param [Array<Geom::Point3d>] points
+    # @param [Sketchup::Color] color
+    # @param [Numeric] size
+    # @param [Numeric] line_width
     #
     # @return [Nil]
     # @since 1.0.0
@@ -914,7 +915,7 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( "> Filled in #{Time.now-debug_time_start}s" )
     end
     
-    # Data Format Version: 1.0.3 (R0)
+    # @note Data Format Version: 1.0.3 (R0)
     #
     # Updates the attribute dictionary with the BezierSurface data.
     #
@@ -1103,7 +1104,7 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
-    # Data Format Version: 1.0.3 (R0)
+    # @note Data Format Version: 1.0.3 (R0)
     #
     # @param [Sketchup::ComponentDefinition] definition
     #

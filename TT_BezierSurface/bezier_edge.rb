@@ -110,10 +110,10 @@ module TT::Plugins::BezierSurfaceTools
       new_vertex
     end
     
-    # @protected
     # @return [BezierVertex]
     # @since 1.0.0
     def replace_vertex( old_vertex, new_vertex )
+      # (?) protected
       unless new_vertex.is_a?( BezierVertex )
         raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
       end
@@ -142,10 +142,10 @@ module TT::Plugins::BezierSurfaceTools
       new_vertex
     end
     
-    # @protected
     # @return [BezierVertex]
     # @since 1.0.0
     def set_vertex!( old_vertex, new_vertex )
+      # (?) protected
       unless new_vertex.is_a?( BezierVertex )
         raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
       end
