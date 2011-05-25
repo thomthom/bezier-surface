@@ -14,11 +14,36 @@ module TT::Plugins::BezierSurfaceTools
     
     attr_reader( :parent, :links )
     
+    # Base class of common methods for bezier related entities.
+    #
+    # ==Linkable Entities==
+    # Related entities are linked together with #link and #unlink.
+    #
+    # BezierEntity use a hash @links to keep track of linked entities.
+    # Subclasses must add the allowed linkable types to this hash. Key should be
+    # entity class and value an array.
+    #
+    # @example
+    #   class MySubClass < BezierEntity
+    #   
+    #     def initialize( parent )
+    #       super()
+    #       # Define linkable entities:
+    #       @links[ BezierEdge ] = []
+    #       @links[ BezierPatch ] = []
+    #     end
+    #
+    #     def edges
+    #       @links[ BezierEdge ].dup
+    #     end
+    #   
+    #   end # class
+    #
     # @since 1.0.0
     def initialize
       @parent = nil
       @valid = true
-      @links = {}
+      @links = {} # Lookup table of related entities, grouped by type.
       @typename = self.class.name.split('::').last.freeze
     end
     
@@ -40,6 +65,12 @@ module TT::Plugins::BezierSurfaceTools
       @valid == false
     end
     
+    # Invalidates the entity and releases any references it had to other
+    # entities. Use after erasing/removing/replacing an entity which result
+    # in an entity not to be used any more
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def invalidate!
       fail_if_invalid()
       # Release any reference to other objects.
@@ -47,12 +78,13 @@ module TT::Plugins::BezierSurfaceTools
       @links = {}
       # The entity is then flagged as invalid.
       @valid = false
+      nil
     end
     
-    # Assosiates an entity with the current BezierEdge. Use to keep track of
-    # which entities use this edge.
+    # Assosiates an entity with the current BezierEntity. Use to keep track of
+    # entities related to each other.
     #
-    # @param [BezierPatch,BezierEdge] entity
+    # @param [BezierEntity] entity
     #
     # @return [Boolean]
     # @since 1.0.0
@@ -79,7 +111,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # De-assosiates an entity.
     #
-    # @param [BezierPatch,BezierEdge] entity
+    # @param [BezierEntity] entity
     #
     # @return [Nil]
     # @since 1.0.0
@@ -103,6 +135,8 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @param [BezierEntity] entity
+    #
     # @return [Boolean]
     # @since 1.0.0
     def used_by?( bezier_entity )
@@ -113,6 +147,8 @@ module TT::Plugins::BezierSurfaceTools
       false
     end
     
+    # @param [BezierEntity] entity
+    #
     # @return [Boolean]
     # @since 1.0.0
     def links_to?( bezier_entity )
