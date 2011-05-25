@@ -8,37 +8,39 @@
 
 module TT::Plugins::BezierSurfaceTools
   
-  
+  # Base class of common methods for bezier related entities.
+  #
+  # == Linkable Entities
+  #
+  # Related entities are linked together with {#link} and {#unlink}.
+  #
+  # BezierEntity use a hash @links to keep track of linked entities.
+  # Subclasses must add the allowed linkable types to this hash. Key should be
+  # entity class and value an array.
+  #
+  # @example
+  #   class MySubClass < BezierEntity
+  #   
+  #     def initialize( parent )
+  #       super()
+  #       # Define linkable entities:
+  #       @links[ BezierEdge ] = []
+  #       @links[ BezierPatch ] = []
+  #     end
+  #
+  #     def edges
+  #       @links[ BezierEdge ].dup
+  #     end
+  #   
+  #   end # class
+  #
+  # @abstract Superclass used to base all bezier related entities.
+  #
   # @since 1.0.0
   class BezierEntity
     
     attr_reader( :parent, :links )
     
-    # Base class of common methods for bezier related entities.
-    #
-    # ==Linkable Entities==
-    # Related entities are linked together with #link and #unlink.
-    #
-    # BezierEntity use a hash @links to keep track of linked entities.
-    # Subclasses must add the allowed linkable types to this hash. Key should be
-    # entity class and value an array.
-    #
-    # @example
-    #   class MySubClass < BezierEntity
-    #   
-    #     def initialize( parent )
-    #       super()
-    #       # Define linkable entities:
-    #       @links[ BezierEdge ] = []
-    #       @links[ BezierPatch ] = []
-    #     end
-    #
-    #     def edges
-    #       @links[ BezierEdge ].dup
-    #     end
-    #   
-    #   end # class
-    #
     # @since 1.0.0
     def initialize
       @parent = nil
