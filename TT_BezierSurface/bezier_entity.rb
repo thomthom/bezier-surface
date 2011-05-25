@@ -37,7 +37,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def deleted?
-      !@valid
+      @valid == false
     end
     
     def invalidate!
