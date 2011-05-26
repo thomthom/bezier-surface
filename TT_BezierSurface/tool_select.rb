@@ -62,6 +62,7 @@ module TT::Plugins::BezierSurfaceTools
     def activate    
       @editor.selection.clear
       update_ui()
+      init_gizmo()
     end
     
     def deactivate( view )
@@ -89,6 +90,13 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onMouseMove( flags, x, y, view )
+      # Handle Gizmo
+      if @gizmo.onMouseMove( flags, x, y, view )
+        view.invalidate
+        return true
+      end
+      
+      # Selection Rectangle is made if left button is pressed.
       if flags & MK_LBUTTON == MK_LBUTTON
         @state = STATE_DRAG
         @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
@@ -101,10 +109,20 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onLButtonDown( flags, x, y, view )
-      @selection_rectangle.start = Geom::Point3d.new( x, y, 0 )
+      if @gizmo.onLButtonDown(flags, x, y, view)
+        view.invalidate
+      else
+        @selection_rectangle.start = Geom::Point3d.new( x, y, 0 )
+      end
     end
     
-    def onLButtonUp( flags, x, y, view )      
+    def onLButtonUp( flags, x, y, view )
+      # Handle Gizmo
+      if @gizmo.onLButtonUp(flags, x, y, view)
+        view.invalidate
+        return
+      end
+      
       # Get key modifier controlling how the selection should be modified.
       # Using standard SketchUp selection modifier keys.
       key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
@@ -173,6 +191,7 @@ module TT::Plugins::BezierSurfaceTools
       
       @draw_cache.render
       @selection_rectangle.draw( view )
+      @gizmo.draw( view ) unless @editor.selection.empty?
       
       # <debug>
       elapsed = Time.now - t_start
@@ -197,6 +216,18 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     private
+    
+    def init_gizmo
+      t = @editor.model.edit_transform
+ 
+      selection_points = @editor.selection.map { |cpt| cpt.position }
+      pt = TT::Geom3d.average_point( selection_points ).transform( t )
+      xaxis = X_AXIS.transform( t )
+      yaxis = Y_AXIS.transform( t )
+      zaxis = Z_AXIS.transform( t )
+      
+      @gizmo = TT::Gizmo::Manipulator.new( pt, xaxis, yaxis, zaxis )
+    end
     
     # @since 1.0.0
     def update_draw_cache
