@@ -61,8 +61,8 @@ module TT::Plugins::BezierSurfaceTools
     
     def activate    
       @editor.selection.clear
-      update_ui()
       init_gizmo()
+      update_ui()
     end
     
     def deactivate( view )
@@ -109,7 +109,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onLButtonDown( flags, x, y, view )
-      if @gizmo.onLButtonDown(flags, x, y, view)
+      if @gizmo.onLButtonDown( flags, x, y, view )
         view.invalidate
       else
         @selection_rectangle.start = Geom::Point3d.new( x, y, 0 )
@@ -231,6 +231,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # @since 1.0.0
     def update_draw_cache
+      
       @draw_cache.clear
       view = @draw_cache
       
@@ -275,6 +276,11 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, unselected_interior )
       @surface.draw_vertices( view, selected_interior, true )
       @surface.draw_patches( view, selected_patches )
+      
+      # Update Gizmo
+      selection_points = active_vertices.map { |cpt| cpt.position }
+      average = TT::Geom3d.average_point( selection_points )
+      @gizmo.origin = average.transform( tr )
     end
     
   end # class SelectionTool
