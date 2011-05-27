@@ -152,6 +152,17 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # @return [Boolean]
+    # @since 1.0.0
+    def refresh
+      if @active_tool.respond_to?( :update_ui )
+        @active_tool.update_ui
+        true
+      else
+        false
+      end
+    end
+    
     # @since 1.0.0
     def update_properties
       types = {}

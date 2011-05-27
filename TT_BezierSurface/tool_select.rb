@@ -52,6 +52,7 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # @since 1.0.0
     def update_ui
       update_draw_cache()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
