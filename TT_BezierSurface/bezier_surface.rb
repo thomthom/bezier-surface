@@ -302,12 +302,31 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def mesh_points( subdivs, transformation )
       # private ?
+      
+      # <debug>
+      t_1 = Time.now
+      # </debug>
+      
       points = []
       for patch in @patches
         points.concat( patch.mesh_points( subdivs, transformation ).to_a )
       end
+      
+      # <debug>
+      t_2 = Time.now
+      # </debug>
+      
       points = TT::Point3d.extend_all( points ) # So that .uniq! works
       points.uniq!
+      
+      # <debug>
+      t_end = Time.now
+      #TT.debug 'Surface.mesh_points'
+      #TT.debug "> Patch.mesh_point: #{t_2 - t_1}"
+      #TT.debug "> Point3d.extend_all: #{t_end - t_2}"
+      #TT.debug "> Total: #{t_end - t_1}"
+      # </debug>
+      
       points
     end
     

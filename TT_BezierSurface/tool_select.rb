@@ -234,6 +234,10 @@ module TT::Plugins::BezierSurfaceTools
       }
       
       @gizmo.on_transform { |t_increment, t_total|
+        # <debug>
+        t_1 = Time.now
+        # </debug>
+      
         # (!) Replace with @surface.transform_entities
         tr = @editor.local_transformation( t_increment )
         for control_point in @editor.selection.related_control_points
@@ -243,6 +247,12 @@ module TT::Plugins::BezierSurfaceTools
         positions = @surface.mesh_points( @preview, @editor.model.edit_transform ) # (!) Slow
         @surface.set_vertex_positions( @vertex_cache, positions )
         @editor.refresh_ui # (!) Slow
+        
+        # <debug>
+        t_end = Time.now
+        TT.debug '@gizmo.on_transform'
+        TT.debug "> Total: #{t_end - t_1}"
+        # </debug>
       }
       
       @gizmo.on_transform_end {
