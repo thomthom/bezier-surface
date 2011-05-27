@@ -17,7 +17,7 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierSurfaceEditor    
     
-    attr_reader( :model, :surface, :selection )
+    attr_reader( :model, :surface, :selection, :draw_cache )
     
     def initialize( model )
       @model = model
@@ -26,6 +26,16 @@ module TT::Plugins::BezierSurfaceTools
       
       @active_tool = nil
       @active = false
+      
+      # Drawing Performance Test ( 23.05.2011 )
+      #   14 Patches - 12 Subdivisions
+      #
+      #   Without Cache: ~0.100s
+      #   With Cache:    ~0.005s
+      #
+      # In addition to the raw numbers, the user experience felt much smoother
+      # with the cache.
+      @draw_cache = DrawCache.new( @model.active_view )
     end
     
     # Indicates if there is an active edit session.
@@ -152,15 +162,11 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
-    # @return [Boolean]
+    # @return [Nil]
     # @since 1.0.0
-    def refresh
-      if @active_tool.respond_to?( :update_ui )
-        @active_tool.update_ui
-        true
-      else
-        false
-      end
+    def refresh_ui
+      update_viewport_cache()
+      nil
     end
     
     # @since 1.0.0
@@ -445,6 +451,54 @@ module TT::Plugins::BezierSurfaceTools
         return MF_CHECKED if entity.automatic?
       end
       MF_UNCHECKED
+    end
+    
+    # @since 1.0.0
+    def update_viewport_cache
+      @draw_cache.clear
+      view = @draw_cache
+      
+      tr = view.model.edit_transform
+      
+      selected_vertices = []
+      selected_interior = []
+      selected_edges = []
+      selected_patches = []
+      for entity in @selection
+        if entity.is_a?( BezierVertex )
+          selected_vertices << entity
+        elsif entity.is_a?( BezierInteriorPoint )
+          selected_interior << entity
+        elsif entity.is_a?( BezierEdge )
+          selected_edges << entity
+        elsif entity.is_a?( BezierPatch )
+          selected_patches << entity
+        end
+      end
+      
+      unselected_vertices = @surface.vertices - selected_vertices
+      unselected_interior = @surface.manual_interior_points - selected_interior
+      unselected_edges = @surface.edges - selected_edges
+      
+      # Get selected vertices and selected entities' vertices. Display handles
+      # for each vertex.
+      edge_vertices = selected_edges.map { |edge| edge.vertices }
+      edge_vertices.flatten!
+      patch_vertices = selected_patches.map { |patch| patch.vertices }
+      patch_vertices.flatten!
+      active_vertices = selected_vertices + edge_vertices + patch_vertices
+      
+      # Draw patches last because it uses transparent colour. SketchUp seem to
+      # cull out any opaque drawing that happens after transparent drawing.
+      @surface.draw_internal_grid( view )
+      @surface.draw_edges( view, unselected_edges )
+      @surface.draw_edges( view, selected_edges, true )
+      @surface.draw_vertices( view, unselected_vertices )
+      @surface.draw_vertices( view, selected_vertices, true )
+      @surface.draw_vertex_handles( view, active_vertices )
+      @surface.draw_vertices( view, unselected_interior )
+      @surface.draw_vertices( view, selected_interior, true )
+      @surface.draw_patches( view, selected_patches )
     end
     
   end # class BezierSurfaceEditor

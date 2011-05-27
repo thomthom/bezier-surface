@@ -17,15 +17,6 @@ module TT::Plugins::BezierSurfaceTools
       @editor = editor
       @surface = editor.surface
       
-      # Drawing Performance Test ( 23.05.2011 )
-      #   14 Patches - 12 Subdivisions
-      #
-      #   Without Cache: ~0.100s
-      #   With Cache:    ~0.005s
-      #
-      # In addition to the raw numbers, the user experience felt much smoother
-      # with the cache.
-      @draw_cache = DrawCache.new( @editor.model.active_view )
       @selection_rectangle = SelectionRectangle.new( @surface )
       
       # Tool state.
@@ -54,7 +45,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # @since 1.0.0
     def update_ui
-      update_draw_cache()
+      update_viewport_cache()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
@@ -162,7 +153,7 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.clear
         @editor.selection.add( entities )
       end
-      update_draw_cache()
+      update_viewport_cache()
       
       @editor.update_properties
       
@@ -190,7 +181,7 @@ module TT::Plugins::BezierSurfaceTools
       t_start = Time.now
       # </debug>
       
-      @draw_cache.render
+      @editor.draw_cache.render
       @selection_rectangle.draw( view )
       @gizmo.draw( view ) unless @editor.selection.empty?
       
@@ -231,55 +222,27 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @since 1.0.0
-    def update_draw_cache
+    def update_viewport_cache
+      @editor.refresh_ui
       
-      @draw_cache.clear
-      view = @draw_cache
+      tr = @editor.model.edit_transform
       
-      tr = view.model.edit_transform
-      
-      selected_vertices = []
-      selected_interior = []
-      selected_edges = []
-      selected_patches = []
+      control_points = []
       for entity in @editor.selection
         if entity.is_a?( BezierVertex )
-          selected_vertices << entity
+          control_points << entity
         elsif entity.is_a?( BezierInteriorPoint )
-          selected_interior << entity
+          control_points.concat( entity.to_a )
         elsif entity.is_a?( BezierEdge )
-          selected_edges << entity
+          control_points.concat( entity.control_points )
         elsif entity.is_a?( BezierPatch )
-          selected_patches << entity
+          control_points.concat( entity.control_points.to_a )
         end
       end
-      
-      unselected_vertices = @surface.vertices - selected_vertices
-      unselected_interior = @surface.manual_interior_points - selected_interior
-      unselected_edges = @surface.edges - selected_edges
-      
-      # Get selected vertices and selected entities' vertices. Display handles
-      # for each vertex.
-      edge_vertices = selected_edges.map { |edge| edge.vertices }
-      edge_vertices.flatten!
-      patch_vertices = selected_patches.map { |patch| patch.vertices }
-      patch_vertices.flatten!
-      active_vertices = selected_vertices + edge_vertices + patch_vertices
-      
-      # Draw patches last because it uses transparent colour. SketchUp seem to
-      # cull out any opaque drawing that happens after transparent drawing.
-      @surface.draw_internal_grid( view )
-      @surface.draw_edges( view, unselected_edges )
-      @surface.draw_edges( view, selected_edges, true )
-      @surface.draw_vertices( view, unselected_vertices )
-      @surface.draw_vertices( view, selected_vertices, true )
-      @surface.draw_vertex_handles( view, active_vertices )
-      @surface.draw_vertices( view, unselected_interior )
-      @surface.draw_vertices( view, selected_interior, true )
-      @surface.draw_patches( view, selected_patches )
+      control_points.uniq!
       
       # Update Gizmo
-      selection_points = active_vertices.map { |cpt| cpt.position }
+      selection_points = control_points.map { |cpt| cpt.position }
       average = TT::Geom3d.average_point( selection_points )
       @gizmo.origin = average.transform( tr )
     end
