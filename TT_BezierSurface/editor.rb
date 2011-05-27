@@ -418,6 +418,11 @@ module TT::Plugins::BezierSurfaceTools
         TT.debug( '> Closing active context' )
         view.model.close_active
       end
+      
+      # Clean up any object references so they can be garbage collected.
+      @selection.clear
+      @surface = nil
+      @draw_cache.clear
     end
     
     private
