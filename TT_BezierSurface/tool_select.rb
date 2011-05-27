@@ -227,9 +227,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Update Gizmo
       tr = @editor.model.edit_transform
-      control_points = @editor.selection_control_points
-      selection_points = control_points.map { |cpt| cpt.position }
-      average = TT::Geom3d.average_point( selection_points )
+      average = TT::Geom3d.average_point( @editor.selection.positions )
       @gizmo.origin = average.transform( tr )
     end
     
