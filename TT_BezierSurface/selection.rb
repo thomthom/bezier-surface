@@ -168,7 +168,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # @return [Array<BezierControlPoint>]
     # @since 1.0.0
-    def related_control_points
+    def to_control_points
       result = []
       for entity in @items
         if entity.is_a?( BezierControlPoint )
@@ -185,7 +185,7 @@ module TT::Plugins::BezierSurfaceTools
     
     # @return [Array<BezierVertex>]
     # @since 1.0.0
-    def related_vertices
+    def to_vertices
       result = []
       for entity in @items
         if entity.is_a?( BezierVertex )
@@ -194,6 +194,29 @@ module TT::Plugins::BezierSurfaceTools
           result.concat( entity.vertices )
         elsif entity.is_a?( BezierPatch )
           result.concat( entity.vertices )
+        end
+      end
+      result.uniq!
+      result
+    end
+    
+    # @return [Array<BezierControlPoint>]
+    # @since 1.0.0
+    def related_control_points
+      result = []
+      for entity in @items
+        if entity.is_a?( BezierControlPoint )
+          result << entity
+        elsif entity.is_a?( BezierEdge )
+          result.concat( entity.control_points )
+        elsif entity.is_a?( BezierPatch )
+          result.concat( entity.control_points.to_a )
+        end
+      end
+      result.uniq!
+      for entity in result.to_a
+        if entity.is_a?( BezierVertex )
+          result.concat( entity.handles )
         end
       end
       result.uniq!
