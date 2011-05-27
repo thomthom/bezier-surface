@@ -36,13 +36,34 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def automatic?
+      fail_if_invalid()
       @automatic ==  true
     end
     
     # @return [Boolean]
     # @since 1.0.0
     def automatic=( is_automatic )
+      fail_if_invalid()
       @automatic = ( is_automatic == true )
+    end
+    
+    # Returns an array of +BezierEdge+ objects in clock-wise order.
+    #
+    # @return [Array<BezierEdge>]
+    # @since 1.0.0
+    def edges
+      fail_if_invalid()
+      @edgeuses.map { |edgeuse| edgeuse.edge }
+    end
+    
+    # @return [Array<BezierHandle>]
+    # @since 1.0.0
+    def handles
+      fail_if_invalid()
+      result = edges.map { |e| e.handles }
+      result.flatten!
+      result.uniq!
+      result
     end
     
     # Subclasses must implement these methods:

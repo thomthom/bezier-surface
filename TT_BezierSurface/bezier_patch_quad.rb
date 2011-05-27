@@ -220,15 +220,6 @@ module TT::Plugins::BezierSurfaceTools
       points
       TT::Dimension.new( points, 4, 4 )
     end
-
-    # Returns an array of +BezierEdge+ objects in clock-wise order.
-    #
-    # @return [Array<BezierEdge>]
-    # @since 1.0.0
-    def edges
-      fail_if_invalid()
-      @edgeuses.map { |edgeuse| edgeuse.edge }
-    end
     
     # Returns an array of +BezierEdge+ objects in clock-wise order.
     #
@@ -254,6 +245,17 @@ module TT::Plugins::BezierSurfaceTools
       }
     end
     
+    # @return [Boolean]
+    # @since 1.0.0
+    def refresh_interior
+      if automatic?
+        # (!) ...
+        true
+      else
+        false
+      end
+    end
+    
     # Accurate calculation of the number of vertices in the mesh.
     #
     # @param [Integer] subdivs
@@ -277,6 +279,8 @@ module TT::Plugins::BezierSurfaceTools
       subdiv * subdiv * 2
     end
     
+    # @note Slow performance. Improve!
+    #
     # Returns a set of 3d points for this patch using the given sub-division.
     # 
     # @param [Integer] subdivs
