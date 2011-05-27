@@ -165,7 +165,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def refresh_ui
-      update_viewport_cache()
+      update_viewport_cache
       nil
     end
     
@@ -451,6 +451,8 @@ module TT::Plugins::BezierSurfaceTools
       MF_UNCHECKED
     end
     
+    # @note Slow! Cause lagging when used in onMouseMove. Optimize!
+    #
     # @since 1.0.0
     def update_viewport_cache
       @draw_cache.clear
