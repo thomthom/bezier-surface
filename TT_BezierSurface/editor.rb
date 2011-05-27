@@ -443,6 +443,7 @@ module TT::Plugins::BezierSurfaceTools
       model.active_view.refresh
       TT::Model.start_operation( 'Automatic Interior' )
       @surface.update( model.edit_transform )
+      refresh_ui()
       model.commit_operation
     end
     

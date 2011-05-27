@@ -145,6 +145,7 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurface.update' )
       Sketchup.status_text = 'Updating Bezier Surface...'
       @preview = false
+      refresh_automatic_patches()
       update_mesh( @subdivs, transformation )
       update_attributes()
       nil
@@ -162,6 +163,7 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
       @preview = subdivs
+      refresh_automatic_patches()
       update_mesh( subdivs, transformation )
       nil
     end

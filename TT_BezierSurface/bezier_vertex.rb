@@ -83,6 +83,13 @@ module TT::Plugins::BezierSurfaceTools
       @position
     end
     
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def position=( new_pt )
+      fail_if_invalid()
+      set( new_pt )
+    end
+    
   end # class BezierVertex
   
   
@@ -166,6 +173,13 @@ module TT::Plugins::BezierSurfaceTools
     def vertex
       fail_if_invalid()
       @links[ BezierVertex ].first
+    end
+    
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def vector
+      fail_if_invalid()
+      vertex.position.vector_to( @position )
     end
   
   end # class BezierHandle

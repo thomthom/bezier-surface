@@ -249,7 +249,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def refresh_interior
       if automatic?
-        # (!) ...
+        @interior_points = interpolate_interior()
         true
       else
         false
@@ -486,6 +486,46 @@ module TT::Plugins::BezierSurfaceTools
         points.column(2)
       ]
     end
+    
+    # @param [BezierVertex] vertex
+    # @param [BezierHandle] handle_x
+    # @param [BezierHandle] handle_y
+    #
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def interpolate_points( vertex, handle_x, handle_y )
+      line_x = [ handle_x.position, handle_y.vector ]
+      line_y = [ handle_y.position, handle_x.vector ]
+      intersect = Geom::intersect_line_line( line_x, line_y )
+      # (!) intersect.nil? would mean error - or edge case?
+      raise TypeError, 'Intersect is Nil' unless intersect
+      intersect
+    end
+    
+    # @since 1.0.0
+    def interpolate_interior
+      # 12 13 14 15
+			#  8  9 10 11
+			#  4  5  6  7
+			#  0  1  2  3
+      cpts = control_points
+      
+      # INTERIOR POINTS:
+      #
+      # X---X---X---X
+      # |   |   |   |
+      # X---2---3---X
+      # |   |   |   |
+      # X---0---1---X
+      # |   |   |   |
+      # X---X---X---X
+      @interior_points[ 0 ].position = interpolate_points( cpts[ 0], cpts[ 1], cpts[ 4] )
+      @interior_points[ 1 ].position = interpolate_points( cpts[ 3], cpts[ 2], cpts[ 7] )
+      @interior_points[ 2 ].position = interpolate_points( cpts[12], cpts[13], cpts[ 8] )
+      @interior_points[ 3 ].position = interpolate_points( cpts[15], cpts[14], cpts[11] )
+      
+      @interior_points.dup
+		end
     
   end # class QuadPatch
 
