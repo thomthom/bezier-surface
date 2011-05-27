@@ -225,23 +225,9 @@ module TT::Plugins::BezierSurfaceTools
     def update_viewport_cache
       @editor.refresh_ui
       
-      tr = @editor.model.edit_transform
-      
-      control_points = []
-      for entity in @editor.selection
-        if entity.is_a?( BezierVertex )
-          control_points << entity
-        elsif entity.is_a?( BezierInteriorPoint )
-          control_points.concat( entity.to_a )
-        elsif entity.is_a?( BezierEdge )
-          control_points.concat( entity.control_points )
-        elsif entity.is_a?( BezierPatch )
-          control_points.concat( entity.control_points.to_a )
-        end
-      end
-      control_points.uniq!
-      
       # Update Gizmo
+      tr = @editor.model.edit_transform
+      control_points = @editor.selection_control_points
       selection_points = control_points.map { |cpt| cpt.position }
       average = TT::Geom3d.average_point( selection_points )
       @gizmo.origin = average.transform( tr )

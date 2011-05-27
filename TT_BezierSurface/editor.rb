@@ -169,6 +169,23 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @return [Array<BezierControlPoint>]
+    # @since 1.0.0
+    def selection_control_points
+      control_points = []
+      for entity in @selection
+        if entity.is_a?( BezierControlPoint )
+          control_points << entity
+        elsif entity.is_a?( BezierEdge )
+          control_points.concat( entity.control_points )
+        elsif entity.is_a?( BezierPatch )
+          control_points.concat( entity.control_points.to_a )
+        end
+      end
+      control_points.uniq!
+      control_points
+    end
+    
     # @since 1.0.0
     def update_properties
       types = {}
