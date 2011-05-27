@@ -20,6 +20,8 @@ module TT::Plugins::BezierSurfaceTools
       @instance = instance
       @patches = []
       @subdivs = SUBDIVS_DEFAULT
+      
+      @preview = false
     end
     
     # Because very large values for subdivision will cause SketchUp to
@@ -142,6 +144,7 @@ module TT::Plugins::BezierSurfaceTools
     def update( transformation )
       TT.debug( 'BezierSurface.update' )
       Sketchup.status_text = 'Updating Bezier Surface...'
+      @preview = false
       update_mesh( @subdivs, transformation )
       update_attributes()
       nil
@@ -158,6 +161,7 @@ module TT::Plugins::BezierSurfaceTools
     def preview( transformation, subdivs = 4 )
       #TT.debug( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
+      @preview = subdivs
       update_mesh( subdivs, transformation )
       nil
     end
@@ -257,6 +261,20 @@ module TT::Plugins::BezierSurfaceTools
       edges
     end
     
+    # @return [Integer>]
+    # @since 1.0.0
+    def refresh_automatic_patches
+      # (!) Make private after transform_entities is working
+      result = 0
+      for patch in @patches
+        if patch.automatic?
+          patch.refresh_interior
+          result += 1
+        end
+      end
+      result
+    end
+    
     # @param [Geom::Transformation] transformation
     # @param [Array<BezierEntity>] entities
     #
@@ -273,6 +291,8 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # @note Slow performance. Improve!
+    #
     # Returns all the 3d points for the surface mesh.
     #
     # @param [Integer] subdivs
@@ -565,13 +585,10 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_internal_grid( view, preview = false )
+    def draw_internal_grid( view )
       for patch in @patches
-        if preview
-          patch.draw_internal_grid( preview, view )
-        else
-          patch.draw_internal_grid( @subdivs, view )
-        end
+        subd = ( @preview ) ? @preview : @subdivs
+        patch.draw_internal_grid( subd, view )
       end
       nil
     end
@@ -583,7 +600,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw_patches( view, patches )
       tr = view.model.edit_transform
-      subd = @subdivs
+      subd = ( @preview ) ? @preview : @subdivs
       view.drawing_color = CLR_PATCH
       for patch in patches
         points = patch.mesh_points( subd, tr )
@@ -694,14 +711,13 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Sketchup::View] view
     # @param [Array<BezierEdge>] edges
     # @param [Boolean] selected
-    # @param [Boolean] preview
     #
     # @return [Nil]
     # @since 1.0.0
-    def draw_edges( view, edges, selected = false, preview = false )
+    def draw_edges( view, edges, selected = false )
       return false if edges.empty?
       tr = view.model.edit_transform
-      subdivs = (preview) ? preview : @subdivs
+      subd = ( @preview ) ? @preview : @subdivs
       
       if selected
         color = CLR_EDGE_SELECTED
@@ -715,7 +731,7 @@ module TT::Plugins::BezierSurfaceTools
       view.line_stipple = ''
       view.drawing_color = color
       for edge in edges
-        view.draw( GL_LINE_STRIP, edge.segment( subdivs, tr ) )
+        view.draw( GL_LINE_STRIP, edge.segment( subd, tr ) )
       end
       true
     end
@@ -724,7 +740,7 @@ module TT::Plugins::BezierSurfaceTools
     # @deprecated Debug method
     def draw_edge_directions( view )
       tr = view.model.edit_transform
-      subdivs = @subdivs
+      subdivs = ( @preview ) ? @preview : @subdivs
       for patch in @patches
         v1 = patch.edges[0].direction
         v2 = patch.edges[1].direction
