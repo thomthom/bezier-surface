@@ -169,23 +169,6 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # @return [Array<BezierControlPoint>]
-    # @since 1.0.0
-    def selection_control_points
-      control_points = []
-      for entity in @selection
-        if entity.is_a?( BezierControlPoint )
-          control_points << entity
-        elsif entity.is_a?( BezierEdge )
-          control_points.concat( entity.control_points )
-        elsif entity.is_a?( BezierPatch )
-          control_points.concat( entity.control_points.to_a )
-        end
-      end
-      control_points.uniq!
-      control_points
-    end
-    
     # @since 1.0.0
     def update_properties
       types = {}
@@ -442,13 +425,12 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def toggle_automatic_patch
       automatic = ( validate_automatic_patch == MF_CHECKED ) ? false : true
-      for entity in @selection.to_a
-        next unless entity.is_a?( BezierPatch )
-        entity.automatic = automatic
+      for patch in @selection.patches.to_a
+        patch.automatic = automatic
         # Remove selected interior points from selection when making patch
         # automatic since the user should not be interacting with these points.
         if automatic
-          @selection.remove( entity.interior_points )
+          @selection.remove( patch.interior_points )
         end
       end
       @active_tool.update_ui
@@ -463,9 +445,8 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def validate_automatic_patch
-      for entity in @selection
-        next unless entity.is_a?( BezierPatch )
-        return MF_CHECKED if entity.automatic?
+      for patch in @selection.patches
+        return MF_CHECKED if patch.automatic?
       end
       MF_UNCHECKED
     end
@@ -477,21 +458,10 @@ module TT::Plugins::BezierSurfaceTools
       
       tr = view.model.edit_transform
       
-      selected_vertices = []
-      selected_interior = []
-      selected_edges = []
-      selected_patches = []
-      for entity in @selection
-        if entity.is_a?( BezierVertex )
-          selected_vertices << entity
-        elsif entity.is_a?( BezierInteriorPoint )
-          selected_interior << entity
-        elsif entity.is_a?( BezierEdge )
-          selected_edges << entity
-        elsif entity.is_a?( BezierPatch )
-          selected_patches << entity
-        end
-      end
+      selected_vertices = @selection.vertices
+      selected_interior = @selection.interior_points
+      selected_edges = @selection.edges
+      selected_patches = @selection.patches
       
       unselected_vertices = @surface.vertices - selected_vertices
       unselected_interior = @surface.manual_interior_points - selected_interior
@@ -499,11 +469,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Get selected vertices and selected entities' vertices. Display handles
       # for each vertex.
-      edge_vertices = selected_edges.map { |edge| edge.vertices }
-      edge_vertices.flatten!
-      patch_vertices = selected_patches.map { |patch| patch.vertices }
-      patch_vertices.flatten!
-      active_vertices = selected_vertices + edge_vertices + patch_vertices
+      active_vertices = @selection.related_vertices
       
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
