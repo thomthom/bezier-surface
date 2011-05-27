@@ -98,6 +98,8 @@ module TT::Plugins::BezierSurfaceTools
         result = @surface.pick_control_points_ex( x, y, view )
         @mouse_over_vertex = !result.empty?
       end
+      
+      view.invalidate # (!) Temp - need Manipulator.onMouseOut
     end
     
     def onLButtonDown( flags, x, y, view )
@@ -227,7 +229,9 @@ module TT::Plugins::BezierSurfaceTools
       
       # Update Gizmo
       tr = @editor.model.edit_transform
-      average = TT::Geom3d.average_point( @editor.selection.positions )
+      control_points = @editor.selection.related_control_points
+      positions = control_points.map { |cpt| cpt.position }
+      average = TT::Geom3d.average_point( positions )
       @gizmo.origin = average.transform( tr )
     end
     
