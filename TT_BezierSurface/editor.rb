@@ -259,6 +259,7 @@ module TT::Plugins::BezierSurfaceTools
       if valid_context?
         @surface.reload
         @selection.clear
+        refresh_ui()
       else
         TT.debug( '> Invalid Context' )
         self.end_session
@@ -477,7 +478,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Get selected vertices and selected entities' vertices. Display handles
       # for each vertex.
-      active_vertices = @selection.related_vertices
+      active_vertices = @selection.to_vertices
       
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
