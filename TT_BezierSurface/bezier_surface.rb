@@ -120,6 +120,9 @@ module TT::Plugins::BezierSurfaceTools
       if mesh_version > MESH_VERSION
         raise 'Mesh format is made with a newer version.'
       end
+      
+      # Clear old data.
+      @patches = []
       if mesh_version == MESH_VERSION_R0
         reload_R0( definition )
       else
