@@ -480,6 +480,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertex_handles( view, active_vertices )
       @surface.draw_vertices( view, unselected_interior )
       @surface.draw_vertices( view, selected_interior, true )
+      @surface.draw_automatic_interior( view )
       @surface.draw_patches( view, selected_patches )
     end
     

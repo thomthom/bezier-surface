@@ -72,6 +72,7 @@ module TT::Plugins::BezierSurfaceTools
   CLR_VERTEX        = Sketchup::Color.new( 255,   0,   0 )
   CLR_HANDLE_POINT  = Sketchup::Color.new(   0, 128,   0 )
   CLR_HANDLE_ARM    = Sketchup::Color.new(   0, 192,   0 )
+  CLR_INTERIOR      = Sketchup::Color.new(   0,   0,   0 )
   CLR_EDGE          = Sketchup::Color.new(  64,  64, 128 )
   CLR_EDGE_SELECTED = Sketchup::Color.new( 255, 165,   0 )
   CLR_PATCH         = Sketchup::Color.new(   0,   0, 255, 64 )

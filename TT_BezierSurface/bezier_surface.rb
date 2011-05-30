@@ -253,6 +253,17 @@ module TT::Plugins::BezierSurfaceTools
       cpts
     end
     
+    # @return [Array<BezierInteriorPoint>]
+    # @since 1.0.0
+    def automatic_interior_points
+      cpts = []
+      for patch in @patches
+        next unless patch.automatic?
+        cpts.concat( patch.interior_points.to_a )
+      end
+      cpts
+    end
+    
     # Returns all the +BezierEdge+ entities for the surface.
     #
     # @return [Array<BezierEdge>]
@@ -777,12 +788,24 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @param [Sketchup::View] view
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def draw_automatic_interior( view )
+      tr = view.model.edit_transform
+      points = automatic_interior_points.map { |control_point|
+        control_point.position.transform(tr)
+      }
+      draw_markers( view, points, CLR_INTERIOR )
+    end
+    
+    # @param [Sketchup::View] view
     # @param [Array<Geom::Point3d>] points
     # @param [Sketchup::Color] color
     # @param [Numeric] size
     # @param [Numeric] line_width
     #
-    # @return [Nil]
+    # @return [Boolean]
     # @since 1.0.0
     def draw_circles( view, points, color, size = VERTEX_SIZE, line_width = 2 )
       return false if points.empty?
@@ -808,7 +831,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Numeric] size
     # @param [Numeric] line_width
     #
-    # @return [Nil]
+    # @return [Boolean]
     # @since 1.0.0
     def draw_markers( view, points, color, size = VERTEX_SIZE, line_width = 2 )
       return false if points.empty?
