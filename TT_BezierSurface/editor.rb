@@ -67,7 +67,7 @@ module TT::Plugins::BezierSurfaceTools
         @model.selection.clear
         @model.select_tool( nil ) # Ensure no other tool is active.
         @model.tools.push_tool( self )
-        tool = VertexSelectionTool.new( self )
+        tool = SelectionTool.new( self )
         select_tool( tool )
       else
         # Invalid instance or incompatible version
@@ -307,16 +307,6 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
-        
-        # Select Vertex
-        button = TT::GUI::ToolbarButton.new('Select Control Points') {
-          puts 'Tool: Select Control Points'
-          tool = VertexSelectionTool.new( self )
-          select_tool( tool )
-          TT::SketchUp.activate_main_window
-        }
-        button.icon = File.join( PATH_ICONS, 'Select_24.png' )
-        @toolbar.add_control( button )
         
         # Select
         button = TT::GUI::ToolbarButton.new('Select') {

@@ -340,61 +340,6 @@ module TT::Plugins::BezierSurfaceTools
       points
     end
     
-    # Returns all the vertices for the surface mesh in the same order as
-    # #mesh_points.
-    #
-    # @todo Optimize!
-    #
-    # @return [Array<Sketchup::Vertex>]
-    # @since 1.0.0
-    def mesh_vertices
-      # private ?
-      d = TT::Instance.definition( @instance )
-      transformation = @instance.model.edit_transform
-      pts = mesh_points( final_subdivs, transformation )
-      vertices = raw_mesh_vertices()
-      
-      # <debug>
-      unless pts.length == vertices.length
-        TT.debug( 'mesh_vertices' )
-        TT.debug( "> Points: #{pts.length}" )
-        TT.debug( "> Vertices: #{vertices.length}" )
-      end
-      # </debug>
-      
-      patch_vertices = []
-      for pt in pts
-        vertex = vertices.find { |v| v.position == pt } # (!) Optimize
-        patch_vertices << vertex
-        vertices.delete( vertex )
-      end
-      patch_vertices
-    end
-    
-    # Moves the given set of vertices to new positions.
-    #
-    # @param [Array<Sketchup::Vertex>] vertices
-    # @param [Array<Geom::Point3d>] positions
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def set_vertex_positions( vertices, positions )
-      # private ?
-      entities = []
-      vectors = []
-      vertices.each_with_index { |v,i|
-        vector = v.position.vector_to( positions[i] )
-        if vector.valid?
-          entities << v
-          vectors << vector
-        end
-      }
-      # (!) ensure entities has same length as vectors
-      d = TT::Instance.definition( @instance )
-      d.entities.transform_by_vectors( entities, vectors )
-      true
-    end
-    
     # Returns the picked control points for the given x, y screen co-ordinates.
     #
     # @note Currently returns an array - might be multiple points returned if
@@ -926,6 +871,61 @@ module TT::Plugins::BezierSurfaceTools
       end
       et = @instance.model.edit_transform
       local_transform = (et.inverse * transformation) * et
+    end
+    
+    # Returns all the vertices for the surface mesh in the same order as
+    # #mesh_points.
+    #
+    # @todo Optimize!
+    #
+    # @return [Array<Sketchup::Vertex>]
+    # @since 1.0.0
+    def mesh_vertices
+      # private ?
+      d = TT::Instance.definition( @instance )
+      transformation = @instance.model.edit_transform
+      points = mesh_points( final_subdivs, transformation )
+      vertices = raw_mesh_vertices()
+      
+      # <debug>
+      unless points.size == vertices.size
+        TT.debug( 'mesh_vertices' )
+        TT.debug( "> Points: #{points.size}" )
+        TT.debug( "> Vertices: #{vertices.size}" )
+      end
+      # </debug>
+      
+      patch_vertices = []
+      for point in points
+        vertex = vertices.find { |v| v.position == point } # (!) Optimize
+        patch_vertices << vertex
+        vertices.delete( vertex )
+      end
+      patch_vertices
+    end
+    
+    # Moves the given set of vertices to new positions.
+    #
+    # @param [Array<Sketchup::Vertex>] vertices
+    # @param [Array<Geom::Point3d>] positions
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def set_vertex_positions( vertices, positions )
+      # private ?
+      entities = []
+      vectors = []
+      vertices.each_with_index { |v,i|
+        vector = v.position.vector_to( positions[i] )
+        if vector.valid?
+          entities << v
+          vectors << vector
+        end
+      }
+      # (!) ensure entities has same length as vectors
+      d = TT::Instance.definition( @instance )
+      d.entities.transform_by_vectors( entities, vectors )
+      true
     end
     
     # Returns all vertices for the surface unordered.
