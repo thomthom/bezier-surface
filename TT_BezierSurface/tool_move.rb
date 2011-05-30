@@ -127,28 +127,12 @@ module TT::Plugins::BezierSurfaceTools
           else
             vertices = @editor.selection.related_control_points
           end
+
+          @surface.transform_entities( vertices, offset_vector )
           
-          #TT.debug @surface.control_points
-          #for edge in @surface.edges
-          #  TT.debug edge.control_points
-          #end
-          
-          local_transform = @editor.local_transformation( offset_vector )
-          vertices.each { |cpt|
-            cpt.position.transform!( local_transform )
-          }
-          
-          #TT.debug '---'
-          #TT.debug @surface.control_points
-          #for edge in @surface.edges
-          #  TT.debug edge.control_points
-          #end
-          
-          @editor.model.start_operation( 'Move Control Points' )
+          @editor.model.start_operation( 'Move Bezier Entities' )
           @surface.update
           @editor.model.commit_operation
-          #positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
-          #@surface.set_vertex_positions( @vertex_cache, positions )
         end
       end
       
