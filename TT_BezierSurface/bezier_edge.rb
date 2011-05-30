@@ -332,7 +332,7 @@ module TT::Plugins::BezierSurfaceTools
       model = Sketchup.active_model
       model.start_operation( 'Add Quad Patch', true )
       surface.add_patch( new_patch )
-      surface.update( model.edit_transform )
+      surface.update
       model.commit_operation
       
       new_patch

@@ -144,7 +144,7 @@ module TT::Plugins::BezierSurfaceTools
           #end
           
           @editor.model.start_operation( 'Move Control Points' )
-          @surface.update( @editor.model.edit_transform )
+          @surface.update
           @editor.model.commit_operation
           #positions = @surface.mesh_points( @preview, @editor.model.edit_transform )
           #@surface.set_vertex_positions( @vertex_cache, positions )

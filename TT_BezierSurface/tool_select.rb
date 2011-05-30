@@ -224,12 +224,11 @@ module TT::Plugins::BezierSurfaceTools
       
       @gizmo = TT::Gizmo::Manipulator.new( pt, xaxis, yaxis, zaxis )
       
+      # (!) Return name of operation in block
       @gizmo.on_transform_start {
         @editor.model.start_operation( 'Edit Control Points' )
         @preview = 4 # Subdivisions
-        @surface.preview( @editor.model.edit_transform, @preview )
-        # Cache the vertices for use in the on_transform event.
-        @vertex_cache = @surface.mesh_vertices( @preview, @editor.model.edit_transform )
+        @surface.preview
         @editor.refresh_ui
       }
       
@@ -238,14 +237,8 @@ module TT::Plugins::BezierSurfaceTools
         t_1 = Time.now
         # </debug>
       
-        # (!) Replace with @surface.transform_entities
-        tr = @editor.local_transformation( t_increment )
-        for control_point in @editor.selection.related_control_points
-          control_point.position.transform!( tr )
-        end
-        @surface.refresh_automatic_patches
-        positions = @surface.mesh_points( @preview, @editor.model.edit_transform ) # (!) Slow
-        @surface.set_vertex_positions( @vertex_cache, positions )
+        entities = @editor.selection.related_control_points
+        @surface.transform_entities( t_increment, entities )
         @editor.refresh_ui # (!) Slow
         
         # <debug>
@@ -256,7 +249,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       
       @gizmo.on_transform_end {
-        @surface.update( @editor.model.edit_transform )
+        @surface.update
         @editor.model.commit_operation
         @preview = false
         update_ui()

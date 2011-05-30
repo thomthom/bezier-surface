@@ -82,9 +82,9 @@ module TT::Plugins::BezierSurfaceTools
       @gizmo.on_transform_start {
         @editor.model.start_operation('Edit Control Points')
         @preview = 4
-        @surface.preview( @editor.model.edit_transform, @preview )
+        @surface.preview
         # Cache the vertices for use in the on_transform event.
-        @vertex_cache = @surface.mesh_vertices( @preview, @editor.model.edit_transform )
+        @vertex_cache = @surface.mesh_vertices
       }
       @gizmo.on_transform { |t_step, t_total|
         et = @editor.model.edit_transform
@@ -96,7 +96,7 @@ module TT::Plugins::BezierSurfaceTools
         @surface.set_vertex_positions( @vertex_cache, positions )
       }
       @gizmo.on_transform_end {
-        @surface.update( @editor.model.edit_transform )
+        @surface.update
         @editor.model.commit_operation
         @preview = false
         update_ui()
@@ -135,7 +135,7 @@ module TT::Plugins::BezierSurfaceTools
         @ip_start.clear			
         @ip_mouse.clear
         @state = S_NORMAL
-        @surface.update( @editor.model.edit_transform )
+        @surface.update
         # (!) Gizmo.reset
         view.invalidate
       when 1 # Reactivate Tool

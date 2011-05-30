@@ -22,6 +22,7 @@ module TT::Plugins::BezierSurfaceTools
       @subdivs = SUBDIVS_DEFAULT
       
       @preview = false
+      @vertex_cache = []
     end
     
     # Because very large values for subdivision will cause SketchUp to
@@ -140,34 +141,33 @@ module TT::Plugins::BezierSurfaceTools
     # @note Remember to wrap in start_operation and commit_operation to ensure
     #       that undo works as expected.
     #
-    # @param [Geom::Transformation] transformation
-    #
     # @return [Nil]
     # @since 1.0.0
-    def update( transformation )
+    def update
       TT.debug( 'BezierSurface.update' )
       Sketchup.status_text = 'Updating Bezier Surface...'
       @preview = false
       refresh_automatic_patches()
-      update_mesh( @subdivs, transformation )
+      update_mesh()
       update_attributes()
+      # (?) Cache vertices?
+      @vertex_cache.clear # (i) For now, invalidate the cache.
       nil
     end
     
     # Updates the mesh with the given sub-division without writing the data to
     # the attribute dictionary. Use this for live transformation previews.
     #
-    # @param [Geom::Transformation] transformation
-    # @param [Integer] subdivs
-    #
     # @return [Nil]
     # @since 1.0.0
-    def preview( transformation, subdivs = 4 )
+    def preview
       #TT.debug( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
-      @preview = subdivs
+      @preview = 4 # (!) Get from settings
       refresh_automatic_patches()
-      update_mesh( subdivs, transformation )
+      update_mesh()
+      # Cache vertices for later use in #transform_entities
+      @vertex_cache = mesh_vertices()
       nil
     end
     
@@ -286,13 +286,18 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def transform_entities( transformation, entities )
+      if @vertex_cache.empty?
+        raise 'No verticed cached!'
+      end
       return false if entities.empty?
       local_transform = local_transformation( transformation )
-      # (!) Collect related vertices
-      for control_point in controlpoints
+      for control_point in entities
         control_point.position.transform!( local_transform )
       end
-      # (!) Update automatic patches
+      refresh_automatic_patches()
+      etr = @instance.model.edit_transform
+      positions = mesh_points( @preview, etr ) # (!) Slow
+      set_vertex_positions( @vertex_cache, positions )
       true
     end
     
@@ -340,15 +345,13 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @todo Optimize!
     #
-    # @param [Integer] subdivs
-    # @param [Geom::Transformation] tranformation
-    #
     # @return [Array<Sketchup::Vertex>]
     # @since 1.0.0
-    def mesh_vertices( subdivs, transformation )
+    def mesh_vertices
       # private ?
       d = TT::Instance.definition( @instance )
-      pts = mesh_points( subdivs, transformation )
+      transformation = @instance.model.edit_transform
+      pts = mesh_points( final_subdivs, transformation )
       vertices = raw_mesh_vertices()
       
       # <debug>
@@ -897,6 +900,15 @@ module TT::Plugins::BezierSurfaceTools
     
     private
     
+    
+    # @return [Integer]
+    # @since 1.0.0
+    def final_subdivs
+      subdivision = ( @preview ) ? @preview : @subdivs
+      # (!) Calculate global multiplier.
+      subdivision
+    end
+    
     # Converts a transformation for the global space into a transformation
     # within the local space.
     #
@@ -933,21 +945,23 @@ module TT::Plugins::BezierSurfaceTools
     
     # Regenerates the mesh from the BezierSurface data.
     #
-    # @param [Integer] subdivs
-    # @param [Geom::Transformation] tranformation
-    #
     # @return [Boolean]
     # @since 1.0.0
-    def update_mesh( subdivs, transformation )
+    def update_mesh
       TT.debug( 'BezierSurface.update_mesh' )
       d = TT::Instance.definition( @instance )
-      points = count_mesh_points( subdivs )
-      polygons = count_mesh_polygons( subdivs )
+      transformation = d.model.edit_transform
+      subdivisions = final_subdivs()
+      # Init a PolygonMesh with an rough geometry estimate for best performance.
+      points = count_mesh_points( subdivisions )
+      polygons = count_mesh_polygons( subdivisions )
       mesh = Geom::PolygonMesh.new( points, polygons )
+      # Populate the mesh.
       TT.debug( '> Adding patches...' )
       for patch in @patches
-        patch.add_to_mesh( mesh, subdivs, transformation )
+        patch.add_to_mesh( mesh, subdivisions, transformation )
       end
+      # Add the mesh to model.
       TT.debug( '> Clear and fill...' )
       debug_time_start = Time.now
       d.entities.clear!

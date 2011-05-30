@@ -139,7 +139,7 @@ module TT::Plugins::BezierSurfaceTools
         surface = BezierSurface.new( group )
         patch = QuadPatch.new( surface, controlpoints )
         surface.add_patch( patch )
-        surface.update( view.model.edit_transform )
+        surface.update
         view.model.commit_operation
         view.model.selection.clear
         view.model.selection.add( group )

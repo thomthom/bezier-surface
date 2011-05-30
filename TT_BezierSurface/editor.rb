@@ -209,7 +209,7 @@ module TT::Plugins::BezierSurfaceTools
       if subdivs > 0
         @model.start_operation('Change Subdivisions', true)
         @surface.subdivs = subdivs
-        @surface.update( @model.edit_transform )
+        @surface.update
         @model.commit_operation
         true
       else
