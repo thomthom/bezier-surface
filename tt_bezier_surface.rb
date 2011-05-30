@@ -167,8 +167,7 @@ module TT::Plugins::BezierSurfaceTools
         
         menu.add_separator
         
-        m = menu.add_item('Update') { }
-        menu.set_validation_proc( m ) { MF_GRAYED }
+        menu.add_item('Update') { self.update_selected_surface }
         
         menu.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
         

@@ -42,7 +42,7 @@ module TT::Plugins::BezierSurfaceTools
   def self.convert_selected_to_mesh
     # Verify selection.
     model = Sketchup.active_model
-    return false if model.selection.length != 1
+    return false if model.selection.length < 1
     instance = model.selection[0]
     return false unless BezierSurface.is?( instance )
     # Fetch definition and make sure to make the selected instance unique.
@@ -63,6 +63,23 @@ module TT::Plugins::BezierSurfaceTools
     model.commit_operation
     # Clear the selection so there is some kind of user feedback of an event.
     model.selection.clear
+    true
+  end
+  
+  
+  # @return [Boolean]
+  # @since 1.0.0
+  def self.update_selected_surface
+    # Verify selection.
+    model = Sketchup.active_model
+    return false if model.selection.length < 1
+    instance = model.selection[0]
+    return false unless BezierSurface.is?( instance )
+    surface = BezierSurface.load( instance )
+    return false unless surface
+    TT::Model.start_operation( 'Update Surface' )
+    surface.update
+    model.commit_operation
     true
   end
 
