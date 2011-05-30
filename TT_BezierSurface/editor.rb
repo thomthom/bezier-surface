@@ -267,20 +267,6 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # Draw mesh grids and control points.
-    #
-    # @param [Sketchup::View] view
-    # @param [Boolean] preview
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def draw( view, preview = false )
-      return unless @surface
-      @surface.draw_internal_grid( view, preview )
-      @surface.draw_control_grid( view )
-      @surface.draw_control_points( view, @selection.to_a )
-    end
-    
     # @return [String]
     # @since 1.0.0
     def inspect

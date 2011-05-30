@@ -200,6 +200,8 @@ module TT::Plugins::BezierSurfaceTools
       result
     end
     
+    # (?) Move to Editor?
+    #
     # @return [Array<BezierControlPoint>]
     # @since 1.0.0
     def related_control_points

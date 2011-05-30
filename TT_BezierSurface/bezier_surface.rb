@@ -123,7 +123,9 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       # Clear old data.
-      @patches = []
+      @patches.clear 
+      
+      # Parse the appropriate version.
       if mesh_version == MESH_VERSION_R0
         reload_R0( definition )
       else
@@ -277,20 +279,6 @@ module TT::Plugins::BezierSurfaceTools
       edges
     end
     
-    # @return [Integer>]
-    # @since 1.0.0
-    def refresh_automatic_patches
-      # (!) Make private after transform_entities is working
-      result = 0
-      for patch in @patches
-        if patch.automatic?
-          patch.refresh_interior
-          result += 1
-        end
-      end
-      result
-    end
-    
     # @param [Geom::Transformation] transformation
     # @param [Array<BezierEntity>] entities
     #
@@ -307,7 +295,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       refresh_automatic_patches()
       etr = @instance.model.edit_transform
-      positions = mesh_points( @preview, etr ) # (!) Slow
+      positions = mesh_points( @preview, etr )
       set_vertex_positions( @vertex_cache, positions )
       true
     end
@@ -322,32 +310,12 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def mesh_points( subdivs, transformation )
-      # private ?
-      
-      # <debug>
-      t_1 = Time.now
-      # </debug>
-      
       points = []
       for patch in @patches
         points.concat( patch.mesh_points( subdivs, transformation ).to_a )
       end
-      
-      # <debug>
-      t_2 = Time.now
-      # </debug>
-      
       points = TT::Point3d.extend_all( points ) # So that .uniq! works
       points.uniq!
-      
-      # <debug>
-      t_end = Time.now
-      #TT.debug 'Surface.mesh_points'
-      #TT.debug "> Patch.mesh_point: #{t_2 - t_1}"
-      #TT.debug "> Point3d.extend_all: #{t_end - t_2}"
-      #TT.debug "> Total: #{t_end - t_1}"
-      # </debug>
-      
       points
     end
     
@@ -498,69 +466,6 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # @deprecated
-    #
-    # @param [Sketchup::View] view
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def draw_control_handles( view )
-      return false if edges.empty?
-      
-      control_points = []
-      handle_points = []
-      handle_lines = []
-      internal_points = []
-
-      tr = view.model.edit_transform
-      for edge in edges
-        world_points = edge.positions.map { |point|
-          point.transform(tr)
-        }
-        
-        control_points << world_points[0]
-        control_points << world_points[3]
-        
-        handle_points << world_points[1]
-        handle_points << world_points[2]
-        
-        handle_lines.concat( world_points )
-      end
-      
-      for patch in patches
-        patch.interior_points.each { |control_point|
-          internal_points << control_point.position.transform(tr)
-        }
-      end
-      
-      view.line_width = 2
-      view.line_stipple = ''
-      
-      # Handle Lines
-      view.drawing_color = 'orange'
-      view.draw( GL_LINES, handle_lines )
-      
-      # Handle Points
-      view.line_width = 2
-      #view.draw_points( handle_points, VERTEX_SIZE, TT::POINT_X, 'green' )
-      draw_circles( view, handle_points, 'green' )
-      
-      # Interior Points
-      view.line_width = 2
-      #view.draw_points( internal_points, VERTEX_SIZE, TT::POINT_CROSS, 'black' )
-      draw_markers( view, internal_points, 'black', 6 )
-      
-      # Control Points
-      view.line_width = CTRL_GRID_BORDER_WIDTH
-      view.drawing_color = CLR_VERTEX
-      view.draw_points( control_points, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
-      
-      # Account for SU bug where draw_points kills the next draw operation.
-      view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
-      
-      true
-    end
-    
     # Draws the internal subdivided structure for all the paches in the surface.
     #
     # @param [Sketchup::View] view
@@ -569,9 +474,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def draw_internal_grid( view )
+      subdivisions = final_subdivs()
       for patch in @patches
-        subd = ( @preview ) ? @preview : @subdivs
-        patch.draw_internal_grid( subd, view )
+        patch.draw_internal_grid( subdivisions, view )
       end
       nil
     end
@@ -583,10 +488,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def draw_patches( view, patches )
       tr = view.model.edit_transform
-      subd = ( @preview ) ? @preview : @subdivs
+      subdivisions = final_subdivs()
       view.drawing_color = CLR_PATCH
       for patch in patches
-        points = patch.mesh_points( subd, tr )
+        points = patch.mesh_points( subdivisions, tr )
         quads = []
         for y in (0...points.height-1)
           for x in (0...points.width-1)
@@ -700,7 +605,7 @@ module TT::Plugins::BezierSurfaceTools
     def draw_edges( view, edges, selected = false )
       return false if edges.empty?
       tr = view.model.edit_transform
-      subd = ( @preview ) ? @preview : @subdivs
+      subdivisions = final_subdivs()
       
       if selected
         color = CLR_EDGE_SELECTED
@@ -714,7 +619,7 @@ module TT::Plugins::BezierSurfaceTools
       view.line_stipple = ''
       view.drawing_color = color
       for edge in edges
-        view.draw( GL_LINE_STRIP, edge.segment( subd, tr ) )
+        view.draw( GL_LINE_STRIP, edge.segment( subdivisions, tr ) )
       end
       true
     end
@@ -723,13 +628,13 @@ module TT::Plugins::BezierSurfaceTools
     # @deprecated Debug method
     def draw_edge_directions( view )
       tr = view.model.edit_transform
-      subdivs = ( @preview ) ? @preview : @subdivs
+      subdivisions = final_subdivs()
       for patch in @patches
         v1 = patch.edges[0].direction
         v2 = patch.edges[1].direction
         normal = v1 * v2
         for edge in patch.edges
-          pts = edge.segment( subdivs, tr )
+          pts = edge.segment( subdivisions, tr )
           
           d = edge.direction
           if edge.reversed_in?( patch )
@@ -758,34 +663,6 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     # </debug>
-    
-    # @deprecated
-    #
-    # @param [Sketchup::View] view
-    # @param [Array<BezierControlPoint>] selected
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def draw_control_points( view, selected = [] )
-      tr = view.model.edit_transform
-      # Prepare viewport
-      view.line_stipple = ''
-      view.line_width = 2
-      # Prepare points
-      #unselected = (control_points - selected).map { |pt| pt.transform(tr) }
-      all_points = control_points.map { |cpt| cpt.position.transform(tr) }
-      selected = selected.map { |cpt| cpt.position.transform(tr) }
-      # Drawing
-      #unless unselected.empty?
-      #  view.draw_points( unselected, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
-      #end
-      view.draw_points( all_points, VERTEX_SIZE, TT::POINT_OPEN_SQUARE, CLR_VERTEX )
-      unless selected.empty?
-        view.draw_points( selected, VERTEX_SIZE, TT::POINT_FILLED_SQUARE, CLR_VERTEX )
-      end
-      # Account for SU bug where draw_points kills the next draw operation.
-      view.draw2d( GL_LINES, [-10,-10,-10], [-11,-11,-11] )
-    end
     
     # @param [Sketchup::View] view
     #
@@ -894,6 +771,19 @@ module TT::Plugins::BezierSurfaceTools
       end
       et = @instance.model.edit_transform
       local_transform = (et.inverse * transformation) * et
+    end
+
+    # @return [Integer>]
+    # @since 1.0.0
+    def refresh_automatic_patches
+      result = 0
+      for patch in @patches
+        if patch.automatic?
+          patch.refresh_interior
+          result += 1
+        end
+      end
+      result
     end
     
     # Returns all the vertices for the surface mesh in the same order as
