@@ -28,6 +28,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def update_ui
+      @editor.refresh_ui
       if @editor.selection.empty?
         Sketchup.status_text = 'Click a control point and hold down left mouse button to move it.'
       else
@@ -124,7 +125,7 @@ module TT::Plugins::BezierSurfaceTools
           if @editor.selection.empty?
             vertices = ( @start_over_vertex ) ? @start_over_vertex : []
           else
-            vertices = @editor.selection
+            vertices = @editor.selection.related_control_points
           end
           
           #TT.debug @surface.control_points
@@ -185,10 +186,11 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def draw(view)
-      @surface.draw_internal_grid( view, @preview )
-      @surface.draw_edges( view, @surface.edges )
-      @surface.draw_control_grid( view )
-      @surface.draw_control_points( view, @editor.selection.to_a )
+      #@surface.draw_internal_grid( view, @preview )
+      #@surface.draw_edges( view, @surface.edges )
+      #@surface.draw_control_grid( view )
+      #@surface.draw_control_points( view, @editor.selection.to_a )
+      @editor.draw_cache.render
       
       if @ip_mouse.valid? && @ip_start.valid? #&& !view.inference_locked?
         pt1 = @ip_start.position
