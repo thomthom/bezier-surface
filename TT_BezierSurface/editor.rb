@@ -217,27 +217,6 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
-    # (!) Private method in BezierSurface
-    #
-    # Converts a transformation for the global space into a transformation
-    # within the local space.
-    #
-    # Use when editing a bezier surface. The group will be open and the
-    # co-ordinate system in SketchUp is working in world space.
-    #
-    # @param [Geom::Transformation] transformation
-    #
-    # @return [Boolean]
-    # @since 1.0.0
-    def local_transformation( transformation )
-      # Cast Vector3d into Transformation.
-      if transformation.is_a?( Geom::Vector3d )
-        transformation = Geom::Transformation.new( transformation )
-      end
-      et = @model.edit_transform
-      local_transform = (et.inverse * transformation) * et
-    end
-    
     # Checks if the current model context is a bezier surface.
     #
     # @return [Boolean]
@@ -434,8 +413,6 @@ module TT::Plugins::BezierSurfaceTools
       MF_UNCHECKED
     end
     
-    # @note Slow! Cause lagging when used in onMouseMove. Optimize!
-    #
     # @since 1.0.0
     def update_viewport_cache
       @draw_cache.clear
