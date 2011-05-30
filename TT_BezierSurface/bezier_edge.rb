@@ -328,12 +328,9 @@ module TT::Plugins::BezierSurfaceTools
       new_patch.set_edge( new_patch.edges.last, self )
       self.link( new_patch )
       
-      # Add the patch to the surface and regenerate the mesh.
-      model = Sketchup.active_model
-      model.start_operation( 'Add Quad Patch', true )
+      # Add the patch to the surface. Calling method should be calling
+      # Surface.update after this to refresh the mesh.
       surface.add_patch( new_patch )
-      surface.update
-      model.commit_operation
       
       new_patch
     end

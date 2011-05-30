@@ -10,18 +10,25 @@ module TT::Plugins::BezierSurfaceTools
 
   # Adds a new QuadPatch to the selected BezierEdge.
   #
+  # @todo Smarter extrusion of connected edges. Merge entities where possible.
+  #
   # @return [Boolean]
   # @since 1.0.0
   def self.add_quadpatch
     model = Sketchup.active_model
-    editor = self.get_editor( model )
+    editor = PLUGIN.get_editor( model )
     return false unless editor
     return false unless editor.active?
-    return false unless editor.selection.size == 1
-    edge = editor.selection[0]
-    return false unless edge.is_a?( BezierEdge )
-    return false if edge.patches.size > 1
-    edge.extrude_quad_patch
+    return false if editor.selection.empty?
+    edges = editor.selection.edges
+    edges.reject! { |edge| edge.patches.size > 1 }
+    return false if edges.empty?
+    model.start_operation( 'Add Quad Patch', true )
+    for edge in edges
+      edge.extrude_quad_patch
+    end
+    editor.surface.update
+    model.commit_operation
     editor.refresh_ui
     true
   end
