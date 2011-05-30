@@ -296,7 +296,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Select
         button = TT::GUI::ToolbarButton.new('Select') {
-          puts 'Tool: Select'
+          TT.debug 'Tool: Select'
           tool = SelectionTool.new( self )
           select_tool( tool )
           TT::SketchUp.activate_main_window
@@ -306,7 +306,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Move
         button = TT::GUI::ToolbarButton.new('Move') {
-          puts 'Tool: Move'
+          TT.debug 'Tool: Move'
           tool = MoveTool.new( self )
           select_tool( tool )
           TT::SketchUp.activate_main_window
@@ -316,7 +316,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Add QuadPatch
         button = TT::GUI::ToolbarButton.new('Add QuadPatch') {
-          puts 'Add QuadPatch'
+          TT.debug 'Add QuadPatch'
           PLUGIN.add_quadpatch
           TT::SketchUp.activate_main_window
         }
@@ -325,7 +325,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Add TriPatch
         button = TT::GUI::ToolbarButton.new('Add TriPatch') {
-          puts 'Add TriPatch'
+          TT.debug 'Add TriPatch'
           #PLUGIN.add_tripatch # (!)
           TT::SketchUp.activate_main_window
         }
@@ -342,7 +342,7 @@ module TT::Plugins::BezierSurfaceTools
           'Custom'
         ] )
         list.on_change { |value|
-          puts "Axis: #{value}"
+          TT.debug "Axis: #{value}"
           TT::SketchUp.activate_main_window
         }
         label = TT::GUI::Label.new( 'Axis: ', list )
