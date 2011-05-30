@@ -206,8 +206,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def change_subdivisions( subdivs )
-      if subdivs > 0
-        @model.start_operation('Change Subdivisions', true)
+      if subdivs > 0 && subdivs != @surface.subdivs
+        @model.start_operation( 'Change Subdivisions', true )
         @surface.subdivs = subdivs
         @surface.update
         @model.commit_operation
@@ -269,7 +269,7 @@ module TT::Plugins::BezierSurfaceTools
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
-        @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE
+        @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE # (!) Add as option
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
         
@@ -366,9 +366,10 @@ module TT::Plugins::BezierSurfaceTools
       close_toolbar()
       
       # (!) SketchUp bug!
+      # Sketchup.close_active
       # Normally, closing a group/component appears in the undo stack.
-      # But when this method is used in SU8-M1 and older the action does not
-      # appear in the stack - and when you then trigger and undo after using
+      # But when close_active is used in SU8-M1 and older the action does not
+      # appear in the stack - so when you then trigger undo/redo after using
       # this method all the modified geometry is offset.
       if valid_context?
         TT.debug( '> Closing active context' )
@@ -383,6 +384,7 @@ module TT::Plugins::BezierSurfaceTools
     
     private
     
+    # @return [Boolean]
     # @since 1.0.0
     def toggle_automatic_patch
       automatic = ( validate_automatic_patch == MF_CHECKED ) ? false : true
@@ -398,13 +400,15 @@ module TT::Plugins::BezierSurfaceTools
       model = @model
       model.active_view.refresh
       TT::Model.start_operation( 'Automatic Interior' )
-      @surface.update( model.edit_transform )
+      @surface.update
       refresh_ui()
       model.commit_operation
+      automatic
     end
     
     # Returns MF_CHECKED if any patch in selection has automatic interior.
     #
+    # @return [MF_CHECKED,MF_UNCHECKED]
     # @since 1.0.0
     def validate_automatic_patch
       for patch in @selection.patches
@@ -413,6 +417,7 @@ module TT::Plugins::BezierSurfaceTools
       MF_UNCHECKED
     end
     
+    # @return [Nil]
     # @since 1.0.0
     def update_viewport_cache
       @draw_cache.clear
@@ -445,6 +450,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_vertices( view, selected_interior, true )
       @surface.draw_automatic_interior( view )
       @surface.draw_patches( view, selected_patches )
+      nil
     end
     
   end # class BezierSurfaceEditor
