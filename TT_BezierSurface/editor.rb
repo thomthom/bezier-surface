@@ -296,7 +296,7 @@ module TT::Plugins::BezierSurfaceTools
         # Add QuadPatch
         button = TT::GUI::ToolbarButton.new('Add QuadPatch') {
           TT.debug 'Add QuadPatch'
-          PLUGIN.add_quadpatch
+          Commands.add_quadpatch
           TT::SketchUp.activate_main_window
         }
         button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
