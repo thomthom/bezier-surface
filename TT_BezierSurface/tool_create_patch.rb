@@ -19,7 +19,7 @@ module TT::Plugins::BezierSurfaceTools
       @ip_mouse = Sketchup::InputPoint.new
       @subdivs = SUBDIVS_DEFAULT
       
-      @cursor = TT::Cursor.get_id(:rectangle)
+      @cursor = TT::Cursor.get_id( :rectangle )
     end
     
     # @since 1.0.0
@@ -74,7 +74,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @since 1.0.0
-    def onCancel(reason, view)
+    def onCancel( reason, view )
       TT.debug( 'CreatePatchTool.onCancel' )
       case reason
       when 0 # ESC
@@ -91,7 +91,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @since 1.0.0
-    def onUserText(text, view)
+    def onUserText( text, view )
       # Ensure the subdivision is within sensible ranges. Prevents the user from
       # hanging the computer when unreasonable values are entered.
       subdivs = text.to_i
@@ -103,7 +103,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @since 1.0.0
-    def onMouseMove(flags, x, y, view)
+    def onMouseMove( flags, x, y, view )
       view.invalidate if @ip_mouse.pick( view, x, y )
       view.tooltip = @ip_mouse.tooltip
     end
@@ -157,7 +157,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # @since 1.0.0
-    def draw(view)
+    def draw( view )
       # InputPoints
       @ip_start.draw(view) if @ip_start.valid?
       @ip_mouse.draw(view) if @ip_mouse.valid?
