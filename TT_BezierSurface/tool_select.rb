@@ -84,9 +84,16 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def onMouseMove( flags, x, y, view )
+      # Use view.refresh instead of view.invalidate as the latter doesn't
+      # update often enough. View.refresh force the viewport to update.
+      #
+      # (?) Maybe limit how many refreshes are made for better performance?
+      #
+      # (i) View.refresh require SketchUp 7.1+
+      
       # Handle Gizmo
       if @gizmo.onMouseMove( flags, x, y, view )
-        view.invalidate
+        view.refresh
         return true
       end
       
@@ -94,14 +101,14 @@ module TT::Plugins::BezierSurfaceTools
       if flags & MK_LBUTTON == MK_LBUTTON
         @state = STATE_DRAG
         @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
-        view.invalidate
+        view.refresh
       else
         @state = STATE_NORMAL
         result = @surface.pick_control_points_ex( x, y, view )
         @mouse_over_vertex = !result.empty?
       end
       
-      view.invalidate # (!) Temp - need Manipulator.onMouseOut
+      view.refresh # (!) Temp - need Manipulator.onMouseOut
     end
     
     def onLButtonDown( flags, x, y, view )
