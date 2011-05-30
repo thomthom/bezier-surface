@@ -19,8 +19,6 @@ module TT::Plugins::BezierSurfaceTools
       
       @selection_rectangle = SelectionRectangle.new( @surface )
       
-      @preview = false # Non-false when mesh is previewed
-      
       # Tool state.
       # Set to STATE_DRAG when a selection box is active.
       @state = STATE_NORMAL
@@ -45,12 +43,14 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # @return [Nil]
     # @since 1.0.0
     def update_ui
       update_viewport_cache()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
+      nil
     end
     
     def activate    
@@ -173,14 +173,14 @@ module TT::Plugins::BezierSurfaceTools
       view.invalidate
     end
     
-    def onKeyDown(key, repeat, flags, view)
+    def onKeyDown( key, repeat, flags, view )
       @key_ctrl  = true if key == COPY_MODIFIER_KEY
       @key_shift = true if key == CONSTRAIN_MODIFIER_KEY
       onSetCursor() # This blocks the VCB. (But "p onSetCursor()" does not.. ? )
       false # The VCB is not blocked as long as onSetCursor isn't the last call.
     end
     
-    def onKeyUp(key, repeat, flags, view)
+    def onKeyUp( key, repeat, flags, view )
       @key_ctrl  = false if key == COPY_MODIFIER_KEY
       @key_shift = false if key == CONSTRAIN_MODIFIER_KEY
       onSetCursor()
@@ -220,6 +220,8 @@ module TT::Plugins::BezierSurfaceTools
     
     private
     
+    # @return [Nil]
+    # @since 1.0.0
     def init_gizmo
       tr = @editor.model.edit_transform
  
@@ -234,35 +236,28 @@ module TT::Plugins::BezierSurfaceTools
       # (!) Return name of operation in block
       @gizmo.on_transform_start {
         @editor.model.start_operation( 'Edit Control Points' )
-        @preview = 4 # Subdivisions
         @surface.preview
         @editor.refresh_ui
       }
       
       @gizmo.on_transform { |t_increment, t_total|
-        # <debug>
-        t_1 = Time.now
-        # </debug>
-      
         entities = @editor.selection.related_control_points
         @surface.transform_entities( t_increment, entities )
-        @editor.refresh_ui # (!) Slow
-        
-        # <debug>
-        t_end = Time.now
-        TT.debug '@gizmo.on_transform'
-        TT.debug "> Total: #{t_end - t_1}"
-        # </debug>
+        @editor.refresh_ui
       }
       
       @gizmo.on_transform_end {
         @surface.update
         @editor.model.commit_operation
-        @preview = false
         update_ui()
       }
+      
+      nil
     end
     
+    # Call after geometry and selection change.
+    #
+    # @return [Nil]
     # @since 1.0.0
     def update_viewport_cache
       @editor.refresh_ui
@@ -273,6 +268,7 @@ module TT::Plugins::BezierSurfaceTools
       positions = control_points.map { |cpt| cpt.position }
       average = TT::Geom3d.average_point( positions )
       @gizmo.origin = average.transform( tr )
+      nil
     end
     
   end # class SelectionTool
