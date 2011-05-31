@@ -38,7 +38,7 @@ module TT::Plugins::BezierSurfaceTools
         cmd.large_icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
         cmd.status_bar_text = 'Create a Tripatch Bezier Surface.'
         cmd.tooltip = 'Create a Tripatch Bezier Surface'
-        cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
+        cmd.set_validation_proc { MF_GRAYED }
         @create_tri_patch = cmd
       end
       @create_tri_patch
@@ -67,7 +67,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         cmd.status_bar_text = 'Clone selected Surface.'
         cmd.tooltip = 'Clone selected Surface'
-        cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
+        cmd.set_validation_proc { MF_GRAYED }
         @clone = cmd
       end
       @clone
@@ -82,7 +82,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         cmd.status_bar_text = 'Select all clones.'
         cmd.tooltip = 'Select all clones'
-        cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
+        cmd.set_validation_proc { MF_GRAYED }
         @replace_clone = cmd
       end
       @replace_clone
@@ -97,7 +97,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         cmd.status_bar_text = 'Select all clones.'
         cmd.tooltip = 'Select all clones'
-        cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
+        cmd.set_validation_proc { MF_GRAYED }
         @select_clone = cmd
       end
       @select_clone
