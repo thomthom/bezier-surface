@@ -220,50 +220,87 @@ module TT::Plugins::BezierSurfaceTools
       count
     end
     
+    # Returns the bezier entities in the surface.
+    #
+    # @return [Array<BezierEntity>]
+    # @since 1.0.0
+    def entities
+      result = []
+      result.concat( patches )
+      result.concat( edges )
+      result.concat( control_points )
+      result
+    end
+    
+    # Returns the manipulable bezier entities in the surface.
+    #
+    # @return [Array<BezierEntity>]
+    # @since 1.0.0
+    def manipulable_entities
+      result = []
+      result.concat( patches )
+      result.concat( edges )
+      result.concat( vertices )
+      result.concat( handles )
+      result.concat( manual_interior_points )
+      result
+    end
+    
     # Returns the control points for all the paches in the surface.
     #
     # @return [Array<BezierControlPoint>]
     # @since 1.0.0
     def control_points
-      pts = []
+      result = []
       for patch in @patches
-        pts.concat( patch.control_points.to_a )
+        result.concat( patch.control_points.to_a )
       end
-      pts.uniq!
-      pts
+      result.uniq!
+      result
     end
     
     # @return [Array<BezierVertex>]
     # @since 1.0.0
     def vertices
-      cpts = []
+      result = []
       for patch in @patches
-        cpts.concat( patch.vertices )
+        result.concat( patch.vertices )
       end
-      cpts.uniq!
-      cpts
+      result.uniq!
+      result
+    end
+    
+    # @return [Array<BezierVertex>]
+    # @since 1.0.0
+    def handles
+      result = []
+      for patch in @patches
+        result.concat( patch.handles )
+      end
+      result.uniq!
+      result
     end
     
     # @return [Array<BezierInteriorPoint>]
     # @since 1.0.0
     def manual_interior_points
-      cpts = []
+      result = []
       for patch in @patches
         next if patch.automatic?
-        cpts.concat( patch.interior_points.to_a )
+        result.concat( patch.interior_points.to_a )
       end
-      cpts
+      result
     end
     
     # @return [Array<BezierInteriorPoint>]
     # @since 1.0.0
     def automatic_interior_points
-      cpts = []
+      result = []
       for patch in @patches
         next unless patch.automatic?
-        cpts.concat( patch.interior_points.to_a )
+        result.concat( patch.interior_points.to_a )
       end
-      cpts
+      result
     end
     
     # Returns all the {BezierEdge} entities for the surface.
@@ -271,12 +308,12 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
-      edges = []
+      result = []
       for patch in @patches
-        edges.concat( patch.edges )
+        result.concat( patch.edges )
       end
-      edges.uniq!
-      edges
+      result.uniq!
+      result
     end
     
     # @param [Geom::Transformation] transformation
