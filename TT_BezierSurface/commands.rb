@@ -49,7 +49,7 @@ module TT::Plugins::BezierSurfaceTools
     def self.convert_to_mesh
       unless @convert_to_mesh
         cmd = UI::Command.new( 'Convert to Editable Mesh' ) {
-          Operations.update_selected_surface
+          Operations.convert_selected_to_mesh
         }
         cmd.status_bar_text = 'Convert selected Surface to editable mesh.'
         cmd.tooltip = 'Convert selected Surface to editable mesh'

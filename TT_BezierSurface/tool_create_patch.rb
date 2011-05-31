@@ -133,8 +133,8 @@ module TT::Plugins::BezierSurfaceTools
         # Create Patch
         TT::Model.start_operation( 'Create Bezier Surface' )
         group = view.model.active_entities.add_group
-        group.name = 'Bezier Surface'
-        group.entities.parent.name = 'Bezier Surface'
+        group.name = MESH_NAME
+        group.entities.parent.name = MESH_NAME
         group.transformation = Geom::Transformation.new( origin, x_axis, y_axis )
         surface = BezierSurface.new( group )
         patch = QuadPatch.new( surface, controlpoints )

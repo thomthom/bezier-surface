@@ -44,6 +44,7 @@ module TT::Plugins::BezierSurfaceTools
   
   # Attribute dictionary values
   MESH_TYPE         = 'BezierSurface'.freeze
+  MESH_NAME         = 'Bezier Surface'.freeze
   MESH_VERSION_R0   = TT::Version.new(1,0,3).freeze
   MESH_VERSION_MIN  = MESH_VERSION_R0
   MESH_VERSION      = MESH_VERSION_R0
