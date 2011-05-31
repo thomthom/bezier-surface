@@ -96,22 +96,46 @@ module TT::Plugins::BezierSurfaceTools
         menu.add_separator
       end
       
-      m = menu.add_item( 'Select All' ) { puts '01' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
+      menu.add_item( 'Select All' ) {
+        @selection.add( @surface.manipulable_entities )
+        refresh_ui()
+      }
       
-      m = menu.add_item( 'Select None' ) { puts '02' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
+      menu.add_item( 'Select None' ) {
+        @selection.clear
+        refresh_ui()
+      }
       
-      m = menu.add_item( 'Invert Selection' ) { puts '03' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
+      menu.add_item( 'Invert Selection' ) {
+        @selection.toggle( @surface.manipulable_entities )
+        refresh_ui()
+      }
       
       menu.add_separator
       
-      m = menu.add_item( 'Show All Handles' ) { puts 'n01' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
+      submenu = menu.add_submenu( 'Select' )
       
-      m = menu.add_item( 'Show Interior' ) { puts 'n02' }
-      menu.set_validation_proc( m ) { MF_GRAYED }
+        m = submenu.add_item( 'Vertices' ) { puts 'Vertices' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+        
+        m = submenu.add_item( 'Handles' ) { puts 'Handles' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_UNCHECKED }
+        
+        m = submenu.add_item( 'Edges' ) { puts 'Patches' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+        
+        m = submenu.add_item( 'Patches' ) { puts 'Patches' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+      
+      
+      submenu = menu.add_submenu( 'Show' )
+      
+        m = submenu.add_item( 'All Handles' ) { puts 'n01' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_UNCHECKED }
+        
+        m = submenu.add_item( 'Automatic Interior' ) { puts 'n02' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+      
       
       menu.add_separator
       
@@ -166,6 +190,10 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def refresh_ui
       update_viewport_cache
+      # (!) Update active_tool - implement when SelectTool doesn't feed back
+      # to this anymore.
+      #
+      # Should be called by SelectionObserver.
       nil
     end
     
@@ -420,6 +448,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def update_viewport_cache
+      # (?) Make public so sub-tools can force an update?
       @draw_cache.clear
       view = @draw_cache
       
