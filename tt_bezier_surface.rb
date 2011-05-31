@@ -121,68 +121,40 @@ module TT::Plugins::BezierSurfaceTools
   end
   
   unless file_loaded?( File.basename(__FILE__) )
-    # Commands
-    cmd = UI::Command.new('Create Quadpatch') {
-      Operations.draw_quadpatch
-    }
-    cmd.small_icon = File.join( PATH_ICONS, 'QuadPatch_16.png' )
-    cmd.large_icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
-    cmd.status_bar_text = 'Create a Quadpatch Bezier Surface'
-    cmd.tooltip = 'Create a Quadpatch Bezier Surface'
-    cmd_create_quad_patch = cmd
-    
-    cmd = UI::Command.new('Create Tripatch') {
-      UI.messagebox( 'Not implemented' )
-    }
-    cmd.small_icon = File.join( PATH_ICONS, 'TriPatch_16.png' )
-    cmd.large_icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
-    cmd.status_bar_text = 'Create a Tripatch Bezier Surface'
-    cmd.tooltip = 'Create a Tripatch Bezier Surface'
-    cmd.set_validation_proc { MF_DISABLED | MF_GRAYED }
-    cmd_create_tri_patch = cmd
-    
     # Menus
-    m = TT.menu('Draw').add_submenu( PLUGIN_NAME )
-    m.add_item( cmd_create_quad_patch )
-    m.add_item( cmd_create_tri_patch )
+    m = TT.menu( 'Draw' ).add_submenu( PLUGIN_NAME )
+    m.add_item( Commands.create_quad_patch )
+    m.add_item( Commands.create_tri_patch )
     
-    m = UI.menu('Window')
-    m.add_item('Bezier Surface Properties') { PLUGIN::PropertiesWindow.toggle }
+    m = UI.menu( 'Window' )
+    m.add_item( Commands.toggle_properties )
     
     # Context menu
     UI.add_context_menu_handler { |context_menu|
       model = Sketchup.active_model
-      sel = model.selection
-      if sel.length == 1 && BezierSurface.is?( sel[0] )
+      selection = model.selection
+      if selection.length == 1 && BezierSurface.is?( selection[0] )
         menu = context_menu.add_submenu( PLUGIN_NAME )
         
-        m = menu.add_item('Clone') { }
-        menu.set_validation_proc( m ) { MF_GRAYED }
-        
-        m = menu.add_item('Select Clones') { }
-        menu.set_validation_proc( m ) { MF_GRAYED }
-        
-        m = menu.add_item('Replace Clones') { }
-        menu.set_validation_proc( m ) { MF_GRAYED }
+        menu.add_item( Commands.clone )
+        menu.add_item( Commands.select_clone )
+        menu.add_item( Commands.replace_clone )
         
         menu.add_separator
         
-        menu.add_item('Update') { Operations.update_selected_surface }
-        
-        menu.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
+        menu.add_item( Commands.update_selected )
+        menu.add_item( Commands.toggle_properties )
         
         menu.add_separator
         
-        menu.add_item('Convert to Editable Mesh') {
-          Operations.convert_selected_to_mesh
-        }
+        menu.add_item( Commands.convert_to_mesh )
       end
     }
     
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
-    toolbar.add_item( cmd_create_quad_patch )
-    toolbar.add_item( cmd_create_tri_patch )
+    toolbar.add_item( Commands.create_quad_patch )
+    toolbar.add_item( Commands.create_tri_patch )
     if toolbar.get_last_state == TB_VISIBLE
       toolbar.restore
       UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
