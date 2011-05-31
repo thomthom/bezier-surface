@@ -7,11 +7,15 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-
+  
+  # @note Supports SketchUp's native +SelectionObserver+.
+  # @see http://code.google.com/apis/sketchup/docs/ourdoc/selectionobserver.html
+  #
   # @since 1.0.0
   class Selection
     
     include Enumerable
+    include Observable
     
     # @since 1.0.0
     def initialize
@@ -38,7 +42,8 @@ module TT::Plugins::BezierSurfaceTools
       ents = validate_entities( entities )
       @items.concat( ents )
       @items.uniq!
-      entities.size
+      trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
+      ents.size
     end
     
     # @param [Array<BezierEntity>] entities
@@ -48,7 +53,8 @@ module TT::Plugins::BezierSurfaceTools
     def remove( entities )
       ents = validate_entities( entities )
       @items -= ents
-      entities.size
+      trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
+      ents.size
     end
     
     # @param [Array<BezierEntity>] entities
@@ -64,12 +70,14 @@ module TT::Plugins::BezierSurfaceTools
           @items << e
         end
       end
-      entities.size
+      trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
+      ents.size
     end
     
     # @return [Nil]
     # @since 1.0.0
     def clear
+      trigger_observer( :onSelectionCleared, self ) unless @items.empty?
       @items.clear
       nil
     end
@@ -107,7 +115,11 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierEntity]
     # @since 1.0.0
     def shift
-      @items.shift
+      result = @items.shift
+      if result
+        trigger_observer( :onSelectionBulkChange, self )
+      end
+      result
     end
     
     # @return [Array<BezierEntity>]
