@@ -9,7 +9,7 @@
 module TT::Plugins::BezierSurfaceTools
   
   # @since 1.0.0
-  module Commands
+  module Operations
   
     # Adds a new QuadPatch to the selected BezierEdge.
     #
@@ -93,6 +93,6 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
   
-  end # module Commands
+  end # module Operations
 
 end # module

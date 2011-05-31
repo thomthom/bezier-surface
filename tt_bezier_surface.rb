@@ -123,7 +123,7 @@ module TT::Plugins::BezierSurfaceTools
   unless file_loaded?( File.basename(__FILE__) )
     # Commands
     cmd = UI::Command.new('Create Quadpatch') {
-      Commands.draw_quadpatch
+      Operations.draw_quadpatch
     }
     cmd.small_icon = File.join( PATH_ICONS, 'QuadPatch_16.png' )
     cmd.large_icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
@@ -167,14 +167,14 @@ module TT::Plugins::BezierSurfaceTools
         
         menu.add_separator
         
-        menu.add_item('Update') { Commands.update_selected_surface }
+        menu.add_item('Update') { Operations.update_selected_surface }
         
         menu.add_item('Properties') { PLUGIN::PropertiesWindow.toggle }
         
         menu.add_separator
         
         menu.add_item('Convert to Editable Mesh') {
-          Commands.convert_selected_to_mesh
+          Operations.convert_selected_to_mesh
         }
       end
     }
