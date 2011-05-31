@@ -45,9 +45,9 @@ module TT::Plugins::BezierSurfaceTools
       @subdivs = value
     end
     
-    # Checks if a given instance (group or component) is a bezier patch.
+    # Checks if a given instance (group or component) is a bezier surface.
     #
-    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    # @param [Sketchup::Group,Sketchup::ComponentInstance] instance
     #
     # @return [Boolean]
     # @since 1.0.0
@@ -73,11 +73,11 @@ module TT::Plugins::BezierSurfaceTools
       ( MESH_VERSION_MIN..MESH_VERSION ).include?( version )
     end
     
-    # Loads the bezier patch data from the given instance (group or component).
+    # Loads the bezier surface data from the given instance.
     #
-    # @param [Sketchup::Group|Sketchup::ComponentInstance] instance
+    # @param [Sketchup::Group,Sketchup::ComponentInstance] instance
     #
-    # @return [BezierSurface|Nil]
+    # @return [BezierSurface,Nil]
     # @since 1.0.0
     def self.load( instance )
       TT.debug( 'BezierSurface.load' )
@@ -97,12 +97,12 @@ module TT::Plugins::BezierSurfaceTools
       surface
     end
     
-    # Reloads the bezier patch data from the attribute dictionary of the
+    # Reloads the bezier surface data from the attribute dictionary of the
     # assosiated instance.
     #
     # Use after undo is detected to corrently rebuild the geometry.
     #
-    # @return [BezierSurface|Nil]
+    # @return [BezierSurface,Nil]
     # @since 1.0.0
     def reload
       TT.debug( 'BezierSurface.reload' )
@@ -173,7 +173,7 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # Adds a +BezierPatch+ to the +BezierSurface+.
+    # Adds a {BezierPatch} to the {BezierSurface}.
     #
     # @param [BezierPatch] patch
     #
@@ -185,7 +185,7 @@ module TT::Plugins::BezierSurfaceTools
       patch
     end
     
-    # Estimates the number of vertices in the BezierSurface.
+    # Estimates the number of vertices in the {BezierSurface}.
     #
     # @note Returned value is not accurate. The method does not take into
     #   account patches that share control points.
@@ -202,7 +202,7 @@ module TT::Plugins::BezierSurfaceTools
       count
     end
     
-    # Estimates the number of polygons (triangles) in the BezierSurface.
+    # Estimates the number of polygons (triangles) in the {BezierSurface}.
     #
     # @note Returned value is not accurate. The method does not take into
     #   account patches that share polygon edges. Also - if the mesh is not
@@ -266,7 +266,7 @@ module TT::Plugins::BezierSurfaceTools
       cpts
     end
     
-    # Returns all the +BezierEdge+ entities for the surface.
+    # Returns all the {BezierEdge} entities for the surface.
     #
     # @return [Array<BezierEdge>]
     # @since 1.0.0
@@ -300,8 +300,6 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
-    # @note Slow performance. Improve!
-    #
     # Returns all the 3d points for the surface mesh.
     #
     # @param [Integer] subdivs
@@ -337,7 +335,6 @@ module TT::Plugins::BezierSurfaceTools
         points = patch.pick_control_points( x, y, view )
         picked.concat( points ) unless points.nil?
       end
-      #( picked.empty? ) ? nil : picked.uniq
       picked.uniq
     end
     
@@ -345,7 +342,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Integer] y
     # @param [Sketchup::View] view
     #
-    # @return [Array<BezierVertex|BezierInteriorPoint>]
+    # @return [Array<BezierVertex,BezierInteriorPoint>]
     # @since 1.0.0
     def pick_control_points_ex( x, y, view )
       tr = view.model.edit_transform
@@ -391,7 +388,6 @@ module TT::Plugins::BezierSurfaceTools
         edges = patch.pick_edges( subdivs, x, y, view )
         picked.concat( edges ) unless edges.nil?
       end
-      #( picked.empty? ) ? nil : picked.uniq
       picked.uniq
     end
     
@@ -399,7 +395,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Integer] y
     # @param [Sketchup::View] view
     #
-    # @return [BezierPatch|Nil]
+    # @return [BezierPatch,Nil]
     # @since 1.0.0
     def pick_patch( x, y, view )
       ph = view.pick_helper
@@ -624,7 +620,6 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
-    # <debug>
     # @deprecated Debug method
     def draw_edge_directions( view )
       tr = view.model.edit_transform
@@ -662,7 +657,6 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
     end
-    # </debug>
     
     # @param [Sketchup::View] view
     #
@@ -772,8 +766,11 @@ module TT::Plugins::BezierSurfaceTools
       et = @instance.model.edit_transform
       local_transform = (et.inverse * transformation) * et
     end
-
-    # @return [Integer>]
+    
+    # Updates all the patches with automatic interior points. Call whenever
+    # a patch's bordering control points have changed.
+    #
+    # @return [Integer]
     # @since 1.0.0
     def refresh_automatic_patches
       result = 0
@@ -1075,7 +1072,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @param [Sketchup::ComponentDefinition] definition
     #
-    # @return [BezierSurface|Nil]
+    # @return [BezierSurface]
     # @since 1.0.0
     def reload_R0( definition )
       TT.debug( 'BezierSurface.reload_R0' )
