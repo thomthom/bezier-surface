@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Compatible: SketchUp 7 (PC)
+# Compatible: SketchUp 7.1 (PC)
 #             (other versions untested)
 #-------------------------------------------------------------------------------
 #
@@ -169,13 +169,13 @@ module TT::Plugins::BezierSurfaceTools
   
   ### MAIN SCRIPT ### ----------------------------------------------------------
   
-  # Returns the BezierSurfaceEditor for the current model. This ensures the 
+  # Returns the {BezierSurfaceEditor} for the current model. This ensures the 
   # tool can be used for multiple models simultaneously - as is possible under
   # OSX.
   #
   # @param [Sketchup::Model] current_model
   #
-  # @return [BezierSurfaceEditor|Nil]
+  # @return [BezierSurfaceEditor,Nil]
   # @since 1.0.0
   def self.get_editor( current_model )
     TT.debug( 'get_editor' )
@@ -208,8 +208,8 @@ module TT::Plugins::BezierSurfaceTools
   
   # Get Instructor Path
   #
-  # Tool.getInstructorContentDirectory expects a path relative to SketchUp's
-  # Resource/<locale>/helpcontent/ folder, despite the documentations use an
+  # +Tool.getInstructorContentDirectory+ expects a path relative to SketchUp's
+  # +Resource/<locale>/helpcontent/+ folder, despite the documentations use an
   # absolute path.
   #
   # This method is a wrapper that generates a path to the actual help content
@@ -218,11 +218,12 @@ module TT::Plugins::BezierSurfaceTools
   # The given path must be under the same drive as SketchUp's help content.
   #
   # This quick exist in all current SketchUp versions.
-  # Current: SketchUp 8 M1
+  #
+  # Current SketchUp version: SketchUp 8 M1
   #
   # @param [String] path
   #
-  # @return [String|Nil]
+  # @return [String,Nil]
   # @since 1.0.0
   def self.get_instructor_path( path )
     path = File.expand_path( path )
