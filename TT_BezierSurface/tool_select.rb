@@ -46,7 +46,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def update_ui
-      update_viewport_cache()
+      update_viewport_cache() # (?) Needed if SelectionObserver is implemented?
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
@@ -164,7 +164,7 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.clear
         @editor.selection.add( entities )
       end
-      update_viewport_cache()
+      update_viewport_cache() # Not needed when SelectionObserver is implemented.
       
       @editor.update_properties
       

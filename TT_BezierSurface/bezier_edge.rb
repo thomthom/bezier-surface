@@ -10,7 +10,6 @@ require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_entity.rb' )
 
 module TT::Plugins::BezierSurfaceTools
   
-  
   # Collection of methods for managing the bezier patch edges and their
   # relationship to connected entities.
   #
@@ -18,7 +17,7 @@ module TT::Plugins::BezierSurfaceTools
   class BezierEdge < BezierEntity
     
     # @param [BezierSurface] parent
-    # @param [Array<Geom::Point3d>|Array<BezierControlPoint>] points
+    # @param [Array<Geom::Point3d>,Array<BezierControlPoint>] points
     #
     # @since 1.0.0
     def initialize( parent, points )
