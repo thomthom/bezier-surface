@@ -65,10 +65,15 @@ module TT::Plugins::BezierSurfaceTools
         BezierHandle.new( parent, points[14] ),
         BezierVertex.new( parent, points[15] )
       ], 4, 4 )
-      # Link Control Points to each other.
+      # Link Control Points to the patch.
       for control_point in grid
         control_point.link( self )
       end
+      # Link Vertices to Interior Points.
+      grid[ 0].link( grid[ 5] )
+      grid[ 3].link( grid[ 6] )
+      grid[12].link( grid[ 9] )
+      grid[15].link( grid[10] )
       # Link Interior Points to Vertices.
       grid[ 5].link( grid[ 0] )
       grid[ 6].link( grid[ 3] )

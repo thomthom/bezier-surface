@@ -102,6 +102,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( *args )
       super
       @links[ BezierHandle ] = []
+      @links[ BezierInteriorPoint ] = []
     end
     
     # @return [Array<BezierHandle>]
