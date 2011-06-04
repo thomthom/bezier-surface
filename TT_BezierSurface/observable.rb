@@ -23,7 +23,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def remove_observer( observer )
       @observers ||= []
-      result = @observers.delete?( observer )
+      result = @observers.delete( observer )
       ( result ) ? true : false
     end
     
