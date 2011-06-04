@@ -128,7 +128,7 @@ module TT::Plugins::BezierSurfaceTools
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
       
       
-      submenu = menu.add_submenu( 'Show' )
+      submenu = menu.add_submenu( 'Display' )
       
         m = submenu.add_item( 'All Handles' ) { puts 'n01' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_UNCHECKED }
