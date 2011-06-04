@@ -99,6 +99,36 @@ module TT::Plugins::BezierSurfaceTools
     end
     
   end # class BST_ModelObserver
+  
+  
+  # @since 1.0.0
+  class BST_SelectionObserver < Sketchup::SelectionObserver
+    
+    # @since 1.0.0
+    def onSelectionBulkChange( selection )
+      #puts 'BST_SelectionObserver.onSelectionBulkChange'
+      editor = PLUGIN.get_editor( selection.model )
+      if editor
+        editor.refresh_viewport
+      end
+    end
+    
+    # @since 1.0.0
+    def onSelectionCleared( selection )
+      #puts 'BST_SelectionObserver.onSelectionCleared'
+      editor = PLUGIN.get_editor( selection.model )
+      if editor
+        editor.refresh_viewport
+      end
+    end
+    
+    # @since 1.0.0
+    def self.factory
+      @@observer ||= self.new
+      @@observer
+    end
+    
+  end # class BST_SelectionObserver
 
   
 end # TT::Plugins::BezierSurfaceTools

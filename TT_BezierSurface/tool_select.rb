@@ -46,10 +46,22 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def update_ui
-      update_viewport_cache() # (?) Needed if SelectionObserver is implemented?
+      @editor.update_viewport
+      update_gizmo()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
+      nil
+    end
+    
+    # Called by BezierEditor when the selection or geometry has updated.
+    # The viewport graphics then needs updating.
+    #
+    # @return [Nil]
+    # @since 1.0.0
+    def refresh_viewport
+      #puts 'SelectTool.refresh_viewport'
+      update_gizmo()
       nil
     end
     
@@ -164,9 +176,6 @@ module TT::Plugins::BezierSurfaceTools
         @editor.selection.clear
         @editor.selection.add( entities )
       end
-      update_viewport_cache() # Not needed when SelectionObserver is implemented.
-      
-      @editor.update_properties
       
       @state = STATE_NORMAL
       @selection_rectangle.reset
@@ -237,13 +246,13 @@ module TT::Plugins::BezierSurfaceTools
       @gizmo.on_transform_start {
         @editor.model.start_operation( 'Edit Control Points' )
         @surface.preview
-        @editor.refresh_ui
+        @editor.update_viewport
       }
       
       @gizmo.on_transform { |t_increment, t_total|
         entities = @editor.selection.related_control_points
         @surface.transform_entities( t_increment, entities )
-        @editor.refresh_ui
+        @editor.update_viewport
       }
       
       @gizmo.on_transform_end {
@@ -255,13 +264,11 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # Call after geometry and selection change.
+    # Called after geometry and selection change.
     #
     # @return [Nil]
     # @since 1.0.0
-    def update_viewport_cache
-      @editor.refresh_ui
-      
+    def update_gizmo
       # Update Gizmo
       tr = @editor.model.edit_transform
       control_points = @editor.selection.to_control_points

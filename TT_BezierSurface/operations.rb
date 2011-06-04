@@ -32,7 +32,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       editor.surface.update
       model.commit_operation
-      editor.refresh_ui
+      editor.refresh_viewport
       true
     end
 
