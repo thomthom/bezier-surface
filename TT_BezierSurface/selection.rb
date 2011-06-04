@@ -17,9 +17,23 @@ module TT::Plugins::BezierSurfaceTools
     include Enumerable
     include Observable
     
+    attr_reader( :model )
+    attr_reader( :editor )
+    
+    # @param [BezierSurfaceEditor,Sketchup::Model] parent
+    #
     # @since 1.0.0
-    def initialize
+    def initialize( parent )
       @items = []
+      if parent.is_a?( BezierSurfaceEditor )
+        @editor = parent
+        @model = parent.model
+      elsif parent.is_a?( Sketchup::Model )
+        @editor = nil
+        @model = parent
+      else
+        raise ArgumentError, 'Parent must be BezierSurfaceEditor or Model.'
+      end
     end
     
     # @since 1.0.0
