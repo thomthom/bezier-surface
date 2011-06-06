@@ -5,8 +5,6 @@
 #
 #-------------------------------------------------------------------------------
 
-require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_patch.rb' )
-
 
 module TT::Plugins::BezierSurfaceTools
   

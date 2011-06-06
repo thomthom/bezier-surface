@@ -88,7 +88,12 @@ module TT::Plugins::BezierSurfaceTools
   
   
   ### MODULES ### --------------------------------------------------------------
-  Dir.glob( File.join(PATH, '*.{rb,rbs}') ).each { |file|
+  # Ensure abstract classes are loaded and found when needed.
+  autoload( :Observable, File.join( PATH, 'observable.rb' ) )
+  autoload( :BezierEntity, File.join( PATH, 'bezier_entity.rb' ) )
+  autoload( :BezierPatch, File.join( PATH, 'bezier_patch.rb' ) )
+  # Load all ruby files.
+  Dir.glob( File.join( PATH, '*.{rb,rbs}' ) ).each { |file|
     require( file )
   }
   

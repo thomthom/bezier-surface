@@ -5,8 +5,6 @@
 #
 #-------------------------------------------------------------------------------
 
-require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'observable.rb' )
-
 
 module TT::Plugins::BezierSurfaceTools
   
