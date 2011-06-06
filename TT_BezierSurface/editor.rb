@@ -117,7 +117,7 @@ module TT::Plugins::BezierSurfaceTools
       
       menu.add_separator
       
-      submenu = menu.add_submenu( 'Select' )
+      submenu = menu.add_submenu( 'Manipulate' )
       
         m = submenu.add_item( 'Vertices' ) { puts 'Vertices' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
