@@ -107,6 +107,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # Handle Gizmo
       if @gizmo.onMouseMove( flags, x, y, view )
+        view.tooltip = @gizmo.tooltip
         view.refresh
         return true
       end
