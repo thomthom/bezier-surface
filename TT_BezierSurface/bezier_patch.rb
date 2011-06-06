@@ -8,7 +8,8 @@
 
 module TT::Plugins::BezierSurfaceTools
   
-  # Mix-in module with core methods used and required by all types of patches.
+  # @abstract Mix-in module with core methods used and required by all types of
+  #   patches.
   #
   # @example
   #  class QuadPatch < BezierEntity

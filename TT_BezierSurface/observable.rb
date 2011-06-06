@@ -8,6 +8,8 @@
 
 module TT::Plugins::BezierSurfaceTools
   
+  # @abstract Include in a class to enable observing mechanism.
+  #
   # @since 1.0.0
   module Observable
     
