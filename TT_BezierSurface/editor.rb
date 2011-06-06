@@ -45,8 +45,6 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def active?
-      #TT.debug( 'BezierSurfaceEditor.active?' )
-      #TT.debug( "> #{@active}" )
       @active == true
     end
     
@@ -66,9 +64,16 @@ module TT::Plugins::BezierSurfaceTools
       end
       @surface = BezierSurface.load( instance )
       if @surface
+        # Clear native selection for less visual distraction and avoid
+        # tools performing actions on the selection. (Such as the Delete key.)
         @model.selection.clear
+        # Activate Bezier Surface editing mode.
         @model.select_tool( nil ) # Ensure no other tool is active.
         @model.tools.push_tool( self )
+        # Start observing the surface for changes.
+        @surface.clear_observers! # Just to be safe.
+        @surface.add_observer( BST_SurfaceObserver.factory )
+        # Activate sub-tool.
         tool = SelectionTool.new( self )
         select_tool( tool )
       else
@@ -100,17 +105,14 @@ module TT::Plugins::BezierSurfaceTools
       
       menu.add_item( 'Select All' ) {
         @selection.add( @surface.manipulable_entities )
-        refresh_viewport()
       }
       
       menu.add_item( 'Select None' ) {
         @selection.clear
-        refresh_viewport()
       }
       
       menu.add_item( 'Invert Selection' ) {
         @selection.toggle( @surface.manipulable_entities )
-        refresh_viewport()
       }
       
       menu.add_separator
@@ -201,15 +203,6 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
-    # Called by active_tool.
-    #
-    # @return [Nil]
-    # @since 1.0.0
-    def update_viewport
-      update_viewport_cache()
-      nil
-    end
-    
     # @since 1.0.0
     def update_properties
       types = {}
@@ -278,8 +271,8 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurfaceEditor.undo_redo' )
       if valid_context?
         @surface.reload
-        @selection.clear
-        refresh_viewport()
+        @selection.clear # SelectionObserver refreshes the viewport.
+        # (?) Should the selection just remove invalid entities?
       else
         TT.debug( '> Invalid Context' )
         self.end_session
@@ -418,6 +411,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       #@selection.remove_observer( BST_SelectionObserver.factory )
+      #@surface.remove_observer( BST_SurfaceObserver.factory )
+      @surface.clear_observers!
       
       # Clean up any object references so they can be garbage collected.
       @selection.clear
@@ -443,7 +438,6 @@ module TT::Plugins::BezierSurfaceTools
       model.active_view.refresh
       TT::Model.start_operation( 'Automatic Interior' )
       @surface.update
-      refresh_viewport()
       model.commit_operation
       automatic
     end

@@ -129,6 +129,27 @@ module TT::Plugins::BezierSurfaceTools
     end
     
   end # class BST_SelectionObserver
+  
+  
+  # @since 1.0.0
+  class BST_SurfaceObserver
+    
+    # @since 1.0.0
+    def onContentModified( surface )
+      #puts 'BST_SurfaceObserver.onContentModified'
+      editor = PLUGIN.get_editor( surface.model )
+      if editor
+        editor.refresh_viewport
+      end
+    end
+    
+    # @since 1.0.0
+    def self.factory
+      @@observer ||= self.new
+      @@observer
+    end
+    
+  end # class BST_SurfaceObserver
 
   
 end # TT::Plugins::BezierSurfaceTools

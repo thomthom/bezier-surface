@@ -18,6 +18,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface = editor.surface
       
       @selection_rectangle = SelectionRectangle.new( @surface )
+      @gizmo = nil
       
       # Tool state.
       # Set to STATE_DRAG when a selection box is active.
@@ -43,11 +44,11 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
     
+    # Updates the statusbar and VCB.
+    #
     # @return [Nil]
     # @since 1.0.0
     def update_ui
-      @editor.update_viewport
-      update_gizmo()
       Sketchup.status_text = 'Click an entity to select and manipulate it.'
       Sketchup.vcb_label = 'Subdivisions'
       Sketchup.vcb_value = @surface.subdivs
@@ -66,9 +67,9 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def activate    
-      @editor.selection.clear
       init_gizmo()
       update_ui()
+      @editor.refresh_viewport
     end
     
     def deactivate( view )
@@ -76,8 +77,9 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     def resume( view )
-      view.invalidate
       update_ui()
+      @editor.refresh_viewport
+      view.invalidate
     end
     
     def getMenu( menu )
@@ -246,13 +248,11 @@ module TT::Plugins::BezierSurfaceTools
       @gizmo.on_transform_start {
         @editor.model.start_operation( 'Edit Control Points' )
         @surface.preview
-        @editor.update_viewport
       }
       
       @gizmo.on_transform { |t_increment, t_total|
         entities = @editor.selection.related_control_points
         @surface.transform_entities( t_increment, entities )
-        @editor.update_viewport
       }
       
       @gizmo.on_transform_end {
@@ -266,16 +266,17 @@ module TT::Plugins::BezierSurfaceTools
     
     # Called after geometry and selection change.
     #
-    # @return [Nil]
+    # @return [Boolean]
     # @since 1.0.0
     def update_gizmo
+      return false if @gizmo.active?
       # Update Gizmo
       tr = @editor.model.edit_transform
       control_points = @editor.selection.to_control_points
       positions = control_points.map { |cpt| cpt.position }
       average = TT::Geom3d.average_point( positions )
       @gizmo.origin = average.transform( tr )
-      nil
+      true
     end
     
   end # class SelectionTool

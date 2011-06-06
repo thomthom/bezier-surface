@@ -5,6 +5,8 @@
 #
 #-------------------------------------------------------------------------------
 
+require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'observable.rb' )
+
 
 module TT::Plugins::BezierSurfaceTools
   
@@ -12,6 +14,8 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BezierSurface
+    
+    include Observable
     
     attr_reader( :patches, :instance )
     attr_accessor( :subdivs )
@@ -154,6 +158,7 @@ module TT::Plugins::BezierSurfaceTools
       update_attributes()
       # (?) Cache vertices?
       @vertex_cache.clear # (i) For now, invalidate the cache.
+      trigger_observer( :onContentModified, self )
       nil
     end
     
@@ -170,6 +175,7 @@ module TT::Plugins::BezierSurfaceTools
       update_mesh()
       # Cache vertices for later use in #transform_entities
       @vertex_cache = mesh_vertices()
+      trigger_observer( :onContentModified, self )
       nil
     end
     
@@ -218,6 +224,12 @@ module TT::Plugins::BezierSurfaceTools
         count += patch.count_mesh_polygons( subdivs )
       end
       count
+    end
+    
+    # @return [Sketchup::Model]
+    # @since 1.0.0
+    def model
+      @instance.model
     end
     
     # Returns the bezier entities in the surface.
@@ -334,6 +346,7 @@ module TT::Plugins::BezierSurfaceTools
       etr = @instance.model.edit_transform
       positions = mesh_points( @preview, etr )
       set_vertex_positions( @vertex_cache, positions )
+      trigger_observer( :onContentModified, self )
       true
     end
     
