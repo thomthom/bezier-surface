@@ -103,17 +103,20 @@ module TT::Plugins::BezierSurfaceTools
         menu.add_separator
       end
       
-      menu.add_item( 'Select All' ) {
+      m = menu.add_item( 'Select All' ) {
         @selection.add( @surface.manipulable_entities )
       }
+      menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
       
-      menu.add_item( 'Select None' ) {
+      m = menu.add_item( 'Select None' ) {
         @selection.clear
       }
+      menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
       
-      menu.add_item( 'Invert Selection' ) {
+      m = menu.add_item( 'Invert Selection' ) {
         @selection.toggle( @surface.manipulable_entities )
       }
+      menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
       
       menu.add_separator
       
@@ -143,7 +146,8 @@ module TT::Plugins::BezierSurfaceTools
       
       menu.add_separator
       
-      menu.add_item( 'Close Instance' ) { end_session() }
+      m = menu.add_item( 'Close Instance' ) { end_session() }
+      menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
       
       menu
     end
