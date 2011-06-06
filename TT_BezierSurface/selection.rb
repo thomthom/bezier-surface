@@ -91,8 +91,10 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def clear
-      trigger_observer( :onSelectionCleared, self ) unless @items.empty?
-      @items.clear
+      unless @items.empty?
+        @items.clear
+        trigger_observer( :onSelectionCleared, self )
+      end
       nil
     end
     
