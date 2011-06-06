@@ -168,7 +168,7 @@ module TT::Plugins::BezierSurfaceTools
     def preview
       #TT.debug( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
-      @preview = 4 # (!) Get from settings
+      @preview = SUBDIVS_PREVIEW # (!) Get from settings
       refresh_automatic_patches()
       update_mesh()
       # Cache vertices for later use in #transform_entities
