@@ -226,6 +226,38 @@ module TT::Plugins::BezierSurfaceTools
       view.invalidate
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonDoubleClick
+    #
+    # @since 1.0.0
+    def onLButtonDoubleClick( flags, x, y, view )
+      # Pick entities.
+      patch = @surface.pick_patch( x, y, view )
+      return false unless patch
+      
+      # Add patch and bordering edges.
+      entities = patch.edges
+      entities << patch
+      
+      # Get key modifier controlling how the selection should be modified.
+      # Using standard SketchUp selection modifier keys.
+      key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
+      key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
+      
+      # Update selection.
+      if key_ctrl && key_shift
+        @editor.selection.remove( entities )
+      elsif key_ctrl
+        @editor.selection.add( entities )
+      elsif key_shift
+        @editor.selection.toggle( entities )
+      else
+        @editor.selection.clear
+        @editor.selection.add( entities )
+      end
+      
+      view.invalidate
+    end
+    
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onKeyDown
     #
     # @since 1.0.0
