@@ -8,11 +8,13 @@
 
 module TT::Plugins::BezierSurfaceTools
   
+  # @since 1.0.0
   class SelectionTool
     
     STATE_NORMAL  = 0
     STATE_DRAG    = 1
     
+    # @since 1.0.0
     def initialize( editor )
       @editor = editor
       @surface = editor.surface
@@ -39,7 +41,21 @@ module TT::Plugins::BezierSurfaceTools
       @cursor_vertex_remove = TT::Cursor.get_id( :vertex_remove )
       @cursor_vertex_toggle = TT::Cursor.get_id( :vertex_toggle )
     end
-
+    
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#getInstructorContentDirectory
+    # @see TT::Plugins::BezierSurfaceTools#get_instructor_path
+    #
+    # @since 1.0.0
+    def getInstructorContentDirectory
+      real_path = File.join( PLUGIN::PATH, 'InstructorContent', 'Test' )
+      adjusted_path = PLUGIN.get_instructor_path( real_path )
+      TT::debug( adjusted_path )
+      adjusted_path
+    end
+    
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#enableVCB?
+    #
+    # @since 1.0.0
     def enableVCB?
       true
     end
@@ -66,26 +82,41 @@ module TT::Plugins::BezierSurfaceTools
       nil
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#activate
+    #
+    # @since 1.0.0
     def activate    
       init_gizmo()
       update_ui()
       @editor.refresh_viewport
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#deactivate
+    #
+    # @since 1.0.0
     def deactivate( view )
       view.invalidate
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#resume
+    #
+    # @since 1.0.0
     def resume( view )
       update_ui()
       @editor.refresh_viewport
       view.invalidate
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#getMenu
+    #
+    # @since 1.0.0
     def getMenu( menu )
       @editor.context_menu( menu )
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onUserText
+    #
+    # @since 1.0.0
     def onUserText( text, view )
       subdivs = text.to_i
       if SUBDIVS_RANGE.include?( subdivs )
@@ -97,11 +128,15 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onMouseMove
+    #
+    # @since 1.0.0
     def onMouseMove( flags, x, y, view )
       # Use view.refresh instead of view.invalidate as the latter doesn't
       # update often enough. View.refresh force the viewport to update.
       #
       # (?) Maybe limit how many refreshes are made for better performance?
+      #     http://forums.sketchucation.com/viewtopic.php?f=180&t=37624
       #
       # (i) View.refresh require SketchUp 7.1+
       
@@ -123,9 +158,12 @@ module TT::Plugins::BezierSurfaceTools
         @mouse_over_vertex = !result.empty?
       end
       
-      view.refresh # (!) Temp - need Manipulator.onMouseOut
+      view.invalidate # (!) Temp - need Manipulator.onMouseOut
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonDown
+    #
+    # @since 1.0.0
     def onLButtonDown( flags, x, y, view )
       if @gizmo.onLButtonDown( flags, x, y, view )
         view.invalidate
@@ -134,6 +172,9 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonUp
+    #
+    # @since 1.0.0
     def onLButtonUp( flags, x, y, view )
       # Handle Gizmo
       if @gizmo.onLButtonUp(flags, x, y, view)
@@ -185,6 +226,9 @@ module TT::Plugins::BezierSurfaceTools
       view.invalidate
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onKeyDown
+    #
+    # @since 1.0.0
     def onKeyDown( key, repeat, flags, view )
       @key_ctrl  = true if key == COPY_MODIFIER_KEY
       @key_shift = true if key == CONSTRAIN_MODIFIER_KEY
@@ -192,6 +236,9 @@ module TT::Plugins::BezierSurfaceTools
       false # The VCB is not blocked as long as onSetCursor isn't the last call.
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onKeyUp
+    #
+    # @since 1.0.0
     def onKeyUp( key, repeat, flags, view )
       @key_ctrl  = false if key == COPY_MODIFIER_KEY
       @key_shift = false if key == CONSTRAIN_MODIFIER_KEY
@@ -199,6 +246,9 @@ module TT::Plugins::BezierSurfaceTools
       false
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#draw
+    #
+    # @since 1.0.0
     def draw( view )
       # <debug>
       t_start = Time.now
@@ -217,6 +267,9 @@ module TT::Plugins::BezierSurfaceTools
       # </debug>
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onSetCursor
+    #
+    # @since 1.0.0
     def onSetCursor
       if @key_ctrl && @key_shift
         cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
