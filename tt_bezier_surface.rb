@@ -1,7 +1,4 @@
 #-------------------------------------------------------------------------------
-# Compatible: SketchUp 7.1 (PC)
-#             (other versions untested)
-#-------------------------------------------------------------------------------
 #
 # Thomas Thomassen
 # thomas[at]thomthom[dot]net
@@ -24,7 +21,7 @@ module TT::Plugins::BezierSurfaceTools
   # Plugin information
   PLUGIN      = self # Namespace shortcut
   ID          = 'TT_BezierSurface'.freeze
-  VERSION     = '1.0.0'.freeze
+  VERSION     = TT::Version.new(1,0,0).freeze
   PLUGIN_NAME = 'Bezier Surface'.freeze
   
   # Attribute dictionary keys
