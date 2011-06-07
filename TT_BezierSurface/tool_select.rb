@@ -182,11 +182,6 @@ module TT::Plugins::BezierSurfaceTools
         return
       end
       
-      # Get key modifier controlling how the selection should be modified.
-      # Using standard SketchUp selection modifier keys.
-      key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
-      key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
-      
       # Pick entities.
       entities = []
       if @state == STATE_NORMAL
@@ -209,17 +204,7 @@ module TT::Plugins::BezierSurfaceTools
         entities = @selection_rectangle.selected_entities( view, availible )
       end
       
-      # Update selection.
-      if key_ctrl && key_shift
-        @editor.selection.remove( entities )
-      elsif key_ctrl
-        @editor.selection.add( entities )
-      elsif key_shift
-        @editor.selection.toggle( entities )
-      else
-        @editor.selection.clear
-        @editor.selection.add( entities )
-      end
+      update_selection( entities, flags )
       
       @state = STATE_NORMAL
       @selection_rectangle.reset
@@ -238,22 +223,7 @@ module TT::Plugins::BezierSurfaceTools
       entities = patch.edges
       entities << patch
       
-      # Get key modifier controlling how the selection should be modified.
-      # Using standard SketchUp selection modifier keys.
-      key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
-      key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
-      
-      # Update selection.
-      if key_ctrl && key_shift
-        @editor.selection.remove( entities )
-      elsif key_ctrl
-        @editor.selection.add( entities )
-      elsif key_shift
-        @editor.selection.toggle( entities )
-      else
-        @editor.selection.clear
-        @editor.selection.add( entities )
-      end
+      update_selection( entities, flags )
       
       view.invalidate
     end
@@ -363,6 +333,32 @@ module TT::Plugins::BezierSurfaceTools
       average = TT::Geom3d.average_point( positions )
       @gizmo.origin = average.transform( tr )
       true
+    end
+    
+    # Updates the current selection with the given entities based on the flags
+    # from the mouse event.
+    #
+    # @return [Selection]
+    # @since 1.0.0
+    def update_selection( entities, flags )
+      # Get key modifier controlling how the selection should be modified.
+      # Using standard SketchUp selection modifier keys.
+      key_ctrl = flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
+      key_shift = flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
+      
+      # Update selection.
+      if key_ctrl && key_shift
+        @editor.selection.remove( entities )
+      elsif key_ctrl
+        @editor.selection.add( entities )
+      elsif key_shift
+        @editor.selection.toggle( entities )
+      else
+        @editor.selection.clear
+        @editor.selection.add( entities )
+      end
+      
+      @editor.selection
     end
     
   end # class SelectionTool
