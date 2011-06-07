@@ -56,7 +56,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       return false if surfaces.empty?
       # Convert all surfaces into normal groups/components.
-      TT::Model.start_operation( 'Convert to Mesh' )
+      model.start_operation( 'Convert to Mesh', true )
       for instance in surfaces
         # Fetch definition and make sure to make the selected instance unique.
         d = TT::Instance.definition( instance )
@@ -83,15 +83,19 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def self.update_selected_surface
-      # Verify selection.
       model = Sketchup.active_model
-      return false if model.selection.length < 1
-      instance = model.selection[0]
-      return false unless BezierSurface.is?( instance )
-      surface = BezierSurface.load( instance )
-      return false unless surface
-      TT::Model.start_operation( 'Update Surface' )
-      surface.update
+      # Find Bezier Surfaces in selection.
+      surfaces = model.selection.select { |entity|
+        BezierSurface.is?( entity )
+      }
+      return false if surfaces.empty?
+      # Update all selected surfaces.
+      model.start_operation( 'Update Surface', true )
+      for instance in surfaces
+        surface = BezierSurface.load( instance )
+        next if surface.nil? # (?) Flag error?
+        surface.update
+      end
       model.commit_operation
       true
     end
