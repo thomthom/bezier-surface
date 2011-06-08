@@ -23,6 +23,7 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( parent, points )
       #TT.debug 'BezierEdge.new'
       super()
+      @links[ BezierControlPoint ] = []
       @links[ BezierPatch ] = []
       @parent = parent # BezierSurface
       if points.all? { |pt| pt.is_a?( BezierControlPoint ) }

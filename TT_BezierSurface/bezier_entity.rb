@@ -75,6 +75,15 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def invalidate!
       fail_if_invalid()
+      # Unlink this entity from any other objects.
+      for type, entities in @links
+        for entity in entities
+          next if entity.deleted?
+          if used_by?( entity )
+            entity.unlink( self )
+          end
+        end
+      end
       # Release any reference to other objects.
       @parent = nil
       @links = {}
@@ -90,7 +99,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Boolean]
     # @since 1.0.0
-    def link( entity )
+    def link( entity, back_reference = false )
       fail_if_invalid()
       
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
@@ -100,6 +109,8 @@ module TT::Plugins::BezierSurfaceTools
       # Keep record of each entity type in a hash lookup.
       @links[ type ] ||= []
       collection = @links[ type ]
+      # Ensure backreference.
+      entity.link( self, true ) unless back_reference
       # Ensure there's only one entry for each entity.
       # (?) Should the Set class be used? Or does it not give enough performance
       # gain for small arrays?
@@ -122,7 +133,7 @@ module TT::Plugins::BezierSurfaceTools
       
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
-        raise ArgumentError, "Can't link #{self.class.name} with #{entity.class.name}. Invalid entity type."
+        raise ArgumentError, "Can't unlink #{entity.class.name} from #{self.class.name}. Invalid entity type."
       end
       # Look up the entity type in the hash table.
       @links[ type ] ||= []

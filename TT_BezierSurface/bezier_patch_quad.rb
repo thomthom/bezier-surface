@@ -73,6 +73,7 @@ module TT::Plugins::BezierSurfaceTools
       grid[12].link( grid[ 9] )
       grid[15].link( grid[10] )
       # Link Interior Points to Vertices.
+      # (!) Redundant when .link back-references?
       grid[ 5].link( grid[ 0] )
       grid[ 6].link( grid[ 3] )
       grid[ 9].link( grid[12] )
@@ -155,6 +156,12 @@ module TT::Plugins::BezierSurfaceTools
         edgeuse.edge.link( patch )
         edgeuse.reversed = prototype.reversed?
       }
+      # <temp>
+      # edgeuse.edge= should correct this.
+      for control_point in patch.control_points
+        control_point.link( patch )
+      end
+      # </temp>
       patch
     end
     

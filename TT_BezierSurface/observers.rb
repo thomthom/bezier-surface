@@ -139,7 +139,12 @@ module TT::Plugins::BezierSurfaceTools
       #puts 'BST_SurfaceObserver.onContentModified'
       editor = PLUGIN.get_editor( surface.model )
       if editor
-        editor.refresh_viewport
+        # Check for erased entites.
+        erased = editor.selection.select { |entity| entity.deleted? }
+        editor.selection.remove( erased )
+        # Update the viewport
+        # The Selection modification will trigger the viewport refresh.
+        editor.refresh_viewport if erased.empty?
       end
     end
     

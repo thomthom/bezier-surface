@@ -26,6 +26,7 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug 'BezierPatch.new'
       
       super()
+      @links[ BezierEntity ] = []
       
       TT::Point3d.extend_all( points )
       

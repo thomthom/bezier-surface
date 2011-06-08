@@ -331,13 +331,61 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @param [Array<BezierEntity>] entities
     #
-    # @return [Boolean]
+    # @return [Integer]
     # @since 1.0.0
     def erase_entities( entities )
-      # Erase control points and edges and their related patches.
-      # Erase patches and connected edges that doesn't defines other pathces.
-      puts 'BezierSurfrace.erase_entities - Not Implemented!'
-      false
+      ex_entities = []
+      related_entities = []
+      # Find all connected patches.
+      patches = []
+      for entity in entities
+        if entity.is_a?( BezierPatch )
+          patches << entity
+        elsif entity.is_a?( BezierEdge ) || entity.is_a?( BezierControlPoint )
+          patches.concat( entity.patches )
+        else
+          raise 'Unknown Entity'
+        end
+      end
+      patches.uniq!
+      #TT.debug "Patches - #{patches.size}"
+      #TT.debug patches
+      # Find all related edges and control points.
+      for patch in patches
+        related_entities << patch
+        related_entities.concat( patch.edges )
+        related_entities.concat( patch.control_points.to_a )
+      end
+      related_entities.uniq!
+      #TT.debug "related_entities - #{related_entities.size}"
+      #TT.debug related_entities
+      # Find entites that doesn't define a valid patch.
+      for entity in related_entities
+        if entity.is_a?( BezierPatch )
+          ex_entities << entity
+        elsif entity.is_a?( BezierEdge ) || entity.is_a?( BezierControlPoint )
+          #invalid_patches = ( entity.patches | patches )
+          invalid_patches = entity.patches.select { |patch| patches.include?( patch ) }
+          if entity.patches.size == invalid_patches.size
+            ex_entities << entity
+          end
+        end
+      end 
+      ex_entities.uniq!
+      TT.debug "ex_entities - #{ex_entities.size}"
+      TT.debug ex_entities
+      # Invalidate entities.
+      for entity in ex_entities
+        entity.invalidate! # This also unlinks connected entities.
+      end
+      # Remove patches from collection.
+      for patch in patches
+        @patches.delete( patch )
+      end
+      # Update surface.
+      #trigger_observer( :onContentModified, self )
+      update() # Triggers :onContentModified
+      ex_entities.size
     end
     
     # @param [Geom::Transformation] transformation

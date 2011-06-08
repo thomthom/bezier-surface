@@ -275,8 +275,15 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurfaceEditor.undo_redo' )
       if valid_context?
         @surface.reload
-        @selection.clear # SelectionObserver refreshes the viewport.
-        # (?) Should the selection just remove invalid entities?
+        invalid_entities = @selection.select { |entity| entity.deleted? }
+        # (i) Because BezierSurface.reload doesn't reuse existing entities,
+        #     the entities in the current selection is invalid. The whole
+        #     selection is therefor cleared.
+        #@selection.remove( invalid_entities )
+        @selection.clear
+        # (i) SelectionObserver doesn't refresh the viewport unless the
+        #     selection changed. Which it often doesn't when you undo/redo.
+        refresh_viewport() if invalid_entities.empty?
       else
         TT.debug( '> Invalid Context' )
         self.end_session
