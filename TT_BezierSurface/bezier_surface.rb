@@ -327,6 +327,19 @@ module TT::Plugins::BezierSurfaceTools
       result
     end
     
+    # @todo Implement
+    #
+    # @param [Array<BezierEntity>] entities
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def erase_entities( entities )
+      # Erase control points and edges and their related patches.
+      # Erase patches and connected edges that doesn't defines other pathces.
+      puts 'BezierSurfrace.erase_entities - Not Implemented!'
+      false
+    end
+    
     # @param [Geom::Transformation] transformation
     # @param [Array<BezierEntity>] entities
     #
