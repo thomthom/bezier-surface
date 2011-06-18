@@ -327,13 +327,21 @@ module TT::Plugins::BezierSurfaceTools
       result
     end
     
-    # @todo Implement
+    # @overload erase_entities( entity )
+    #   @param [BezierEntity] entity
     #
-    # @param [Array<BezierEntity>] entities
+    # @overload erase_entities( entities )
+    #   @param [Array<BezierEntity>] entities
     #
     # @return [Integer]
     # @since 1.0.0
     def erase_entities( entities )
+      # If a single entity is passed to the method, ensure we deal with it as
+      # an array.
+      if entities.is_a?( BezierEntity )
+        entities = [ entities ]
+      end
+      #
       ex_entities = []
       related_entities = []
       # Find all connected patches.
