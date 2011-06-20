@@ -307,14 +307,12 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def init_gizmo
       tr = @editor.model.edit_transform
- 
-      selection_points = @editor.selection.map { |cpt| cpt.position }
-      pt = TT::Geom3d.average_point( selection_points ).transform( tr )
       xaxis = X_AXIS.transform( tr )
       yaxis = Y_AXIS.transform( tr )
       zaxis = Z_AXIS.transform( tr )
       
-      @gizmo = TT::Gizmo::Manipulator.new( pt, xaxis, yaxis, zaxis )
+      @gizmo = TT::Gizmo::Manipulator.new( ORIGIN, xaxis, yaxis, zaxis )
+      update_gizmo()
       
       # (!) Return name of operation in block
       @gizmo.on_transform_start {
