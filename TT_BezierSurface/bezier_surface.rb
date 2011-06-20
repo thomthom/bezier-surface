@@ -135,6 +135,9 @@ module TT::Plugins::BezierSurfaceTools
         raise "Could not load mesh format. Version: #{mesh_version}"
       end
       
+      # Prepare the vertex cache required by #transform_entities
+      @vertex_cache = mesh_vertices()
+      
       TT.debug( "> Loaded in #{Time.now-debug_time_start}s" )
       self
     end
@@ -156,7 +159,8 @@ module TT::Plugins::BezierSurfaceTools
       update_mesh()
       update_attributes()
       # (?) Cache vertices?
-      @vertex_cache.clear # (i) For now, invalidate the cache.
+      #@vertex_cache.clear # (i) For now, invalidate the cache.
+      @vertex_cache = mesh_vertices()
       trigger_observer( :onContentModified, self )
       nil
     end
@@ -405,6 +409,9 @@ module TT::Plugins::BezierSurfaceTools
       if @vertex_cache.empty?
         raise 'No verticed cached!'
       end
+      unless transformation.is_a?( Geom::Transformation )
+        raise ArgumentError, 'Not a transformation.'
+      end
       return false if entities.empty?
       local_transform = local_transformation( transformation )
       for control_point in entities
@@ -412,7 +419,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       refresh_automatic_patches()
       etr = @instance.model.edit_transform
-      positions = mesh_points( @preview, etr )
+      subdivisions = final_subdivs()
+      positions = mesh_points( subdivisions, etr )
       set_vertex_positions( @vertex_cache, positions )
       trigger_observer( :onContentModified, self )
       true
