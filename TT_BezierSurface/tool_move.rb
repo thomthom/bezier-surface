@@ -8,8 +8,10 @@
 
 module TT::Plugins::BezierSurfaceTools
   
+  # @since 1.0.0
   class MoveTool
     
+    # @since 1.0.0
     def initialize( editor )
       @editor = editor
       @surface = editor.surface
@@ -17,18 +19,28 @@ module TT::Plugins::BezierSurfaceTools
       @ip_start = Sketchup::InputPoint.new			
 			@ip_mouse = Sketchup::InputPoint.new
       
-      @preview = false
+      # Used by onSetCursor
+      @key_ctrl = false
+      @key_shift = false
       
-      @select_ctrl = false
-      @select_shift = false
+      # (!) Display vertex cursor only when mouse is over a control point
+      #     and the selection is empty.
+      @cursor         = TT::Cursor.get_id( :move )
+      @cursor_vertex  = TT::Cursor.get_id( :vertex )
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#enableVCB?
+    #
+    # @since 1.0.0
     def enableVCB?
       true
     end
     
+    # Updates the statusbar and VCB.
+    #
+    # @return [Nil]
+    # @since 1.0.0
     def update_ui
-      @editor.refresh_ui
       if @editor.selection.empty?
         Sketchup.status_text = 'Click a control point and hold down left mouse button to move it.'
       else
@@ -38,25 +50,39 @@ module TT::Plugins::BezierSurfaceTools
       Sketchup.vcb_value = 0
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#activate
+    #
+    # @since 1.0.0
     def activate
       update_ui()
+      @editor.refresh_viewport
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#deactivate
+    #
+    # @since 1.0.0
     def deactivate(view)
       view.invalidate
     end
     
-    def resume(view)
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#resume
+    #
+    # @since 1.0.0
+    def resume( view )
+      update_ui()
+      @editor.refresh_viewport
       view.invalidate
+    end
+    
+    def onUserText( text, view )
+      # (!) Adjust last move operation.
       update_ui()
     end
     
-    def onUserText(text, view)
-      #@editor.change_subdivisions( text.to_i )
-      update_ui()
-    end
-    
-    def onCancel(reason, view)
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onCancel
+    #
+    # @since 1.0.0
+    def onCancel( reason, view )
       TT.debug( 'onCancel' )
       case reason
       when 0 # ESC
@@ -64,29 +90,32 @@ module TT::Plugins::BezierSurfaceTools
         @ip_start.clear			
         @ip_mouse.clear
         @start_over_vertex = false
-        #@state = S_NORMAL
-        #@surface.update( @editor.model.edit_transform )
+        # (!) Abort operation. After mouse down triggers start_operation.
         view.invalidate
       when 1 # Reactivate Tool
         TT.debug( '> Reactivate' )
+        # (?) Same as ESC?
       when 2 # Undo
         TT.debug( '> Undo' )
-        #@surface.reload
         @ip_start.clear			
         @ip_mouse.clear
         @start_over_vertex = false
-        #@state = S_NORMAL
         view.invalidate
-        #@surface.update( @editor.model.edit_transform )
       end
     end
     
-    def onMouseMove(flags, x, y, view)
-      @mouse_over_vertex = @surface.pick_control_points(x, y, view)
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onMouseMove
+    #
+    # @since 1.0.0
+    def onMouseMove( flags, x, y, view )
+      # (!) Pick separate entities.
+      # * Pick mouse snapping entity
+      # * Pick mouse-select entity - used when the selection is empty.
+      @mouse_over_vertex = @surface.pick_control_points_ex( x, y, view )
       @mouse_over_vertex = false if @mouse_over_vertex.empty?
       if @mouse_over_vertex
-        t = view.model.edit_transform
-        pt = @mouse_over_vertex[0].position.transform(t)
+        tr = view.model.edit_transform
+        pt = @mouse_over_vertex[0].position.transform( tr )
         @ip_mouse = Sketchup::InputPoint.new( pt )
       else
         if @ip_start.valid?
@@ -97,17 +126,28 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       if flags & MK_LBUTTON == MK_LBUTTON
-        #@state = S_DRAG
+        # (!) Left mouse button drag
+        # * First Event:
+        #   * preview mesh
+        #   * start_transformation
+        # * Afterwards
+        # * update preview mesh
       end
       view.invalidate
     end
     
-    def onLButtonDown(flags, x, y, view)
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonDown
+    #
+    # @since 1.0.0
+    def onLButtonDown( flags, x, y, view )
       @ip_start.copy!( @ip_mouse )
       @start_over_vertex = @mouse_over_vertex
     end
     
-    def onLButtonUp(flags, x, y, view)
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonUp
+    #
+    # @since 1.0.0
+    def onLButtonUp( flags, x, y, view )
       TT.debug 'MoveTool.onLButtonUp'
       # Get key modifier controlling how the selection should be modified.
       # Using standard SketchUp selection modifier keys.
@@ -121,16 +161,18 @@ module TT::Plugins::BezierSurfaceTools
         if offset_vector.valid?
           # Transform selected vertices, or if there is no selection move the
           # vertices the user initially clicked on.
-          # (!) Update
           if @editor.selection.empty?
             vertices = ( @start_over_vertex ) ? @start_over_vertex : []
           else
             vertices = @editor.selection.related_control_points
           end
-
-          @surface.transform_entities( vertices, offset_vector )
+          # (!) Move Selection.related_control_points to separate method.
+          # Get related control points from picked entities.
+          
+          tr = Geom::Transformation.new( offset_vector )
           
           @editor.model.start_operation( 'Move Bezier Entities' )
+          @surface.transform_entities( tr, vertices )
           @surface.update
           @editor.model.commit_operation
         end
@@ -144,38 +186,43 @@ module TT::Plugins::BezierSurfaceTools
       view.invalidate
     end
     
-    def onKeyDown(key, repeat, flags, view)
-      @select_ctrl  = true if key == COPY_MODIFIER_KEY
-      @select_shift = true if key == CONSTRAIN_MODIFIER_KEY
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onKeyDown
+    #
+    # @since 1.0.0
+    def onKeyDown( key, repeat, flags, view )
+      @key_ctrl  = true if key == COPY_MODIFIER_KEY
+      @key_shift = true if key == CONSTRAIN_MODIFIER_KEY
       
-      if @select_shift
+      if @key_shift
         if @ip_mouse.valid? && @ip_start.valid?
-          #view.lock_inference( @ip_start, @ip_mouse )
           view.lock_inference( @ip_mouse, @ip_start )
         end
         view.invalidate
       end
       
-      #onSetCursor() # This blocks the VCB. (But "p onSetCursor()" does not.. ? )
+      onSetCursor()
       false # The VCB is not blocked as long as onSetCursor isn't the last call.
     end
     
-    def onKeyUp(key, repeat, flags, view)
-      @select_ctrl  = false if key == COPY_MODIFIER_KEY
-      @select_shift = false if key == CONSTRAIN_MODIFIER_KEY
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onKeyUp
+    #
+    # @since 1.0.0
+    def onKeyUp( key, repeat, flags, view )
+      @key_ctrl  = false if key == COPY_MODIFIER_KEY
+      @key_shift = false if key == CONSTRAIN_MODIFIER_KEY
       view.lock_inference
       view.invalidate
-      #onSetCursor()
+      onSetCursor()
       false
     end
     
-    def draw(view)
-      #@surface.draw_internal_grid( view, @preview )
-      #@surface.draw_edges( view, @surface.edges )
-      #@surface.draw_control_grid( view )
-      #@surface.draw_control_points( view, @editor.selection.to_a )
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#draw
+    #
+    # @since 1.0.0
+    def draw( view )
       @editor.draw_cache.render
       
+      # Move indication.
       if @ip_mouse.valid? && @ip_start.valid? #&& !view.inference_locked?
         pt1 = @ip_start.position
         pt2 = @ip_mouse.position
@@ -187,7 +234,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       view.line_width = 2
-        
+      
+      # Inference from mouse position.
       #view.tooltip = "Valid: #{@ip_mouse.valid?}\nDisplay: #{@ip_mouse.display?}"
       if @ip_mouse.valid? && @ip_mouse.display?
         view.line_stipple = '.'
@@ -197,6 +245,7 @@ module TT::Plugins::BezierSurfaceTools
         view.draw_points( @ip_mouse.position, 7, 3, [0,0,0] )
       end
       
+      # Inference from move origin.
       if @ip_start.valid? && @ip_start.display?
         view.line_stipple = '.'
         @ip_start.draw( view ) 
@@ -206,16 +255,11 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
-    def onSetCursor_disabled
-      if @select_ctrl && @select_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
-      elsif @select_ctrl
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_add : @cursor_add
-      elsif @select_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_toggle : @cursor_toggle
-      else
-        cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
-      end
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onSetCursor
+    #
+    # @since 1.0.0
+    def onSetCursor
+      cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
       UI.set_cursor( cursor )
     end
     
