@@ -107,7 +107,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def self.toggle_properties
       unless @toggle_properties
-        cmd = UI::Command.new( 'Bezier Surface Properties' ) {
+        cmd = UI::Command.new( 'Entity Properties' ) {
           PLUGIN::PropertiesWindow.toggle
         }
         cmd.status_bar_text = 'Show or Hide the Properties Window.'

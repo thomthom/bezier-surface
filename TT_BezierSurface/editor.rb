@@ -136,12 +136,17 @@ module TT::Plugins::BezierSurfaceTools
       
       
       submenu = menu.add_submenu( 'Display' )
-      
-        m = submenu.add_item( 'All Handles' ) { puts 'n01' }
-        submenu.set_validation_proc( m ) { MF_GRAYED | MF_UNCHECKED }
         
-        m = submenu.add_item( 'Automatic Interior' ) { puts 'n02' }
+        m = submenu.add_item( 'Automatic Interior' ) { puts 'n01' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+        
+        m = submenu.add_item( 'Interior Grid' ) { puts 'n02' }
+        submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+      
+      
+      menu.add_separator
+      
+      m = menu.add_item( Commands.toggle_properties )
       
       
       menu.add_separator
