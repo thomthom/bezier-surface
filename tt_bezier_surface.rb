@@ -146,12 +146,17 @@ module TT::Plugins::BezierSurfaceTools
         
         menu.add_separator
         
-        menu.add_item( Commands.update_selected )
-        menu.add_item( Commands.toggle_properties )
+        menu.add_item( Commands.extract_edges )
+        menu.add_item( Commands.extract_control_grid )
         
         menu.add_separator
         
         menu.add_item( Commands.convert_to_mesh )
+        
+        menu.add_separator
+        
+        menu.add_item( Commands.update_selected )
+        menu.add_item( Commands.toggle_properties )
       end
     }
     

@@ -130,6 +130,36 @@ module TT::Plugins::BezierSurfaceTools
       end
       @update_selected
     end
+    
+    # @return [UI::Command]
+    # @since 1.0.0
+    def self.extract_edges
+      unless @extract_edges
+        cmd = UI::Command.new( 'Extract Edges' ) {
+          UI.messagebox( 'Not implemented' )
+        }
+        cmd.status_bar_text = 'Extracts Bezier Edges into a group of Bezier Curves.'
+        cmd.tooltip = 'Extracts Bezier Edges'
+        cmd.set_validation_proc { MF_GRAYED }
+        @extract_edges = cmd
+      end
+      @extract_edges
+    end
+    
+     # @return [UI::Command]
+    # @since 1.0.0
+    def self.extract_control_grid
+      unless @extract_control_grid
+        cmd = UI::Command.new( 'Extract Control Grid' ) {
+          UI.messagebox( 'Not implemented' )
+        }
+        cmd.status_bar_text = 'Extracts the control grid into a group.'
+        cmd.tooltip = 'Extracts Control Grid'
+        cmd.set_validation_proc { MF_GRAYED }
+        @extract_control_grid = cmd
+      end
+      @extract_control_grid
+    end
   
   end # module Commands
 
