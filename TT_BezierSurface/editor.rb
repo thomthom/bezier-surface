@@ -17,16 +17,23 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class BezierSurfaceEditor    
     
+    # @since 1.0.0
     attr_reader( :model, :surface, :selection, :draw_cache )
     
+    # @since 1.0.0
     def initialize( model )
+      # References the context the editor works in when active.
       @model = model
       @selection = Selection.new( self )
       @surface = nil
       
-      @active_tool = nil
+      # State of the session.
       @active = false
       
+      # References the currently active sub-tool on the stack.
+      @active_tool = nil
+      
+      # Observers
       @selection.add_observer( BST_SelectionObserver.factory )
       
       # Drawing Performance Test ( 23.05.2011 )
@@ -78,7 +85,7 @@ module TT::Plugins::BezierSurfaceTools
       else
         # Invalid instance or incompatible version
         puts 'Invalid Bezier Surface or incompatible version.'
-        model.close_active # (?)
+        model.close_active
       end
       true
     end
@@ -156,25 +163,27 @@ module TT::Plugins::BezierSurfaceTools
       menu
     end
     
-    # Activates a bezier editing tool - pushing it into SketchUp's tool stack.
+    # Activates a bezier editing tool - pushing it into SketchUp's tool stack
+    # after ending the existing one.
     #
     # @param [Sketchup::Tool] tool
     #
     # @return [Boolean]
     # @since 1.0.0
     def select_tool( tool )
-      # (!) Some times other tools, for instance viewport tools, push other
+      TT.debug( 'BezierSurfaceEditor.select_tool' )
+      tools = @model.tools
+      # (i) Some times other tools, for instance viewport tools, push other
       #     tools into the stack. This should be accounted for so we get a 
       #     correctly working tool stack.
-      TT.debug( 'BezierSurfaceEditor.select_tool' )
-      # (!) Pop all tools until we have a RubyTool. This is incase one of the 
+      #
+      # (i) Pop all tools until we have a RubyTool. This is incase one of the 
       #     native camera tools had been activated during the session. They
       #     push themselves into the stack.
       #
-      # (!) If another RubyTool pushed itself into the stack then this won't
+      # (i) If another RubyTool pushed itself into the stack then this won't
       #     work properly. But it's an edge case which hopefully doesn't need
       #     to be addressed. At least it's considered low priority for now.
-      tools = @model.tools
       until tools.active_tool_id == 0 || tools.active_tool_id >= 50000
         # tools.active_tool_id might be zero if the entire tool stack has been
         # popped. This is catched just in case to prevent infinite loop. But
@@ -189,14 +198,15 @@ module TT::Plugins::BezierSurfaceTools
         #     and it is no problem.
         tools.pop_tool
       end
-      # (!) Catch tools.active_tool_id == 0 - in case oddites.
+      # Catch tools.active_tool_id == 0 - in case unexpected oddites.
       if tools.active_tool_id == 0
         # This would mean something wrong has happened. At any time during
         # editing, the BezierSurfaceEditor Tool should be present and active.
         # If the stack is empty it means it's been removed and no sub-tools
         # should be pushed into the stack.
         #
-        # (!) Alert user about error? Raise exception?
+        # (?) Alert user about error? Raise exception?
+        TT.debug( '> Error! Tool stack empty.' )
         return false
       end
       # Pop the current Bezier Surface tool. (At least it should be unless
@@ -219,8 +229,6 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def end_session
-      # (!) Ensure all tools are popped. Some times other tools might have
-      #     pushed a tool into the stack.
       TT.debug( 'BezierSurfaceEditor.end_session' )
       if @active
         TT.debug( '> Ending active tool...' )
@@ -274,8 +282,6 @@ module TT::Plugins::BezierSurfaceTools
       PLUGIN::PropertiesWindow.info = info
     end
     
-    # (!) Move to BezierSurface ?
-    #
     # Changes the subdivision of the active surface and commits it.
     #
     # @param [Integer] subdivs
@@ -283,6 +289,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def change_subdivisions( subdivs )
+      # (!) Move to BezierSurface ?
       if subdivs > 0 && subdivs != @surface.subdivs
         @model.start_operation( 'Change Subdivisions', true )
         @surface.subdivs = subdivs
@@ -430,6 +437,8 @@ module TT::Plugins::BezierSurfaceTools
     
     ### Tool Events
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#activate
+    #
     # @since 1.0.0
     def activate
       TT.debug( 'BezierSurfaceEditor.activate' )
@@ -441,6 +450,8 @@ module TT::Plugins::BezierSurfaceTools
       show_toolbar()
     end
     
+    # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#deactivate
+    #
     # @since 1.0.0
     def deactivate(view)
       TT.debug( 'BezierSurfaceEditor.deactivate' )
@@ -450,18 +461,17 @@ module TT::Plugins::BezierSurfaceTools
       close_toolbar()
       
       # (!) SketchUp bug!
-      # Sketchup.close_active
-      # Normally, closing a group/component appears in the undo stack.
-      # But when close_active is used in SU8-M1 and older the action does not
-      # appear in the stack - so when you then trigger undo/redo after using
-      # this method all the modified geometry is offset.
+      #     Sketchup.close_active
+      #     Normally, closing a group/component appears in the undo stack.
+      #     But when close_active is used in SU8-M1 and older the action does
+      #     not appear in the stack - so when you then trigger undo/redo after
+      #     using this method all the modified geometry is offset.
       if valid_context?
         TT.debug( '> Closing active context' )
         view.model.close_active
       end
       
-      #@selection.remove_observer( BST_SelectionObserver.factory )
-      #@surface.remove_observer( BST_SurfaceObserver.factory )
+      # Clean up any observers used during the editing session.
       @surface.clear_observers!
       
       # Clean up any object references so they can be garbage collected.
