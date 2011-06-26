@@ -68,14 +68,13 @@ module TT::Plugins::BezierSurfaceTools
         # tools performing actions on the selection. (Such as the Delete key.)
         @model.selection.clear
         # Activate Bezier Surface editing mode.
-        @model.select_tool( nil ) # Ensure no other tool is active.
-        @model.tools.push_tool( self )
+        @model.select_tool( self )
         # Start observing the surface for changes.
         @surface.clear_observers! # Just to be safe.
         @surface.add_observer( BST_SurfaceObserver.factory )
         # Activate sub-tool.
-        tool = SelectionTool.new( self )
-        select_tool( tool )
+        default_tool = SelectionTool.new( self )
+        select_tool( default_tool )
       else
         # Invalid instance or incompatible version
         puts 'Invalid Bezier Surface or incompatible version.'
@@ -168,13 +167,48 @@ module TT::Plugins::BezierSurfaceTools
       #     tools into the stack. This should be accounted for so we get a 
       #     correctly working tool stack.
       TT.debug( 'BezierSurfaceEditor.select_tool' )
+      # (!) Pop all tools until we have a RubyTool. This is incase one of the 
+      #     native camera tools had been activated during the session. They
+      #     push themselves into the stack.
+      #
+      # (!) If another RubyTool pushed itself into the stack then this won't
+      #     work properly. But it's an edge case which hopefully doesn't need
+      #     to be addressed. At least it's considered low priority for now.
+      tools = @model.tools
+      until tools.active_tool_id == 0 || tools.active_tool_id >= 50000
+        # tools.active_tool_id might be zero if the entire tool stack has been
+        # popped. This is catched just in case to prevent infinite loop. But
+        # it should not happen.
+        #
+        # RubyTools seem to have ids over 50000. Not sure if it's a future safe
+        # assumption to make, but active_tool_name is bugged in older SketchUp
+        # versions - where the first four letters are trunkated. Which makes it
+        # impossible to distinquish it from other tools.
+        #
+        # (?) Maybe BezierSurface require SketchUp versions that has this fixed
+        #     and it is no problem.
+        tools.pop_tool
+      end
+      # (!) Catch tools.active_tool_id == 0 - in case oddites.
+      if tools.active_tool_id == 0
+        # This would mean something wrong has happened. At any time during
+        # editing, the BezierSurfaceEditor Tool should be present and active.
+        # If the stack is empty it means it's been removed and no sub-tools
+        # should be pushed into the stack.
+        #
+        # (!) Alert user about error? Raise exception?
+        return false
+      end
+      # Pop the current Bezier Surface tool. (At least it should be unless
+      # some other plugin pushed a tool into the stack.)
       if @active_tool
         TT.debug( '> Pop active tool...' )
-        @model.tools.pop_tool
+        tools.pop_tool
       end
+      # Push the new one into the stack in place of the old one.
       TT.debug( '> Push new tool...' )
       @active_tool = tool
-      @model.tools.push_tool( tool )
+      tools.push_tool( tool )
     end
     
     # Ends the active editing session. Called when the bezier surface instance
@@ -190,12 +224,12 @@ module TT::Plugins::BezierSurfaceTools
       TT.debug( 'BezierSurfaceEditor.end_session' )
       if @active
         TT.debug( '> Ending active tool...' )
-        if @active_tool
-          TT.debug( '  > Pop sub-tool...' )
-          @model.tools.pop_tool
-        end
-        TT.debug( '  > Pop self...' )
-        @model.tools.pop_tool
+        # Instead of popping all tools - just activate the Select tool. Which
+        # will deactivate this BezierSurfaceEditor tool and end this session.
+        # Trying to get back to the tool used before this one leads to too many
+        # potential problems. And the editor isn't pushed into the tool stack
+        # anyway - as it would make no sense to run it on top of another tool.
+        @model.select_tool( nil )
       end
     end
     
