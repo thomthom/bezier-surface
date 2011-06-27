@@ -148,6 +148,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def bounds
       bb = Geom::BoundingBox.new
+      # (!) This doesn't yield a correct boundingbox? .positions() get the
+      #     Point3d points from selected control points - not all entities.
       bb.add( positions ) unless empty?
       bb
     end
