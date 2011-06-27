@@ -14,16 +14,16 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BST_AppObserver < Sketchup::AppObserver
-  
+    
+    # @param [Sketchup::Model] model
     # @since 1.0.0
-    def onNewModel(model)
-      #TT.debug( 'BST_AppObserver.onNewModel' )
+    def onNewModel( model )
       PLUGIN.observe_model( model )
     end
     
+    # @param [Sketchup::Model] model
     # @since 1.0.0
-    def onOpenModel(model)
-      #TT.debug( 'BST_AppObserver.onOpenModel' )
+    def onOpenModel( model )
       PLUGIN.observe_model( model )
     end
 
@@ -33,12 +33,13 @@ module TT::Plugins::BezierSurfaceTools
   # When the user opens a Group/ComponentInstance containing a Bezier Surface
   # for editing - activate the Bezier editing tools.
   #
-  # When the user closes a Bezier Surface Group/ComponentInstance the
-  # edit session is ended.
+  # When the user closes a Bezier Surface Group/ComponentInstance the editing
+  # session is ended.
   #
   # @since 1.0.0
   class BST_ModelObserver < Sketchup::ModelObserver
-  
+    
+    # @param [Sketchup::Model] model
     # @since 1.0.0
     def onActivePathChanged( model )
       # (!) This appear to trigger on occations when not expected. Errors can
@@ -53,12 +54,14 @@ module TT::Plugins::BezierSurfaceTools
       check_active_path( model )
     end
     
+    # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionUndo( model )
       TT.debug( 'BST_ModelObserver.onTransactionUndo' )
       check_active_path( model, true )
     end
     
+    # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionRedo( model )
       TT.debug( 'BST_ModelObserver.onTransactionRedo' )
@@ -69,6 +72,9 @@ module TT::Plugins::BezierSurfaceTools
     # active. This must be checked in the undo events because 
     # onActivePathChanged does not trigger when undo/redo cause the
     # active context to change.
+    #
+    # @param [Sketchup::Model] model
+    # @param [Boolean] undo_redo Indicate an undo/redo event triggered the check.
     #
     # @since 1.0.0
     def check_active_path( model, undo_redo = false )
@@ -101,27 +107,36 @@ module TT::Plugins::BezierSurfaceTools
   end # class BST_ModelObserver
   
   
+  # Monitors the model selection for changes. The selection can be
+  # Sketchup::Selection or {Selection}.
+  #
+  # @todo Monitor both native and custom selection.
+  #       Notify Entity Properties window of changes.
+  #
   # @since 1.0.0
   class BST_SelectionObserver < Sketchup::SelectionObserver
     
+    # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionBulkChange( selection )
-      #puts 'BST_SelectionObserver.onSelectionBulkChange'
+      #TT.debug 'BST_SelectionObserver.onSelectionBulkChange'
       editor = PLUGIN.get_editor( selection.model )
       if editor
         editor.refresh_viewport
       end
     end
     
+    # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionCleared( selection )
-      #puts 'BST_SelectionObserver.onSelectionCleared'
+      #TT.debug 'BST_SelectionObserver.onSelectionCleared'
       editor = PLUGIN.get_editor( selection.model )
       if editor
         editor.refresh_viewport
       end
     end
     
+    # @return [BST_SelectionObserver]
     # @since 1.0.0
     def self.factory
       @@observer ||= self.new
@@ -131,12 +146,15 @@ module TT::Plugins::BezierSurfaceTools
   end # class BST_SelectionObserver
   
   
+  # Monitors a surface for changes - ensuring things are kept up to date.
+  #
   # @since 1.0.0
   class BST_SurfaceObserver
     
+    # @param [BezierSurface] surface
     # @since 1.0.0
     def onContentModified( surface )
-      #puts 'BST_SurfaceObserver.onContentModified'
+      #TT.debug 'BST_SurfaceObserver.onContentModified'
       editor = PLUGIN.get_editor( surface.model )
       if editor
         # Check for erased entites.
@@ -148,6 +166,7 @@ module TT::Plugins::BezierSurfaceTools
       end
     end
     
+    # @return [BST_SurfaceObserver]
     # @since 1.0.0
     def self.factory
       @@observer ||= self.new
