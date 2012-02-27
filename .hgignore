@@ -1,3 +1,6 @@
 syntax: glob
 Documentation/
 Builds/
+Test Models/*
+Theory and Reading/*
+Project Files/*
