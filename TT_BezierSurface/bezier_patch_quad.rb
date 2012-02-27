@@ -18,7 +18,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def initialize( parent, points )
-      TT.debug 'QuadPatch.new'
+      Console.log 'QuadPatch.new'
       
       # Validate arguments
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
@@ -132,7 +132,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [QuadPatch]
     # @since 1.0.0
     def self.restore( surface, edgeuses, interior_points )
-      TT.debug 'QuadPatch.restore'
+      Console.log 'QuadPatch.restore'
       # Validate
       unless surface.is_a?( BezierSurface )
         raise ArgumentError, 'Argument not a BezierSurface.'

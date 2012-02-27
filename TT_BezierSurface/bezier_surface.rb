@@ -82,7 +82,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierSurface,Nil]
     # @since 1.0.0
     def self.load( instance )
-      TT.debug( 'BezierSurface.load' )
+      Console.log( 'BezierSurface.load' )
       unless self.is?( instance )
         UI.messagebox("This is not a valid bezier surface instance and can not be edited.")
         return nil
@@ -108,7 +108,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def reload
       # (!) Raise SurfaceDataParseException
-      TT.debug( 'BezierSurface.reload' )
+      Console.log( 'BezierSurface.reload' )
       debug_time_start = Time.now
       
       # Verify mesh definition
@@ -138,7 +138,7 @@ module TT::Plugins::BezierSurfaceTools
       # Prepare the vertex cache required by #transform_entities
       @vertex_cache = mesh_vertices()
       
-      TT.debug( "> Loaded in #{Time.now-debug_time_start}s" )
+      Console.log( "> Loaded in #{Time.now-debug_time_start}s" )
       self
     end
     
@@ -152,7 +152,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def update
-      TT.debug( 'BezierSurface.update' )
+      Console.log( 'BezierSurface.update' )
       Sketchup.status_text = 'Updating Bezier Surface...'
       @preview = false
       refresh_automatic_patches()
@@ -171,7 +171,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def preview
-      #TT.debug( 'Preview Bezier Surface...' )
+      #Console.log( 'Preview Bezier Surface...' )
       Sketchup.status_text = 'Preview Bezier Surface...'
       @preview = SUBDIVS_PREVIEW # (!) Get from settings
       refresh_automatic_patches()
@@ -360,8 +360,8 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
       patches.uniq!
-      #TT.debug "Patches - #{patches.size}"
-      #TT.debug patches
+      #Console.log "Patches - #{patches.size}"
+      #Console.log patches
       # Find all related edges and control points.
       for patch in patches
         related_entities << patch
@@ -369,8 +369,8 @@ module TT::Plugins::BezierSurfaceTools
         related_entities.concat( patch.control_points.to_a )
       end
       related_entities.uniq!
-      #TT.debug "related_entities - #{related_entities.size}"
-      #TT.debug related_entities
+      #Console.log "related_entities - #{related_entities.size}"
+      #Console.log related_entities
       # Find entites that doesn't define a valid patch.
       for entity in related_entities
         if entity.is_a?( BezierPatch )
@@ -384,8 +384,8 @@ module TT::Plugins::BezierSurfaceTools
         end
       end 
       ex_entities.uniq!
-      TT.debug "ex_entities - #{ex_entities.size}"
-      TT.debug ex_entities
+      Console.log "ex_entities - #{ex_entities.size}"
+      Console.log ex_entities
       # Invalidate entities.
       for entity in ex_entities
         entity.invalidate! # This also unlinks connected entities.
@@ -925,9 +925,9 @@ module TT::Plugins::BezierSurfaceTools
       
       # <debug>
       unless points.size == vertices.size
-        TT.debug( 'mesh_vertices' )
-        TT.debug( "> Points: #{points.size}" )
-        TT.debug( "> Vertices: #{vertices.size}" )
+        Console.log( 'mesh_vertices' )
+        Console.log( "> Points: #{points.size}" )
+        Console.log( "> Vertices: #{vertices.size}" )
       end
       # </debug>
       
@@ -984,7 +984,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def update_mesh
-      TT.debug( 'BezierSurface.update_mesh' )
+      Console.log( 'BezierSurface.update_mesh' )
       d = TT::Instance.definition( @instance )
       transformation = d.model.edit_transform
       subdivisions = final_subdivs()
@@ -993,16 +993,16 @@ module TT::Plugins::BezierSurfaceTools
       polygons = count_mesh_polygons( subdivisions )
       mesh = Geom::PolygonMesh.new( points, polygons )
       # Populate the mesh.
-      TT.debug( '> Adding patches...' )
+      Console.log( '> Adding patches...' )
       for patch in @patches
         patch.add_to_mesh( mesh, subdivisions, transformation )
       end
       # Add the mesh to model.
-      TT.debug( '> Clear and fill...' )
+      Console.log( '> Clear and fill...' )
       debug_time_start = Time.now
       d.entities.clear!
       d.entities.fill_from_mesh( mesh, true, TT::MESH_SOFT_SMOOTH )
-      TT.debug( "> Filled in #{Time.now-debug_time_start}s" )
+      Console.log( "> Filled in #{Time.now-debug_time_start}s" )
     end
     
     # @note Data Format Version: 1.0.3 (R0)
@@ -1012,7 +1012,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def update_attributes
-      TT.debug( 'BezierSurface.update_attributes' )
+      Console.log( 'BezierSurface.update_attributes' )
       debug_time_start = Time.now
       
       # ### DATA FORMAT ###
@@ -1117,7 +1117,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       d.set_attribute( ATTR_ID, ATTR_POSITIONS, point_data )
       
-      TT.debug( "> Points written #{Time.now-debug_time_start}s" )
+      Console.log( "> Points written #{Time.now-debug_time_start}s" )
       
       # BezierControlPoints relationship and properties
       cpoint_data = {
@@ -1146,12 +1146,12 @@ module TT::Plugins::BezierSurfaceTools
       d.set_attribute( ATTR_ID, ATTR_HANDLES, cpoint_data[ BezierHandle ] )
       d.set_attribute( ATTR_ID, ATTR_INTERIORPOINTS, cpoint_data[ BezierInteriorPoint ] )
       
-      TT.debug( "> Control Points written #{Time.now-debug_time_start}s" )
+      Console.log( "> Control Points written #{Time.now-debug_time_start}s" )
       
       ### Edges
       edge_data = []
       edge_indexes = {}   # Lookup hash for quick indexing
-      TT.debug '> Edges'
+      Console.log '> Edges'
       edges.each_with_index { |edge, index|
         # Index Edge
         edge_indexes[ edge ] = index
@@ -1161,7 +1161,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       d.set_attribute( ATTR_ID, ATTR_EDGES, edge_data )
       
-      TT.debug( "> Edges written #{Time.now-debug_time_start}s" )
+      Console.log( "> Edges written #{Time.now-debug_time_start}s" )
       
       ### Patches
       patch_data = []
@@ -1188,9 +1188,9 @@ module TT::Plugins::BezierSurfaceTools
       end
       d.set_attribute( ATTR_ID, ATTR_PATCHES, patch_data )
       
-      TT.debug( "> Patches written #{Time.now-debug_time_start}s" )
+      Console.log( "> Patches written #{Time.now-debug_time_start}s" )
       
-      TT.debug( "> Written in #{Time.now-debug_time_start}s" )
+      Console.log( "> Written in #{Time.now-debug_time_start}s" )
       true
     end
     
@@ -1201,7 +1201,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierSurface]
     # @since 1.0.0
     def reload_R0( definition )
-      TT.debug( 'BezierSurface.reload_R0' )
+      Console.log( 'BezierSurface.reload_R0' )
 
       d = definition
       
@@ -1215,7 +1215,7 @@ module TT::Plugins::BezierSurfaceTools
         # (!) Validate Point3d
         point.extend( TT::Point3d_Ex )
       end
-      TT.debug "> positions: #{positions.size} (#{positions.nitems})"
+      Console.log "> positions: #{positions.size} (#{positions.nitems})"
       unless positions.size == positions.nitems
         raise TypeError, 'Invalid Point3d data'
       end
@@ -1252,7 +1252,7 @@ module TT::Plugins::BezierSurfaceTools
       for index in ( 0...positions.size )
         cpoints << cp_index[ index ]
       end
-      TT.debug "> controlpoints: #{cpoints.size} (#{cpoints.nitems})"
+      Console.log "> controlpoints: #{cpoints.size} (#{cpoints.nitems})"
       unless cpoints.size == cpoints.nitems
         raise TypeError, 'Invalid Control Point data'
       end
@@ -1271,7 +1271,7 @@ module TT::Plugins::BezierSurfaceTools
         edge = BezierEdge.new( self, points )
         edge_sets << edge
       end
-      TT.debug "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
+      Console.log "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
       unless edge_sets.size == edge_sets.nitems
         raise TypeError, 'Invalid Edge data'
       end
@@ -1313,7 +1313,7 @@ module TT::Plugins::BezierSurfaceTools
           edge = edge_sets[edge_index]
           edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed ) # Temp
         end
-        TT.debug "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
+        Console.log "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
         unless edgeuses_set.size == edgeuses_set.nitems
           raise TypeError, 'Invalid EdgeUse data'
         end

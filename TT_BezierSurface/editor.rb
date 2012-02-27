@@ -63,10 +63,10 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def edit( instance )
-      TT.debug( 'BezierSurfaceEditor.edit' )
+      Console.log( 'BezierSurfaceEditor.edit' )
       # Don't activate a new session while there is one already active.
       if @active
-        TT.debug( '> Already active edit session!' )
+        Console.log( '> Already active edit session!' )
         return false
       end
       @surface = BezierSurface.load( instance )
@@ -171,7 +171,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def select_tool( tool )
-      TT.debug( 'BezierSurfaceEditor.select_tool' )
+      Console.log( 'BezierSurfaceEditor.select_tool' )
       tools = @model.tools
       # (i) Some times other tools, for instance viewport tools, push other
       #     tools into the stack. This should be accounted for so we get a 
@@ -206,17 +206,17 @@ module TT::Plugins::BezierSurfaceTools
         # should be pushed into the stack.
         #
         # (?) Alert user about error? Raise exception?
-        TT.debug( '> Error! Tool stack empty.' )
+        Console.log( '> Error! Tool stack empty.' )
         return false
       end
       # Pop the current Bezier Surface tool. (At least it should be unless
       # some other plugin pushed a tool into the stack.)
       if @active_tool
-        TT.debug( '> Pop active tool...' )
+        Console.log( '> Pop active tool...' )
         tools.pop_tool
       end
       # Push the new one into the stack in place of the old one.
-      TT.debug( '> Push new tool...' )
+      Console.log( '> Push new tool...' )
       @active_tool = tool
       tools.push_tool( tool )
     end
@@ -229,9 +229,9 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Boolean]
     # @since 1.0.0
     def end_session
-      TT.debug( 'BezierSurfaceEditor.end_session' )
+      Console.log( 'BezierSurfaceEditor.end_session' )
       if @active
-        TT.debug( '> Ending active tool...' )
+        Console.log( '> Ending active tool...' )
         # Instead of popping all tools - just activate the Select tool. Which
         # will deactivate this BezierSurfaceEditor tool and end this session.
         # Trying to get back to the tool used before this one leads to too many
@@ -318,7 +318,7 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def undo_redo
-      TT.debug( 'BezierSurfaceEditor.undo_redo' )
+      Console.log( 'BezierSurfaceEditor.undo_redo' )
       if valid_context?
         @surface.reload
         invalid_entities = @selection.select { |entity| entity.deleted? }
@@ -331,7 +331,7 @@ module TT::Plugins::BezierSurfaceTools
         #     selection changed. Which it often doesn't when you undo/redo.
         refresh_viewport() if invalid_entities.empty?
       else
-        TT.debug( '> Invalid Context' )
+        Console.log( '> Invalid Context' )
         self.end_session
       end
       nil
@@ -366,7 +366,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Select
         button = TT::GUI::ToolbarButton.new('Select') {
-          TT.debug 'Tool: Select'
+          Console.log 'Tool: Select'
           tool = SelectionTool.new( self )
           select_tool( tool )
           TT::SketchUp.activate_main_window
@@ -376,7 +376,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Move
         button = TT::GUI::ToolbarButton.new('Move') {
-          TT.debug 'Tool: Move'
+          Console.log 'Tool: Move'
           tool = MoveTool.new( self )
           select_tool( tool )
           TT::SketchUp.activate_main_window
@@ -386,7 +386,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Add QuadPatch
         button = TT::GUI::ToolbarButton.new('Add QuadPatch') {
-          TT.debug 'Add QuadPatch'
+          Console.log 'Add QuadPatch'
           Operations.add_quadpatch
           TT::SketchUp.activate_main_window
         }
@@ -395,7 +395,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Add TriPatch
         button = TT::GUI::ToolbarButton.new('Add TriPatch') {
-          TT.debug 'Add TriPatch'
+          Console.log 'Add TriPatch'
           #PLUGIN.add_tripatch # (!)
           TT::SketchUp.activate_main_window
         }
@@ -412,7 +412,7 @@ module TT::Plugins::BezierSurfaceTools
           'Custom'
         ] )
         list.add_event_handler( :change ) { |control, value|
-          TT.debug "Axis: #{value}"
+          Console.log "Axis: #{value}"
           TT::SketchUp.activate_main_window
         }
         label = TT::GUI::Label.new( 'Axis: ', list )
@@ -441,7 +441,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def activate
-      TT.debug( 'BezierSurfaceEditor.activate' )
+      Console.log( 'BezierSurfaceEditor.activate' )
       @active = true
       @active_tool = nil
       @selection.clear
@@ -454,7 +454,7 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def deactivate(view)
-      TT.debug( 'BezierSurfaceEditor.deactivate' )
+      Console.log( 'BezierSurfaceEditor.deactivate' )
       @active = false
       @active_tool = nil
       
@@ -467,7 +467,7 @@ module TT::Plugins::BezierSurfaceTools
       #     not appear in the stack - so when you then trigger undo/redo after
       #     using this method all the modified geometry is offset.
       if valid_context?
-        TT.debug( '> Closing active context' )
+        Console.log( '> Closing active context' )
         view.model.close_active
       end
       

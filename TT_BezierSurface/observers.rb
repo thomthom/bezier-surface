@@ -50,21 +50,21 @@ module TT::Plugins::BezierSurfaceTools
       # Not noticed this again. Maybe the issue is gone. Or it was an observer
       # reload issue.
       
-      #TT.debug( 'BST_ModelObserver.onActivePathChanged' )
+      #Console.log( 'BST_ModelObserver.onActivePathChanged' )
       check_active_path( model )
     end
     
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionUndo( model )
-      TT.debug( 'BST_ModelObserver.onTransactionUndo' )
+      Console.log( 'BST_ModelObserver.onTransactionUndo' )
       check_active_path( model, true )
     end
     
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionRedo( model )
-      TT.debug( 'BST_ModelObserver.onTransactionRedo' )
+      Console.log( 'BST_ModelObserver.onTransactionRedo' )
       check_active_path( model, true )
     end
     
@@ -78,27 +78,27 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def check_active_path( model, undo_redo = false )
-      TT.debug( 'BST_ModelObserver.check_active_path' )
+      Console.log( 'BST_ModelObserver.check_active_path' )
       instance = (model.active_path) ? model.active_path.last : nil
       editor = PLUGIN.get_editor( model )
       if TT::Instance.is?( instance ) && BezierSurface.is?( instance )
-        TT.debug( '> Is BezierSurface' )
+        Console.log( '> Is BezierSurface' )
         if editor
           # Valid context, ensure an editor is active.
           unless editor.active?
-            TT.debug( '  > Activating editor...' )
+            Console.log( '  > Activating editor...' )
             editor.edit( instance )
             editor.undo_redo if undo_redo
           else
-            TT.debug( '  > Editor already active.' )
+            Console.log( '  > Editor already active.' )
             editor.undo_redo if undo_redo
           end
         else
-          TT.debug( '  > No Editor!' )
+          Console.log( '  > No Editor!' )
           # (?) Error? State not seen.
         end
       else
-        TT.debug( '> Is Not BezierSurface' )
+        Console.log( '> Is Not BezierSurface' )
         editor.end_session # Ensures any active sessions is ended.
       end
       nil
@@ -119,7 +119,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionBulkChange( selection )
-      #TT.debug 'BST_SelectionObserver.onSelectionBulkChange'
+      #Console.log 'BST_SelectionObserver.onSelectionBulkChange'
       editor = PLUGIN.get_editor( selection.model )
       if editor
         editor.refresh_viewport
@@ -129,7 +129,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionCleared( selection )
-      #TT.debug 'BST_SelectionObserver.onSelectionCleared'
+      #Console.log 'BST_SelectionObserver.onSelectionCleared'
       editor = PLUGIN.get_editor( selection.model )
       if editor
         editor.refresh_viewport
@@ -154,7 +154,7 @@ module TT::Plugins::BezierSurfaceTools
     # @param [BezierSurface] surface
     # @since 1.0.0
     def onContentModified( surface )
-      #TT.debug 'BST_SurfaceObserver.onContentModified'
+      #Console.log 'BST_SurfaceObserver.onContentModified'
       editor = PLUGIN.get_editor( surface.model )
       if editor
         # Check for erased entites.

@@ -95,6 +95,15 @@ module TT::Plugins::BezierSurfaceTools
     require( file )
   }
   
+
+  ### DEBUGGING ### ------------------------------------------------------------
+  
+  # TT::Plugins::BezierSurfaceTools::Console.output = true
+  # TT::Plugins::BezierSurfaceTools::Console.external = true
+  
+  DEBUG = false
+  Console = DebugConsole.new( DEBUG, true )
+  
   
   ### VARIABLES ### ------------------------------------------------------------
   
@@ -116,10 +125,10 @@ module TT::Plugins::BezierSurfaceTools
     editor = BezierSurfaceEditor.new( model )
     @editors[model] = editor
     
-    TT.debug( "Observe Model" )
-    TT.debug( "> Instance Variable:" )
+    Console.log( "Observe Model" )
+    Console.log( "> Instance Variable:" )
     e = model.instance_variable_set( :@tt_bezier_surface_editor, editor )
-    TT.debug( "> #{e}" )
+    Console.log( "> #{e}" )
     
     nil
   end
@@ -186,15 +195,15 @@ module TT::Plugins::BezierSurfaceTools
   # @return [BezierSurfaceEditor,Nil]
   # @since 1.0.0
   def self.get_editor( current_model )
-    TT.debug( 'get_editor' )
-    #TT.debug( "  > #{current_model.inspect}" )
-    #TT.debug( "  > #{current_model.guid}" )
+    Console.log( 'get_editor' )
+    #Console.log( "  > #{current_model.inspect}" )
+    #Console.log( "  > #{current_model.guid}" )
     
     # Monitor if this work.
-    #TT.debug( "  > Instance Variable:" )
+    #Console.log( "  > Instance Variable:" )
     e = current_model.instance_variable_get( :@tt_bezier_surface_editor )
-    TT.debug( "> #{e}" )
-    TT.debug( (e) ? '> Editor Variable: OK' : '> Editor Variable: LOST!' )
+    Console.log( "> #{e}" )
+    Console.log( (e) ? '> Editor Variable: OK' : '> Editor Variable: LOST!' )
     
     # (i) model.guid isn't always reliable - it can change so the model object
     # is also compared. Model is also not 100% reliable, which might be why
