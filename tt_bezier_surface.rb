@@ -8,7 +8,7 @@
 require 'sketchup.rb'
 require 'TT_Lib2/core.rb'
 
-TT::Lib.compatible?('2.6.0', 'Bezier Surface')
+TT::Lib.compatible?('2.7.0', 'Bezier Surface')
 
 #-------------------------------------------------------------------------------
 
@@ -19,10 +19,10 @@ module TT::Plugins::BezierSurfaceTools
   ### CONSTANTS ### ------------------------------------------------------------
   
   # Plugin information
-  PLUGIN      = self # Namespace shortcut
-  ID          = 'TT_BezierSurface'.freeze
-  VERSION     = TT::Version.new(1,0,0).freeze
-  PLUGIN_NAME = 'Bezier Surface'.freeze
+  PLUGIN         = self # Namespace shortcut
+  PLUGIN_ID      = 'TT_BezierSurface'.freeze
+  PLUGIN_NAME    = 'Bezier Surface'.freeze
+  PLUGIN_VERSION = TT::Version.new( 1,0,0 ).freeze
   
   # Attribute dictionary keys
   ATTR_ID             = 'TT_Mesh'.freeze
@@ -42,7 +42,7 @@ module TT::Plugins::BezierSurfaceTools
   # Attribute dictionary values
   MESH_TYPE         = 'BezierSurface'.freeze
   MESH_NAME         = 'Bezier Surface'.freeze
-  MESH_VERSION_R0   = TT::Version.new(1,0,3).freeze
+  MESH_VERSION_R0   = TT::Version.new( 1,0,3 ).freeze
   MESH_VERSION_MIN  = MESH_VERSION_R0
   MESH_VERSION      = MESH_VERSION_R0
   

@@ -351,7 +351,7 @@ module TT::Plugins::BezierSurfaceTools
       if @toolbar.nil?
         options = {
           :title => PLUGIN_NAME,
-          :pref_key => "#{PLUGIN::ID}_Toolbar",
+          :pref_key => "#{PLUGIN_ID}_Toolbar",
           :left => 200,
           :top => 200,
           :width => 280,

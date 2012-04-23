@@ -19,7 +19,7 @@ module TT::Plugins::BezierSurfaceTools
       if @window.nil?
         options = {
           :title => "#{PLUGIN_NAME} Properties",
-          :pref_key => "#{PLUGIN::ID}_Properties",
+          :pref_key => "#{PLUGIN_ID}_Properties",
           :left => 400,
           :top => 200,
           :width => 250,
