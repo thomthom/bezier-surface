@@ -19,7 +19,7 @@ module TT::Plugins::BezierSurfaceTools
     attr_accessor( :subdivs )
     
     def initialize( instance )
-      @instance = instance
+      @instance = instance # ComponentInstance or Group containing the geometry.
       @patches = []
       @subdivs = SUBDIVS_DEFAULT
       
@@ -172,13 +172,14 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def preview
       #Console.log( 'Preview Bezier Surface...' )
+      # (?) Set preview true?
       Sketchup.status_text = 'Preview Bezier Surface...'
       @preview = SUBDIVS_PREVIEW # (!) Get from settings
       refresh_automatic_patches()
       update_mesh()
       # Cache vertices for later use in #transform_entities
       @vertex_cache = mesh_vertices()
-      trigger_observer( :onContentModified, self )
+      trigger_observer( :onContentModified, self ) # (?)
       nil
     end
     
@@ -354,6 +355,7 @@ module TT::Plugins::BezierSurfaceTools
         if entity.is_a?( BezierPatch )
           patches << entity
         elsif entity.is_a?( BezierEdge ) || entity.is_a?( BezierControlPoint )
+        # elsif entity.respond_to?( :patches )
           patches.concat( entity.patches )
         else
           raise 'Unknown Entity'
@@ -482,6 +484,27 @@ module TT::Plugins::BezierSurfaceTools
         picked << point if ph.test_point( point.position.transform( tr ) )
       end
       picked.uniq
+    end
+
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<BezierHandle>]
+    # @since 1.0.0
+    def pick_handles( x, y, view )
+      tr = view.model.edit_transform
+      ph = view.pick_helper
+      ph.init( x, y, VERTEX_SIZE )
+      picked = []
+      for handle in handles.uniq
+        segment = [
+          handle.position.transform( tr ),
+          handle.vertex.position.transform( tr ),
+        ]
+        picked << handle if ph.pick_segment( segment, x, y, VERTEX_SIZE )
+      end
+      picked
     end
     
     # @param [Integer] x

@@ -168,6 +168,14 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       @links[ BezierVertex ].handles.select { |handle| handle.linked? }
     end
+
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def length=( new_length )
+      fail_if_invalid()
+      new_point = vertex.position.offset( vector, new_length )
+      set( new_point )
+    end
     
     # @return [BezierVertex]
     # @since 1.0.0

@@ -29,7 +29,7 @@ module TT::Plugins::BezierSurfaceTools
       # Used by onSetCursor
       @key_ctrl = false
       @key_shift = false
-      @mouse_over_vertex = false
+      @mouse_over_entity = nil
       
       @cursor         = TT::Cursor.get_id( :select )
       @cursor_add     = TT::Cursor.get_id( :select_add )
@@ -40,6 +40,8 @@ module TT::Plugins::BezierSurfaceTools
       @cursor_vertex_add    = TT::Cursor.get_id( :vertex_add )
       @cursor_vertex_remove = TT::Cursor.get_id( :vertex_remove )
       @cursor_vertex_toggle = TT::Cursor.get_id( :vertex_toggle )
+
+      @cursor_handle = TT::Cursor.get_id( :scale_n_ne )
     end
     
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#getInstructorContentDirectory
@@ -150,12 +152,42 @@ module TT::Plugins::BezierSurfaceTools
       # Selection Rectangle is made if left button is pressed.
       if flags & MK_LBUTTON == MK_LBUTTON
         @state = STATE_DRAG
-        @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
+        if @mouse_over_entity.is_a?( BezierHandle )
+          tr = view.model.edit_transform
+          handle = @mouse_over_entity
+
+          mouse_point = project_to_handle( handle, x, y, view )
+          vertex = handle.vertex.position.transform( tr )
+
+          vertex_to_mouse_start = vertex.vector_to( @mouse_start )
+          vertex_to_mouse_point = vertex.vector_to( mouse_point )
+
+          vector = @mouse_start.vector_to( mouse_point )
+          local_vector = vector.transform( tr.inverse )
+          new_vector = @handle_vector + local_vector
+
+          scale = vertex_to_mouse_point.length / vertex_to_mouse_start.length
+          handle.length = new_vector.length
+
+          world_handle = handle.vector.transform( tr )
+          view.tooltip = "Scale: #{scale}\nDistance: #{vector.length}\nLength: #{world_handle.length}"
+
+          @surface.preview
+        else
+          @selection_rectangle.end = Geom::Point3d.new( x, y, 0 )
+        end
         view.refresh
       else
         @state = STATE_NORMAL
+        @mouse_over_entity = nil
+        # Pick Vertices
         result = @surface.pick_control_points_ex( x, y, view )
-        @mouse_over_vertex = !result.empty?
+        @mouse_over_entity = result.first unless result.empty?
+        # Pick Handle
+        @mouse_over_entity ||= pick_visible_handle( x, y, view )
+        if @mouse_over_entity.is_a?( BezierHandle )
+          @cursor_handle = handle_cursor( @mouse_over_entity, view )
+        end
       end
       
       view.invalidate # (!) Temp - need Manipulator.onMouseOut
@@ -165,6 +197,18 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def onLButtonDown( flags, x, y, view )
+      if @mouse_over_entity.is_a?( BezierHandle )
+        handle = @mouse_over_entity
+
+        @mouse_start = project_to_handle( handle, x, y, view )
+        @handle_vector = handle.vector
+
+        @editor.model.start_operation( 'Scale Handle' )
+        @surface.preview
+      else
+        @mouse_start = Geom::Point3d.new( x, y, 0 )
+      end
+
       if @gizmo.onLButtonDown( flags, x, y, view )
         view.invalidate
       else
@@ -176,8 +220,21 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def onLButtonUp( flags, x, y, view )
+      @mouse_start = nil
+
       # Handle Gizmo
       if @gizmo.onLButtonUp(flags, x, y, view)
+        view.invalidate
+        return
+      end
+
+      if @mouse_over_entity.is_a?( BezierHandle )
+        @state = STATE_NORMAL
+
+        @surface.update
+        @editor.model.commit_operation
+        update_ui()
+
         view.invalidate
         return
       end
@@ -203,7 +260,6 @@ module TT::Plugins::BezierSurfaceTools
         availible = s.vertices + s.manual_interior_points + s.edges + s.patches
         entities = @selection_rectangle.selected_entities( view, availible )
       end
-      
       update_selection( entities, flags )
       
       @state = STATE_NORMAL
@@ -289,15 +345,34 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @since 1.0.0
     def onSetCursor
-      if @key_ctrl && @key_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_remove : @cursor_remove
-      elsif @key_ctrl
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_add : @cursor_add
-      elsif @key_shift
-        cursor = (@mouse_over_vertex) ? @cursor_vertex_toggle : @cursor_toggle
+      if @mouse_over_entity
+        if @mouse_over_entity.is_a?( BezierVertex )
+          if @key_ctrl && @key_shift
+            cursor = @cursor_vertex_remove
+          elsif @key_ctrl
+            cursor = @cursor_vertex_add
+          elsif @key_shift
+            cursor = @cursor_vertex_toggle
+          else
+            cursor = @cursor_vertex
+          end
+        elsif @mouse_over_entity.is_a?( BezierHandle )
+          cursor = @cursor_handle
+        else
+          raise ArgumentError, "No cursor for entity #{@mouse_over_entity.class}"
+        end
       else
-        cursor = (@mouse_over_vertex) ? @cursor_vertex : @cursor
+        if @key_ctrl && @key_shift
+          cursor = @cursor_remove
+        elsif @key_ctrl
+          cursor = @cursor_add
+        elsif @key_shift
+          cursor = @cursor_toggle
+        else
+          cursor = @cursor
+        end
       end
+
       UI.set_cursor( cursor )
     end
     
@@ -352,6 +427,9 @@ module TT::Plugins::BezierSurfaceTools
     # Updates the current selection with the given entities based on the flags
     # from the mouse event.
     #
+    # @param [Array<BezierEntity>] entities
+    # @param [Integer] flags
+    #
     # @return [Selection]
     # @since 1.0.0
     def update_selection( entities, flags )
@@ -373,6 +451,72 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       @editor.selection
+    end
+
+    # (!) Move to Editor?
+    #
+    # @param [BezierHandle] handle
+    # @param [Sketchup::View] view
+    #
+    # @return [Integer]
+    # @since 1.0.0
+    def handle_cursor( handle, view )
+      tr = view.model.edit_transform
+      pt1 = handle.position.transform( tr )
+      pt2 = handle.vertex.position.transform( tr )
+      vector = pt1.vector_to( pt2 )
+      TT::Cursor.get_vector3d_cursor( vector, view )
+    end
+
+    # (!) Move to Editor?
+    #
+    # @return [Array<BezierHandle>]
+    # @since 1.0.0
+    def visible_handles
+      vertices = []
+      for entity in @editor.selection
+        if entity.is_a?( BezierVertex )
+          vertices << entity
+        elsif entity.respond_to?( :vertices )
+          vertices.concat( entity.vertices )
+        end
+      end
+      vertices.uniq!
+      handles = vertices.map { |entity| entity.handles }
+      handles.flatten!
+      handles.uniq!
+      handles
+    end
+
+    # (!) Move to Editor?
+    #
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [BezierHandle|Nil]
+    # @since 1.0.0
+    def pick_visible_handle( x, y, view )
+      visible = visible_handles()
+      handles = @surface.pick_handles( x, y, view )
+      handles.find { |handle| visible.include?( handle ) }
+    end
+
+    # (!) Move to Editor?
+    #
+    # @param [BezierHandle] handle
+    # @param [Sketchup::View] view
+    #
+    # @return [Geom::Point3d]
+    # @since 1.0.0
+    def project_to_handle( handle, x, y, view )
+      tr = view.model.edit_transform
+      pt1 = handle.position.transform( tr )
+      pt2 = handle.vertex.position.transform( tr )
+      line = [ pt1, pt2 ]
+
+      ray = view.pickray( x, y )
+      Geom.closest_points( line, ray ).first
     end
     
   end # class SelectionTool
