@@ -84,6 +84,7 @@ module TT::Plugins::BezierSurfaceTools
         select_tool( default_tool )
       else
         # Invalid instance or incompatible version
+        UI.beep
         puts 'Invalid Bezier Surface or incompatible version.'
         model.close_active
       end
