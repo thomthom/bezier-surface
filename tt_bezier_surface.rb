@@ -87,9 +87,9 @@ module TT::Plugins::BezierSurfaceTools
   
   ### MODULES ### --------------------------------------------------------------
   # Ensure abstract classes are loaded and found when needed.
-  autoload( :Observable, File.join( PATH, 'observable.rb' ) )
+  autoload( :Observable,   File.join( PATH, 'observable.rb' ) )
   autoload( :BezierEntity, File.join( PATH, 'bezier_entity.rb' ) )
-  autoload( :BezierPatch, File.join( PATH, 'bezier_patch.rb' ) )
+  autoload( :BezierPatch,  File.join( PATH, 'bezier_patch.rb' ) )
   # Load all ruby files.
   Dir.glob( File.join( PATH, '*.{rb,rbs}' ) ).each { |file|
     require( file )
@@ -292,7 +292,7 @@ module TT::Plugins::BezierSurfaceTools
     $VERBOSE = original_verbose
   end
 
-end # module
+end if Sketchup.version.to_i > 6
 
 #-------------------------------------------------------------------------------
 
