@@ -415,14 +415,19 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Not a transformation.'
       end
       return false if entities.empty?
+      # Transform given entities.
       local_transform = local_transformation( transformation )
+      local_transform = transformation
       for control_point in entities
         control_point.position.transform!( local_transform )
       end
+      # Recalculate the automatic internal control points.
       refresh_automatic_patches()
+      # Compute new 3D points in mesh.
       etr = @instance.model.edit_transform
       subdivisions = final_subdivs()
       positions = mesh_points( subdivisions, etr )
+      # Update SketchUp mesh.
       set_vertex_positions( @vertex_cache, positions )
       trigger_observer( :onContentModified, self )
       true
