@@ -402,6 +402,9 @@ module TT::Plugins::BezierSurfaceTools
       ex_entities.size
     end
     
+    # Transforms the given entities with a transformation in SketchUp's world
+    # coordinate system.
+    #
     # @param [Geom::Transformation] transformation
     # @param [Array<BezierEntity>] entities
     #
@@ -416,8 +419,8 @@ module TT::Plugins::BezierSurfaceTools
       end
       return false if entities.empty?
       # Transform given entities.
+      # (?) Should this method expect local transformation?
       local_transform = local_transformation( transformation )
-      local_transform = transformation
       for control_point in entities
         control_point.position.transform!( local_transform )
       end
@@ -903,7 +906,7 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     # Converts a transformation for the global space into a transformation
-    # within the local space.
+    # within the local space. (The coordinates system for the surface.)
     #
     # Use when editing a bezier surface. The group will be open and the
     # co-ordinate system in SketchUp is working in world space.

@@ -389,15 +389,13 @@ module TT::Plugins::BezierSurfaceTools
       @gizmo = TT::Gizmo::Manipulator.new( @editor, ORIGIN, xaxis, yaxis, zaxis )
       update_gizmo()
       
-      # (!) Return name of operation in block
       @gizmo.on_transform_start { |action_name|
-        @editor.model.start_operation( 'Edit Control Points' )
+        @editor.model.start_operation( "Gizmo #{action_name}" )
         @surface.preview
       }
       
       @gizmo.on_transform { |t_increment, t_total, data|
         entities = @editor.selection.related_control_points
-        p t_increment.to_a # DEBUG
         @surface.transform_entities( t_increment, entities )
       }
       
