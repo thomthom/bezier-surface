@@ -109,13 +109,30 @@ module TT::Plugins::BezierSurfaceTools
       @control_points[3] = replace_vertex( old_vertex, new_vertex )
       new_vertex
     end
+
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def other_vertex( vertex )
+      fail_if_invalid()
+      unless vertices.include?( vertex )
+        raise ArgumentError, 'Vertex not part of this edge.'
+      end
+      vertices.find { |v| v != vertex }
+    end
     
     # @return [BezierVertex]
     # @since 1.0.0
     def replace_vertex( old_vertex, new_vertex )
+      #TT.debug 'replace_vertex'
+      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
+      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
       # (?) protected
       unless new_vertex.is_a?( BezierVertex )
         raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
+      end
+      if new_vertex == old_vertex
+        #raise ArgumentError, "Can't replace itself! (#{new_vertex})"
+        return new_vertex
       end
       # Transfer links from old vertex to new
       for handle in old_vertex.handles
@@ -135,8 +152,14 @@ module TT::Plugins::BezierSurfaceTools
       for patch in old_vertex.patches
         new_vertex.link( patch )
       end
+      #TT.debug "> ----------"
+      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
+      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
       # Kill old vertex
       old_vertex.invalidate!
+      #TT.debug "> ----------"
+      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
+      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
       # Link new vertex to current edge
       new_vertex.link( self )
       new_vertex
@@ -274,9 +297,9 @@ module TT::Plugins::BezierSurfaceTools
       
       # <debug>
       index = patch.edge_index( self )
-      TT.debug( "Extrude Edge: (#{index}) #{self}" )
-      TT.debug( "> Length: #{self.length(surface.subdivs).to_s}" )
-      TT.debug( "> Reversed: #{edge_reversed}" )
+      #TT.debug( "Extrude Edge: (#{index}) #{self}" )
+      #TT.debug( "> Length: #{self.length(surface.subdivs).to_s}" )
+      #TT.debug( "> Reversed: #{edge_reversed}" )
       # </debug>
       
       # Use the connected edges to determine the direction of the extruded
@@ -285,8 +308,8 @@ module TT::Plugins::BezierSurfaceTools
       next_edge = edgeuse.next.edge
       
       # <debug>
-      TT.debug( "> Prev Edge: #{prev_edge}" )
-      TT.debug( "> Next Edge: #{next_edge}" )
+      #TT.debug( "> Prev Edge: #{prev_edge}" )
+      #TT.debug( "> Next Edge: #{next_edge}" )
       # </debug>
       
       # Cache the point for quicker access.

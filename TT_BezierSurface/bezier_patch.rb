@@ -96,9 +96,10 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Edge not related to Patch.'
       end
       
-      TT.debug( 'BezierPatch.set_edge' )
-      TT.debug "Old: #{old_edge}"
-      TT.debug "New: #{old_edge}"
+      #TT.debug( ' ' )
+      #TT.debug( 'BezierPatch.set_edge' )
+      #TT.debug "Old: #{old_edge}"
+      #TT.debug "New: #{new_edge}"
       
       edgeuse = get_edgeuse( old_edge )
       edgeuse.edge = new_edge
@@ -118,10 +119,10 @@ module TT::Plugins::BezierSurfaceTools
       # (!) Hack - Find a method that works even if the points are not at
       # the same location. Or require points to be the same?
       #TT.debug( 'BezierPatch.set_edge' )
-      #TT.debug( "> #{old_edge.start == new_edge.start}" )
-      #TT.debug( "> #{old_edge.start == new_edge.end}" )
+      #TT.debug( "  > #{old_edge.start == new_edge.start}" )
+      #TT.debug( "  > #{old_edge.start == new_edge.end}" )
       if old_edge.start.position == new_edge.end.position
-        TT.debug( '> Reversed!' )
+        #TT.debug( '  > Reversed!' )
         edgeuse.reversed = !edgeuse.reversed?
         
         new_start = new_edge.end
@@ -130,11 +131,15 @@ module TT::Plugins::BezierSurfaceTools
         new_start = new_edge.start
         new_end = new_edge.end
       end
+
+      #TT.debug( "> New Start: #{new_start}" )
+      #TT.debug( "> New End: #{new_end}" )
       
       # (!) Update control points of connected edges.
       # Update the vertices of self with the vertices of the new edge.
       
       old_start = old_edge.start
+      #TT.debug( "> Old Start: #{old_start}" )
       for edge in old_start.edges
         next if edge == old_edge
         if edge.start == old_start
@@ -145,6 +150,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       
       old_end = old_edge.end
+      #TT.debug( "> Old End: #{old_end}" )
       for edge in old_end.edges
         next if edge == old_edge
         if edge.end == old_end
@@ -154,11 +160,13 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
       
+      #TT.debug( "> Relink" )
       new_edge.link( self )
       for point in new_edge.control_points
         point.link( self )
       end
       
+      #TT.debug( "> Return" )
       new_edge
     end
     
