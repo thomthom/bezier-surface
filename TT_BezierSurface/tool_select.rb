@@ -346,7 +346,8 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def onSetCursor
       if @mouse_over_entity
-        if @mouse_over_entity.is_a?( BezierVertex )
+        if  @mouse_over_entity.is_a?( BezierVertex ) ||
+            @mouse_over_entity.is_a?( BezierInteriorPoint )
           if @key_ctrl && @key_shift
             cursor = @cursor_vertex_remove
           elsif @key_ctrl
