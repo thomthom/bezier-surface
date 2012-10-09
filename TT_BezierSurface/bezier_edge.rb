@@ -297,6 +297,7 @@ module TT::Plugins::BezierSurfaceTools
       
       # <debug>
       index = patch.edge_index( self )
+      #TT.debug( " " )
       #TT.debug( "Extrude Edge: (#{index}) #{self}" )
       #TT.debug( "> Length: #{self.length(surface.subdivs).to_s}" )
       #TT.debug( "> Reversed: #{edge_reversed}" )
@@ -334,13 +335,16 @@ module TT::Plugins::BezierSurfaceTools
       # a continous surface.
       directions = [ v1, v1, v2, v2 ]
 
-      # Extrude the new patch by the same length as the edge it's extruded from.
-      # This should be an ok length that scales predictably in most conditions.
-      length = self.length( surface.subdivs ) / 3.0
+      # Extrude the new patch by the same length as the edge adjesant edges.
+      # This appear to be a bit more predictable then using the length of the
+      # edge extruded.
+      prev_length = prev_edge.length( surface.subdivs ) / 3.0
+      next_length = next_edge.length( surface.subdivs ) / 3.0
       
       # Generate the control points for the new patch.
       points = []
       pts.each_with_index { |point, index|
+        length = ( index < 2 ) ? prev_length : next_length
         points << point.clone
         points << point.offset( directions[index], length )
         points << point.offset( directions[index], length * 2 )
@@ -354,6 +358,8 @@ module TT::Plugins::BezierSurfaceTools
       # Add the patch to the surface. Calling method should be calling
       # Surface.update after this to refresh the mesh.
       surface.add_patch( new_patch )
+
+      # (?) Merge edges that match 100%?
       
       new_patch
     end
