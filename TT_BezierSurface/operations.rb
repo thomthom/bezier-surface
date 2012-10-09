@@ -78,6 +78,8 @@ module TT::Plugins::BezierSurfaceTools
           target_vertex = target_edge.other_vertex( vertex )
           source_vertex.position = target_vertex.position
 
+          source_handles = source_edge.handles
+
           new_patch.set_edge( source_edge, target_edge )
           #puts "    > Target Vertices: #{target_edge.vertices}"
           #puts "    > Target Handles:  #{target_edge.handles}"
@@ -88,6 +90,10 @@ module TT::Plugins::BezierSurfaceTools
           target_edge.link( new_patch )
           new_patch_edges.delete( target_edge )
           new_patch_edges.delete( source_edge )
+          source_edge.invalidate!
+          for handle in source_handles
+            handle.invalidate!
+          end
 
           #editor.selection.add( [target_edge, source_edge] )
         end

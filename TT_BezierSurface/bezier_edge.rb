@@ -148,7 +148,7 @@ module TT::Plugins::BezierSurfaceTools
         new_vertex.link( edge )
         edge.set_vertex!( old_vertex, new_vertex )
       end
-      # Transfer paatch references
+      # Transfer patch references
       for patch in old_vertex.patches
         new_vertex.link( patch )
       end
@@ -352,8 +352,18 @@ module TT::Plugins::BezierSurfaceTools
       }
       # Create the BezierPatch entity, add all entity assosiations.
       new_patch = QuadPatch.new( surface, points )
-      new_patch.set_edge( new_patch.edges.last, self )
+
+      merge_edge = new_patch.edges.last
+      old_handles = merge_edge.handles
+
+      new_patch.set_edge( merge_edge, self )
+
       self.link( new_patch )
+      for handle in old_handles
+        handle.invalidate!
+      end
+
+      merge_edge.invalidate!
       
       # Add the patch to the surface. Calling method should be calling
       # Surface.update after this to refresh the mesh.
