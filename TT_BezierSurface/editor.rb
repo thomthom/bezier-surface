@@ -402,6 +402,16 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
         @toolbar.add_control( button )
+
+        # Merge
+        button = TT::GUI::ToolbarButton.new('Merge') {
+          Console.log 'Tool: Merge'
+          tool = MergeTool.new( self )
+          select_tool( tool )
+          TT::SketchUp.activate_main_window
+        }
+        button.icon = File.join( PATH_ICONS, 'Merge_24.png' )
+        @toolbar.add_control( button )
         
         # Axis
         container = TT::GUI::Container.new
