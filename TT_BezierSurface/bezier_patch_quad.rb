@@ -508,7 +508,9 @@ module TT::Plugins::BezierSurfaceTools
       line_y = [ handle_y.position, handle_x.vector ]
       intersect = Geom::intersect_line_line( line_x, line_y )
       # (!) intersect.nil? would mean error - or edge case?
-      raise TypeError, 'Intersect is Nil' unless intersect
+      unless intersect
+        raise TypeError, "No intersection!\nX:#{line_x.inspect}\nY:#{line_y.inspect}"
+      end
       intersect
     end
     

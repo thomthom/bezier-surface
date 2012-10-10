@@ -89,8 +89,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def start=( new_vertex )
       fail_if_invalid()
-      old_vertex = @control_points[0]
-      @control_points[0] = replace_vertex( old_vertex, new_vertex )
+      #old_vertex = @control_points[0]
+      #@control_points[0] = replace_vertex( old_vertex, new_vertex )
+      replace_vertex( @control_points[0], new_vertex )
       new_vertex
     end
     
@@ -105,8 +106,9 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def end=( new_vertex )
       fail_if_invalid()
-      old_vertex = @control_points[3]
-      @control_points[3] = replace_vertex( old_vertex, new_vertex )
+      #old_vertex = @control_points[3]
+      #@control_points[3] = replace_vertex( old_vertex, new_vertex )
+      replace_vertex( @control_points[3], new_vertex )
       new_vertex
     end
 
@@ -123,63 +125,34 @@ module TT::Plugins::BezierSurfaceTools
     # @return [BezierVertex]
     # @since 1.0.0
     def replace_vertex( old_vertex, new_vertex )
-      #TT.debug 'replace_vertex'
-      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
-      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
-      # (?) protected
+      fail_if_invalid()
+      unless old_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{old_vertex.class.name})"
+      end
       unless new_vertex.is_a?( BezierVertex )
         raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
       end
-      if new_vertex == old_vertex
-        #raise ArgumentError, "Can't replace itself! (#{new_vertex})"
-        return new_vertex
-      end
-      # Transfer links from old vertex to new
-      for handle in old_vertex.handles
-        # Add reference to new
-        new_vertex.link( handle )
-        handle.link( new_vertex )
-        # Remove reference to old vertex
-        handle.unlink( old_vertex )
-      end
-      # Other edges needs to update their vertex references
-      for edge in old_vertex.edges
-        next if edge == self
-        new_vertex.link( edge )
-        edge.set_vertex!( old_vertex, new_vertex )
-      end
-      # Transfer patch references
-      for patch in old_vertex.patches
-        new_vertex.link( patch )
-      end
-      #TT.debug "> ----------"
-      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
-      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
-      # Kill old vertex
-      old_vertex.invalidate!
-      #TT.debug "> ----------"
-      #TT.debug "> #{old_vertex} #{old_vertex.valid?}"
-      #TT.debug "> #{new_vertex} #{new_vertex.valid?}"
-      # Link new vertex to current edge
-      new_vertex.link( self )
-      new_vertex
-    end
-    
-    # @return [BezierVertex]
-    # @since 1.0.0
-    def set_vertex!( old_vertex, new_vertex )
-      # (?) protected
-      unless new_vertex.is_a?( BezierVertex )
-        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
-      end
-      # Transfer links from old vertex to new
-      if @control_points[0] == old_vertex
-        @control_points[0] = new_vertex
-      elsif @control_points[3] == old_vertex
-        @control_points[3] = new_vertex
-      else
+      unless old_vertex.links_to?( self )
         raise ArgumentError, "Vertex not connected to edge. (#{old_vertex})"
       end
+      # Not sure if this would be better off raising error or returning nil.
+      # Currently it works well to just return the vertex - but might it be
+      # a better control to raise error? (Test units would probably solve that.)
+      if new_vertex == old_vertex
+        return new_vertex
+      end
+      # Update positions.
+      new_vertex.position = old_vertex.position
+      # Transfer links from old vertex to new vertex.
+      for entity in old_vertex.linked
+        entity.link( new_vertex )
+        entity.unlink( old_vertex )
+        next unless entity.is_a?( BezierEdge )
+        entity.set_vertex!( old_vertex, new_vertex )
+      end
+      # Kill old vertex.
+      old_vertex.invalidate!
+      # Return the merged vertex.
       new_vertex
     end
     
@@ -354,16 +327,8 @@ module TT::Plugins::BezierSurfaceTools
       new_patch = QuadPatch.new( surface, points )
 
       merge_edge = new_patch.edges.last
-      old_handles = merge_edge.handles
 
-      new_patch.set_edge( merge_edge, self )
-
-      self.link( new_patch )
-      for handle in old_handles
-        handle.invalidate!
-      end
-
-      merge_edge.invalidate!
+      new_patch.replace_edge( merge_edge, self )
       
       # Add the patch to the surface. Calling method should be calling
       # Surface.update after this to refresh the mesh.
@@ -372,6 +337,34 @@ module TT::Plugins::BezierSurfaceTools
       # (?) Merge edges that match 100%?
       
       new_patch
+    end
+
+    protected
+
+    # Swaps one vertex reference with another.
+    # 
+    # @return [BezierVertex]
+    # @since 1.0.0
+    def set_vertex!( old_vertex, new_vertex )
+      # (?) protected
+      unless old_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{old_vertex.class.name})"
+      end
+      unless new_vertex.is_a?( BezierVertex )
+        raise ArgumentError, "Not a BezierVertex (#{new_vertex.class.name})"
+      end
+      unless old_vertex.links_to?( self )
+        raise ArgumentError, "Vertex not connected to edge. (#{old_vertex})"
+      end
+      # Transfer links from old vertex to new
+      if @control_points[0] == old_vertex
+        @control_points[0] = new_vertex
+      elsif @control_points[3] == old_vertex
+        @control_points[3] = new_vertex
+      else
+        raise ArgumentError, "Unexpected Error! (#{old_vertex})"
+      end
+      new_vertex
     end
 
   end # class BezierEdge

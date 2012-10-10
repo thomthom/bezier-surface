@@ -91,15 +91,26 @@ module TT::Plugins::BezierSurfaceTools
       @valid = false
       nil
     end
+
+    # @return [Array<BezierEntity>]
+    # @since 1.0.0
+    def linked
+      fail_if_invalid()
+      @links.values.flatten
+    end
     
     # Assosiates an entity with the current BezierEntity. Use to keep track of
     # entities related to each other.
     #
+    # The `is_back_reference`argument is for internal usage when this method
+    # ensures a mutual link.
+    #
     # @param [BezierEntity] entity
+    # @param [Boolean] is_back_reference Flag indicating it's a backreference.
     #
     # @return [Boolean]
     # @since 1.0.0
-    def link( entity, back_reference = false )
+    def link( entity, is_back_reference = false )
       fail_if_invalid()
       
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
@@ -110,10 +121,10 @@ module TT::Plugins::BezierSurfaceTools
       @links[ type ] ||= []
       collection = @links[ type ]
       # Ensure backreference.
-      entity.link( self, true ) unless back_reference
+      entity.link( self, true ) unless is_back_reference
       # Ensure there's only one entry for each entity.
       # (?) Should the Set class be used? Or does it not give enough performance
-      # gain for small arrays?
+      #     gain for small arrays?
       if collection.include?( entity )
         return false
       else

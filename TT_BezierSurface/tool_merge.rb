@@ -164,14 +164,7 @@ module TT::Plugins::BezierSurfaceTools
       # Merge edge
       target_patch = target_edge.patches.first
       source_patch = source_edge.patches.first
-      source_patch.set_edge( source_edge, target_edge )
-      target_edge.link( source_patch )
-      # Cleanup
-      source_handles = source_edge.handles
-      source_edge.invalidate!
-      for handle in source_handles
-        handle.invalidate!
-      end
+      source_patch.replace_edge( source_edge, target_edge )
       # Update mesh
       @surface.update
       @editor.model.commit_operation

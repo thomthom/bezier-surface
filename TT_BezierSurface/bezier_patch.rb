@@ -82,91 +82,61 @@ module TT::Plugins::BezierSurfaceTools
     # def draw_internal_grid( points )
     # def self.restore( surface, edgeuses, interior_points, reversed )
     
-    # Replace an edge object with another.
+    # Replace an edge in the patch with another edge. The old edge is deleted.
+    #
+    # @note The vertices in the two edges needs to be at the same positions.
     #
     # @param [BezierEdge] old_edge
     # @param [BezierEdge] new_edge
     #
     # @return [BezierEdge]
     # @since 1.0.0
-    def set_edge( old_edge, new_edge )
+    def replace_edge( old_edge, new_edge )
       fail_if_invalid()
-      # Ensure the old edge belongs to this patch.
-      unless old_edge.links_to?( self )
-        raise ArgumentError, 'Edge not related to Patch.'
+      unless old_edge.is_a?( BezierEdge )
+        raise ArgumentError, "Not a BezierEdge (#{old_edge.class.name})"
       end
-      
-      #TT.debug( ' ' )
-      #TT.debug( 'BezierPatch.set_edge' )
-      #TT.debug "Old: #{old_edge}"
-      #TT.debug "New: #{new_edge}"
-      
+      unless new_edge.is_a?( BezierEdge )
+        raise ArgumentError, "Not a BezierEdge (#{new_edge.class.name})"
+      end
+      unless old_edge.links_to?( self )
+        raise ArgumentError, "Edge not connected to Patch. (#{old_edge})"
+      end
+      # Update the EdgeUse instance to point to the new edge.
       edgeuse = get_edgeuse( old_edge )
       edgeuse.edge = new_edge
-      
-      # Associate the new edge with this patch.
-      #for point in new_edge.control_points
-      #  point.link( self )
-      #end
-      
-      # (?) Required?
-      # Remove association between the old edge and the control points.
-      for point in old_edge.control_points
-        point.unlink( old_edge )
-        #point.link( new_edge )
-      end
-      
-      # (!) Hack - Find a method that works even if the points are not at
-      # the same location. Or require points to be the same?
-      #TT.debug( 'BezierPatch.set_edge' )
-      #TT.debug( "  > #{old_edge.start == new_edge.start}" )
-      #TT.debug( "  > #{old_edge.start == new_edge.end}" )
+      # Check if the orientation of the two edges are the same - if they are not
+      # the EdgeUse instance needs to update to reflect this.
+      #
+      # (?) Hack - Find a method that works even if the points are not at
+      #     the same location. Or require points to be the same?
       if old_edge.start.position == new_edge.end.position
-        #TT.debug( '  > Reversed!' )
         edgeuse.reversed = !edgeuse.reversed?
-        
         new_start = new_edge.end
-        new_end = new_edge.start
-      else
+        new_end   = new_edge.start
+      elsif old_edge.start.position == new_edge.start.position
         new_start = new_edge.start
-        new_end = new_edge.end
+        new_end   = new_edge.end
+      else
+        raise ArgumentError, "New edge vertices doesn't match old edge"
       end
-
-      #TT.debug( "> New Start: #{new_start}" )
-      #TT.debug( "> New End: #{new_end}" )
-      
-      # (!) Update control points of connected edges.
-      # Update the vertices of self with the vertices of the new edge.
-      
-      old_start = old_edge.start
-      #TT.debug( "> Old Start: #{old_start}" )
-      for edge in old_start.edges
-        next if edge == old_edge
-        if edge.start == old_start
-          edge.start = new_start
-        else 
-          edge.end = new_start
-        end
-      end
-      
-      old_end = old_edge.end
-      #TT.debug( "> Old End: #{old_end}" )
-      for edge in old_end.edges
-        next if edge == old_edge
-        if edge.end == old_end
-          edge.end = new_end
-        else 
-          edge.start = new_end
-        end
-      end
-      
-      #TT.debug( "> Relink" )
+      # Replace the edge vertices.
+      new_edge.replace_vertex( new_start, old_edge.start )
+      new_edge.replace_vertex( new_end,   old_edge.end )
+      # Relink new entities. (Handles needs linking to new edge.)
       new_edge.link( self )
       for point in new_edge.control_points
         point.link( self )
       end
-      
-      #TT.debug( "> Return" )
+      # Clean up old entities
+      #
+      # Handles needs to be invalidated as otherwise the vertices of the new
+      # edge will still refer to the handles of the old one.
+      for handle in old_edge.handles
+        handle.invalidate!
+      end
+      old_edge.invalidate!
+      # Return the merged edge.
       new_edge
     end
     
