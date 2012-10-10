@@ -52,6 +52,10 @@ module TT::Plugins::BezierSurfaceTools
       @links[ BezierPatch ].dup
     end
     
+    # Sets a new position for the controlpoint.
+    #
+    # (?) alias position= ?
+    #
     # @return [Geom::Point3d]
     # @since 1.0.0
     def set( *args )
@@ -189,6 +193,13 @@ module TT::Plugins::BezierSurfaceTools
     def vector
       fail_if_invalid()
       vertex.position.vector_to( @position )
+    end
+
+    # @return [Geom::Vector3d]
+    # @since 1.0.0
+    def vector=( new_vector )
+      fail_if_invalid()
+      position = vertex.position.offset( new_vector )
     end
   
   end # class BezierHandle
