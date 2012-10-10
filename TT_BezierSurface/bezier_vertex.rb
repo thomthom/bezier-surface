@@ -129,6 +129,22 @@ module TT::Plugins::BezierSurfaceTools
       end
       cpoints
     end
+
+    # @return [Boolean]
+    # @since 1.0.0
+    def move!( arg )
+      fail_if_invalid()
+      if arg.is_a?( Geom::Vector3d )
+        vector = arg
+      elsif arg.is_a?( Geom::Point3d )
+        vector = position.vector_to( arg )
+      else
+        raise ArgumentError, "Argument must be a point or vector. (#{arg.class.name})"
+      end
+      for control_point in linked_control_points
+        control_point.position = control_point.position.offset( vector )
+      end
+    end
   
   end # class BezierInteriorPoint
   

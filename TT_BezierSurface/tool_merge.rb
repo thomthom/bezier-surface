@@ -150,22 +150,26 @@ module TT::Plugins::BezierSurfaceTools
 
     def merge_edges( source_edge, target_edge )
       @editor.model.start_operation( 'Merge Edges', true )
-      # Find nearest start vertex
+      # Find nearest start vertex.
       target_start = target_edge.start.position
       source_start = source_edge.vertices.sort { |a,b|
         d1 = a.position.distance( target_start )
         d2 = b.position.distance( target_start )
         d1 <=> d2
       }.first.position
-      # Set new positions
+      # Sort new positions to match target edge orientation.
       new_points = target_edge.positions
       new_points.reverse! if source_start != source_edge.start
+      # Initial rough move - moves all related control points.
+      source_edge.start.move!( new_points[0] )
+      source_edge.end.move!( new_points[3] )
+      # Set new precise positions - makes the source edge match 100% the target.
       source_edge.control_points = new_points
-      # Merge edge
+      # Merge edge.
       target_patch = target_edge.patches.first
       source_patch = source_edge.patches.first
       source_patch.replace_edge( source_edge, target_edge )
-      # Update mesh
+      # Update mesh.
       @surface.update
       @editor.model.commit_operation
       @editor.refresh_viewport
