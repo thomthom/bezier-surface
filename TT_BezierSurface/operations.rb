@@ -148,6 +148,47 @@ module TT::Plugins::BezierSurfaceTools
       model.selection.clear
       true
     end
+
+
+    # @return [Boolean]
+    # @since 1.0.0
+    def self.convert_selected_to_quadmesh
+      model = Sketchup.active_model
+      # Find Bezier Surfaces in selection
+      surfaces = model.selection.select { |entity|
+        BezierSurface.is?( entity )
+      }
+      return false if surfaces.empty?
+      # Convert all surfaces into normal groups/components.
+      model.start_operation( 'Convert to Quadmesh', true )
+      for instance in surfaces
+        # Fetch definition and make sure to make the selected instance unique.
+        d = TT::Instance.definition( instance )
+        if d.count_instances > 1
+          instance = instance.make_unique
+          d = TT::Instance.definition( instance )
+        end
+        # Load Bezier Surface data and convert into a quadmesh.
+        surface = BezierSurface.load( instance )
+        next if surface.nil? # (?) Flag error?
+        entities = d.entities
+        entities.clear!
+        surface.to_quadmesh( entities, true )
+        surface = nil
+        # Remove "Bezier Surface" from the instance name so it provides a
+        # better visual clue that it's no longer a Bezier Surface.
+        instance.name = instance.name.gsub( MESH_NAME, 'Editable Quadmesh' )
+        d.name = d.name.gsub( MESH_NAME, 'Editable Quadmesh' )
+        # Remove attributes
+        if d.attribute_dictionaries
+          d.attribute_dictionaries.delete( ATTR_ID )
+        end
+      end
+      model.commit_operation
+      # Clear the selection so there is some kind of user feedback of an event.
+      model.selection.clear
+      true
+    end
     
     
     # @return [Boolean]

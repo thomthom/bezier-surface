@@ -161,6 +161,7 @@ module TT::Plugins::BezierSurfaceTools
         menu.add_separator
         
         menu.add_item( Commands.convert_to_mesh )
+        menu.add_item( Commands.convert_to_quadmesh )
         
         menu.add_separator
         

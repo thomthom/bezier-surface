@@ -463,6 +463,34 @@ module TT::Plugins::BezierSurfaceTools
       end # y
       mesh
     end
+
+    # @return [Nil]
+    # @since 1.0.0
+    def to_quadmesh( entities, force_triangulation = false )
+      fail_if_invalid()
+      transformation = Geom::Transformation.new
+      pts = mesh_points( parent.subdivs, transformation )
+      for y in (0...pts.height-1)
+        for x in (0...pts.width-1)
+          # Get point for current quad.
+          row = y * pts.width
+          indexes = [ x+row, x+1+row, x+pts.width+1+row, x+pts.width+row ]
+          points = indexes.map { |i| pts[i] }
+          # Generate quad.
+          if TT::Geom3d.planar_points?( points ) && !force_triangulation
+            entities.add_face( points )
+          else
+            f1 = entities.add_face( points[0], points[1], points[2] )
+            f2 = entities.add_face( points[0], points[2], points[3] )
+            edge = ( f1.edges & f2.edges ).first
+            edge.soft          = true
+            edge.smooth        = true
+            edge.casts_shadows = false
+          end
+        end
+      end
+      nil
+    end
     
     private
     

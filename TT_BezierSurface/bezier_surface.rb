@@ -886,6 +886,16 @@ module TT::Plugins::BezierSurfaceTools
       end
       true
     end
+
+    # @return [Nil]
+    # @since 1.0.0
+    def to_quadmesh( entities, force_triangulation = false )
+      definition = TT::Instance.definition( @instance )
+      for patch in @patches
+        patch.to_quadmesh( entities, force_triangulation )
+      end
+      nil
+    end
     
     # @return [String]
     # @since 1.0.0

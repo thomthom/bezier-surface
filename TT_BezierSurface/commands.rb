@@ -57,6 +57,20 @@ module TT::Plugins::BezierSurfaceTools
       end
       @convert_to_mesh
     end
+
+    # @return [UI::Command]
+    # @since 1.0.0
+    def self.convert_to_quadmesh
+      unless @convert_to_quadmesh
+        cmd = UI::Command.new( 'Convert to Editable Quadmesh' ) {
+          Operations.convert_selected_to_quadmesh
+        }
+        cmd.status_bar_text = 'Convert selected Surface to editable quadmesh.'
+        cmd.tooltip = 'Convert selected Surface to editable quadmesh'
+        @convert_to_quadmesh = cmd
+      end
+      @convert_to_quadmesh
+    end
     
     # @return [UI::Command]
     # @since 1.0.0
