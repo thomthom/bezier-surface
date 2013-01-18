@@ -10,9 +10,11 @@ module TT::Plugins::BezierSurfaceTools
   
   # Manages the editing environment for bezier patches.
   #
-  # The cless is a Tool class, used as the root for the editing tools. This
+  # The class is a Tool class, used as the root for the editing tools. This
   # class must be activated first - then the sub-tools are pushed into the
   # stack.
+  #
+  # Keep this class to managing the editing environment and general UI.
   #
   # @since 1.0.0
   class BezierSurfaceEditor    
@@ -300,6 +302,35 @@ module TT::Plugins::BezierSurfaceTools
       else
         false
       end
+    end
+
+    # Updates the current selection with the given entities based on the flags
+    # from the mouse event.
+    #
+    # @param [Array<BezierEntity>] entities
+    # @param [Integer] flags Key flags from mouse events.
+    #
+    # @return [Selection]
+    # @since 1.0.0
+    def update_selection( entities, key_flags )
+      # Get key modifier controlling how the selection should be modified.
+      # Using standard SketchUp selection modifier keys.
+      key_ctrl  = key_flags & COPY_MODIFIER_MASK      == COPY_MODIFIER_MASK
+      key_shift = key_flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
+      
+      # Update selection.
+      if key_ctrl && key_shift
+        @selection.remove( entities )
+      elsif key_ctrl
+        @selection.add( entities )
+      elsif key_shift
+        @selection.toggle( entities )
+      else
+        @selection.clear
+        @selection.add( entities )
+      end
+      
+      @selection
     end
     
     # Checks if the current model context is a bezier surface.

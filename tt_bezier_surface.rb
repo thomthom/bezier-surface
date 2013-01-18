@@ -62,7 +62,7 @@ module TT::Plugins::BezierSurfaceTools
   
   VERTEX_SIZE = 8
   
-  MESH_GRID_LINE_WIDTH    = 2
+  MESH_GRID_LINE_WIDTH    = 1
   CTRL_GRID_LINE_WIDTH    = 3
   CTRL_GRID_BORDER_WIDTH  = 3
   
@@ -87,11 +87,14 @@ module TT::Plugins::BezierSurfaceTools
   
   ### MODULES ### --------------------------------------------------------------
   # Ensure abstract classes are loaded and found when needed.
-  autoload( :Observable,   File.join( PATH, 'observable.rb' ) )
-  autoload( :BezierEntity, File.join( PATH, 'bezier_entity.rb' ) )
-  autoload( :BezierPatch,  File.join( PATH, 'bezier_patch.rb' ) )
+  autoload( :Observable,      File.join( PATH, 'observable.rb' ) )
+  autoload( :BezierEntity,    File.join( PATH, 'bezier_entity.rb' ) )
+  autoload( :BezierPatch,     File.join( PATH, 'bezier_patch.rb' ) )
+  autoload( :Operator,        File.join( PATH, 'operator.rb' ) )
+  autoload( :OperatorManager, File.join( PATH, 'operator_manager.rb' ) )
   # Load all ruby files.
   Dir.glob( File.join( PATH, '*.{rb,rbs}' ) ).each { |file|
+    # (!) Strip extension and use Sketchup::require for production.
     require( file )
   }
   

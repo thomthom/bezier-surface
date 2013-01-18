@@ -111,8 +111,7 @@ module TT::Plugins::BezierSurfaceTools
       # (!) Pick separate entities.
       # * Pick mouse snapping entity
       # * Pick mouse-select entity - used when the selection is empty.
-      @mouse_over_vertex = @surface.pick_control_points_ex( x, y, view )
-      @mouse_over_vertex = false if @mouse_over_vertex.empty?
+      @mouse_over_vertex = @surface.pick_editable_point( x, y, view )
       if @mouse_over_vertex
         tr = view.model.edit_transform
         pt = @mouse_over_vertex[0].position.transform( tr )

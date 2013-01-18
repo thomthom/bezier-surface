@@ -473,14 +473,36 @@ module TT::Plugins::BezierSurfaceTools
       end
       picked.uniq
     end
-    
+
     # @param [Integer] x
     # @param [Integer] y
     # @param [Sketchup::View] view
     #
-    # @return [Array<BezierVertex,BezierInteriorPoint>]
+    # @return [Array<Geom::Point3d>]
     # @since 1.0.0
-    def pick_control_points_ex( x, y, view )
+    def pick_control_point( x, y, view )
+      for patch in @patches
+        points = patch.pick_control_points( x, y, view )
+        return points[0] if points
+      end
+      nil
+    end
+    
+    # In contrast to #pick_control_points() which test any of the control
+    # points in the surface, this method test only vertices and manual
+    # interior points. Handle grips and automatic interior points are ignored.
+    #
+    # @note Currently returns an array - might be multiple points returned if
+    #   they occupy similar screen co-ordinates. This should perhaps return only
+    #   one point.
+    #
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [Array<BezierVertex,BezierInteriorPoint>,Nil]
+    # @since 1.0.0
+    def pick_editable_points( x, y, view )
       tr = view.model.edit_transform
       ph = view.pick_helper
       ph.init( x, y, VERTEX_SIZE )
@@ -492,6 +514,25 @@ module TT::Plugins::BezierSurfaceTools
         picked << point if ph.test_point( point.position.transform( tr ) )
       end
       picked.uniq
+    end
+
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
+    # @return [BezierVertex,BezierInteriorPoint,Nil]
+    # @since 1.0.0
+    def pick_editable_point( x, y, view )
+      tr = view.model.edit_transform
+      ph = view.pick_helper
+      ph.init( x, y, VERTEX_SIZE )
+      for vertex in vertices
+        return vertex if ph.test_point( vertex.position.transform( tr ) )
+      end
+      for point in manual_interior_points
+        return point if ph.test_point( point.position.transform( tr ) )
+      end
+      nil
     end
 
     # @param [Integer] x
