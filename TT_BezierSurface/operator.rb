@@ -41,8 +41,23 @@ module TT::Plugins::BezierSurfaceTools
 
     # @since 1.0.0
     def resume( view )
-      #@editor.refresh_viewport # (!) This appear to slow things down.
-      view.invalidate
+      @editor.refresh_viewport
+      # (!) view.invalidate doesn't refresh the viewport fast enough, so it
+      #     appear to be quite laggy. Forcing with refresh makes it appear
+      #     smoother, but Editor.update_viewport_cache needs to be improved.
+      #
+      #     It may possibly be smarter way to cache this stuff. Like not
+      #     regenerating the edge and patch data used to draw the Edges and
+      #     Patches.
+      #
+      #     Vertices, Handles and Gizmo and the like needs to be regenerated as
+      #     they are a type of UI elements that appear 2D but drawn in 3D space
+      #     so they need to be recalculated on each viewportchange regardless.
+      #
+      #     When the Bezier is moved to C it might provide enough performance
+      #     increase - at least initially. If the calculation load is less it
+      #      -might- be enough to revert to use #invalidate.
+      view.refresh
       false
     end
 
