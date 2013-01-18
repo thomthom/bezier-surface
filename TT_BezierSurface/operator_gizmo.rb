@@ -36,6 +36,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def onLButtonDown( flags, x, y, view )
       super
+      return false if @editor.selection.empty?
       if @gizmo.onLButtonDown( flags, x, y, view )
         view.invalidate
         true
@@ -47,6 +48,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def onLButtonUp( flags, x, y, view )
       super
+      return false if @editor.selection.empty?
       if @gizmo.onLButtonUp( flags, x, y, view )
         view.invalidate
         true
@@ -64,6 +66,7 @@ module TT::Plugins::BezierSurfaceTools
       #     http://forums.sketchucation.com/viewtopic.php?f=180&t=37624
       #
       # (i) View.refresh require SketchUp 7.1+
+      return false if @editor.selection.empty?
       if @gizmo.onMouseMove( flags, x, y, view )
         view.tooltip = @gizmo.tooltip
         view.refresh
@@ -89,7 +92,7 @@ module TT::Plugins::BezierSurfaceTools
       yaxis = Y_AXIS.transform( tr )
       zaxis = Z_AXIS.transform( tr )
       
-      @gizmo = TT::Gizmo::Manipulator.new( @editor, ORIGIN, xaxis, yaxis, zaxis )
+      @gizmo = TT::Gizmo::Manipulator.new( ORIGIN, xaxis, yaxis, zaxis )
       update_gizmo()
       
       @gizmo.on_transform_start { |action_name|
