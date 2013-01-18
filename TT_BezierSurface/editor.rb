@@ -453,6 +453,7 @@ module TT::Plugins::BezierSurfaceTools
           'Selection',
           'Custom'
         ] )
+        list.value = 'Local'
         list.add_event_handler( :change ) { |control, value|
           Console.log "Axis: #{value}"
           TT::SketchUp.activate_main_window
