@@ -77,6 +77,20 @@ module TT::Plugins::BezierSurfaceTools
     def onKeyUp( key, repeat, flags, view )
       @key_ctrl  = false if key == COPY_MODIFIER_KEY
       @key_shift = false if key == CONSTRAIN_MODIFIER_KEY
+      # Detect Delete key - VK_DELETE
+      # (i) VK_DELETE does not trigger onKeyDown under Windows. Therefor the
+      #     key must be detected on key up. This deviate from SketchUp's native
+      #     behaviour.
+      #
+      #   * When only Delete is pressed, it triggers only onKeyUp.
+      #   * When Shift+Delete is pressed, it only onKeyUp.
+      #   * When Ctrl+Delete is pressed, it triggers both onKeyDown and onKeyUp.
+      #   * When Alt+Delete is pressed, it triggers both onKeyDown and onKeyUp.
+      if key == VK_DELETE && !@editor.selection.empty?
+        view.model.start_operation( 'Erase' )
+        @surface.erase_entities( @editor.selection )
+        view.model.commit_operation
+      end
       false
     end
 
