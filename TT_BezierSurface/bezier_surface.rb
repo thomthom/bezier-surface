@@ -539,6 +539,23 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Integer] y
     # @param [Sketchup::View] view
     #
+    # @return [BezierVertex,BezierInteriorPoint,Nil]
+    # @since 1.0.0
+    def pick_handle_grips( x, y, view )
+      tr = view.model.edit_transform
+      ph = view.pick_helper
+      ph.init( x, y, VERTEX_SIZE )
+      picked = []
+      for handle in handles
+        picked << handle if ph.test_point( handle.position.transform( tr ) )
+      end
+      picked
+    end
+
+    # @param [Integer] x
+    # @param [Integer] y
+    # @param [Sketchup::View] view
+    #
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def pick_handles( x, y, view )
@@ -546,7 +563,7 @@ module TT::Plugins::BezierSurfaceTools
       ph = view.pick_helper
       ph.init( x, y, VERTEX_SIZE )
       picked = []
-      for handle in handles.uniq
+      for handle in handles.uniq # (?)
         segment = [
           handle.position.transform( tr ),
           handle.vertex.position.transform( tr ),
@@ -873,10 +890,12 @@ module TT::Plugins::BezierSurfaceTools
     # @param [Sketchup::Color] color
     # @param [Numeric] size
     # @param [Numeric] line_width
+    # @param [Boolean] filled
     #
     # @return [Boolean]
     # @since 1.0.0
-    def draw_circles( view, points, color, size = VERTEX_SIZE, line_width = 2 )
+    def draw_circles( view, points, color, size = VERTEX_SIZE,
+                      line_width = 2, filled = false )
       return false if points.empty?
       
       # private?
@@ -889,7 +908,11 @@ module TT::Plugins::BezierSurfaceTools
       for point in points
         screen_size = view.pixels_to_model( radius, point )
         circle_points = TT::Geom3d.circle( point, vector, screen_size, 8 )
-        view.draw( GL_LINE_LOOP, circle_points )
+        if filled
+          view.draw( GL_POLYGON, circle_points )
+        else
+          view.draw( GL_LINE_LOOP, circle_points )
+        end
       end
       true
     end

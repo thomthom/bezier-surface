@@ -58,16 +58,20 @@ module TT::Plugins::BezierSurfaceTools
   PATH_UI    = File.join( PATH, 'UI' ).freeze
   PATH_ICONS = File.join( PATH_UI, 'Icons' ).freeze
   
+  # Inference
+  LINEAR_SNAP_THRESHOLD = 6  # Pixels
+  RADIAL_SNAP_THRESHOLD = 12 # Pixels
+  INFERENCE_WIDTH = 1 # Pixels
+  INFERENCE_STYLE = '.'
+
   # UI Constants
+  VERTEX_SIZE = 8 # Pixels
   
-  VERTEX_SIZE = 8
-  
-  MESH_GRID_LINE_WIDTH    = 1
-  CTRL_GRID_LINE_WIDTH    = 3
-  CTRL_GRID_BORDER_WIDTH  = 3
+  MESH_GRID_LINE_WIDTH    = 1 # Pixels
+  CTRL_GRID_LINE_WIDTH    = 3 # Pixels
+  CTRL_GRID_BORDER_WIDTH  = 3 # Pixels
   
   # Colours
-  
   CLR_VERTEX        = Sketchup::Color.new( 255,   0,   0 )
   CLR_HANDLE_POINT  = Sketchup::Color.new(   0, 128,   0 )
   CLR_HANDLE_ARM    = Sketchup::Color.new(   0, 192,   0 )

@@ -20,6 +20,7 @@ module TT::Plugins::BezierSurfaceTools
 
       add_operator( GizmoOperator.new( editor ) )
       add_operator( PickSelectOperator.new( editor ) )
+      add_operator( HandleGripOperator.new( editor ) )
       add_operator( HandleOperator.new( editor ) )
       add_operator( RectangleSelectOperator.new( editor ) )
     end
