@@ -186,7 +186,13 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def linked_handles
       fail_if_invalid()
-      @links[ BezierVertex ].handles.select { |handle| handle.linked? }
+      handles = @links[ BezierVertex ].map { |vertex|
+        vertex.handles.select { |handle| handle.linked? }
+      }
+      handles.flatten!
+      handles.uniq!
+      handles.delete( self )
+      handles
     end
 
     # @return [BezierVertex]
