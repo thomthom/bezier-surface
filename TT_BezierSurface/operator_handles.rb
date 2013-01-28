@@ -16,6 +16,7 @@ module TT::Plugins::BezierSurfaceTools
       super
       @cursor = TT::Cursor.get_id( :scale_n_ne )
       @mouse_start = Geom::Point3d.new( 0, 0, 0 )
+      @cache = [] # Key: Handle - Value: Length
     end
 
     # @since 1.0.0
@@ -28,6 +29,26 @@ module TT::Plugins::BezierSurfaceTools
         # the nearest point on the handle.
         @mouse_start = project_to_handle( handle, x, y, view )
         @handle_vector = handle.vector
+      end
+      false
+    end
+
+    # @since 1.0.0
+    def onKeyDown( key, repeat, flags, view )
+      super
+      if @active && @scale
+        scale_linked_handles( @scale )
+        @surface.preview
+      end
+      false
+    end
+
+    # @since 1.0.0
+    def onKeyUp( key, repeat, flags, view )
+      super
+      if @active && @scale
+        scale_linked_handles( 1.0 )
+        @surface.preview
       end
       false
     end
@@ -60,6 +81,7 @@ module TT::Plugins::BezierSurfaceTools
           @active = true
           @editor.model.start_operation( 'Scale Handle' )
           @surface.preview
+          @cache = cache_handles( @entity_under_mouse )
         end
 
         tr = view.model.edit_transform
@@ -76,12 +98,18 @@ module TT::Plugins::BezierSurfaceTools
         local_vector = vector.transform( tr.inverse )
         new_vector = @handle_vector + local_vector
         # Calculate the scaling ratio and update the handle
-        scale = vertex_to_mouse_point.length / vertex_to_mouse_start.length
+        @scale = vertex_to_mouse_point.length / vertex_to_mouse_start.length
         handle.length = new_vector.length
+        # Scale the linked handles.
+        if @key_ctrl
+          scale_linked_handles( @scale )
+        end
         # DEBUG: Output information on the scaling operation.
         # (!) Implement VCB support.
         world_handle = handle.vector.transform( tr )
-        view.tooltip = "Scale: #{scale}\nDistance: #{vector.length}\nLength: #{world_handle.length}"
+        view.tooltip = "Scale: #{@scale}\nDistance: #{vector.length}\nLength: #{world_handle.length}"
+        Sketchup.vcb_label = 'Scale'
+        Sketchup.vcb_value = sprintf( '%.2f', @scale ) # (!) Use model settings!
         # Update mesh and viewport.
         @surface.preview
         view.refresh
@@ -109,6 +137,20 @@ module TT::Plugins::BezierSurfaceTools
     end
 
     private
+
+    def cache_handles( handle )
+      cache = {}
+      for h in handle.linked_handles
+        cache[h] = h.vector.length
+      end
+      cache
+    end
+
+    def scale_linked_handles( scale )
+      for handle, length in @cache
+        handle.length = length * scale
+      end
+    end
 
     # Returns a cursor resource ID based on a given BezierHandle entity
     #
