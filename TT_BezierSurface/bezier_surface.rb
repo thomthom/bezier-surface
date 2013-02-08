@@ -424,15 +424,26 @@ module TT::Plugins::BezierSurfaceTools
       for control_point in entities
         control_point.position.transform!( local_transform )
       end
-      # Recalculate the automatic internal control points.
-      refresh_automatic_patches()
-      # Compute new 3D points in mesh.
-      etr = @instance.model.edit_transform
-      subdivisions = final_subdivs()
-      positions = mesh_points( subdivisions, etr )
-      # Update SketchUp mesh.
-      set_vertex_positions( @vertex_cache, positions )
-      trigger_observer( :onContentModified, self )
+      update_after_transformation()
+      true
+    end
+
+    # @note Vectors should be local to the surface.
+    #
+    # @param [Array<BezierEntity>] entities Just BezierControlPoints.
+    # @param [Array<Geom::Vector3d>] vectors
+    #
+    # @return [Boolean]
+    # @since 1.0.0
+    def transform_by_vectors( entities, vectors )
+      if @vertex_cache.empty?
+        raise 'No verticed cached!'
+      end
+      return false if entities.empty?
+      for index in 0...entities.length
+        entities[index].position.offset!( vectors[index] )
+      end
+      update_after_transformation()
       true
     end
     
@@ -998,6 +1009,21 @@ module TT::Plugins::BezierSurfaceTools
       local_transform = (et.inverse * transformation) * et
     end
     
+    # @return [Nil]
+    # @since 1.0.0
+    def update_after_transformation
+      # Recalculate the automatic internal control points.
+      refresh_automatic_patches()
+      # Compute new 3D points in mesh.
+      etr = @instance.model.edit_transform
+      subdivisions = final_subdivs()
+      positions = mesh_points( subdivisions, etr )
+      # Update SketchUp mesh.
+      set_vertex_positions( @vertex_cache, positions )
+      trigger_observer( :onContentModified, self )
+      nil
+    end
+
     # Updates all the patches with automatic interior points. Call whenever
     # a patch's bordering control points have changed.
     #
