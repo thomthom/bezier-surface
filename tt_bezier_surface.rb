@@ -70,6 +70,11 @@ module TT::Plugins::BezierSurfaceTools
   MESH_GRID_LINE_WIDTH    = 1 # Pixels
   CTRL_GRID_LINE_WIDTH    = 3 # Pixels
   CTRL_GRID_BORDER_WIDTH  = 3 # Pixels
+
+  # Tool.cancel Reason Codes
+  CANCEL_ESC        = 0
+  CANCEL_REACTIVATE = 1
+  CANCEL_UNDO       = 2
   
   # Colours
   CLR_VERTEX        = Sketchup::Color.new( 255,   0,   0 )
