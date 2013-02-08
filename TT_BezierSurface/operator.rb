@@ -96,7 +96,7 @@ module TT::Plugins::BezierSurfaceTools
 
     # @since 1.0.0
     def onLButtonDown( flags, x, y, view )
-      @left_mouse_down = false
+      @left_mouse_drag = false
       @left_mouse_down = Geom::Point3d.new( x, y, 0 )
       false
     end
@@ -115,6 +115,36 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def left_mouse_drag?
       @left_mouse_drag == true
+    end
+
+    # @param [Integer] flags Mouse event flags
+    #
+    # Windows: Ctrl Key
+    #     OSX: Alt Key
+    #
+    # @since 1.0.0
+    def is_ctrl_modifier?( flags )
+      flags & COPY_MODIFIER_MASK == COPY_MODIFIER_MASK
+    end
+
+    # @param [Integer] flags Mouse event flags
+    #
+    # Windows: Alt Key
+    #     OSX: Command Key
+    #
+    # @since 1.0.0
+    def is_alt_modifier?( flags )
+      flags & ALT_MODIFIER_MASK == ALT_MODIFIER_MASK
+    end
+
+    # @param [Integer] flags Mouse event flags
+    #
+    # Windows: Shift Key
+    #     OSX: Shift Key
+    #
+    # @since 1.0.0
+    def is_constrain?( flags )
+      flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
     end
 
   end # class
