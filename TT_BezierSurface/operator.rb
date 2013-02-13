@@ -35,7 +35,7 @@ module TT::Plugins::BezierSurfaceTools
 
     # @since 1.0.0
     def deactivate( view )
-      view.invalidate
+      view.invalidate # (!) Move to OperatorManager
       false
     end
 

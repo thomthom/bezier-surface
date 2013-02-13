@@ -15,6 +15,9 @@ module TT::Plugins::BezierSurfaceTools
     def initialize( *args )
       super
 
+      @axes = [ X_AXIS, Y_AXIS, Z_AXIS ]
+      @axis_lock = nil
+
       @cache = nil
       @vector = nil
       @length = nil
@@ -23,7 +26,11 @@ module TT::Plugins::BezierSurfaceTools
       @ip_mouse = Sketchup::InputPoint.new   
       @entity_under_mouse = nil
 
+      @copy = false
+      @copy_cache = []
+
       @cursor         = TT::Cursor.get_id( :move )
+      @cursor_copy    = TT::Cursor.get_id( :move_copy )
       @cursor_vertex  = TT::Cursor.get_id( :vertex )
     end
     
@@ -34,15 +41,28 @@ module TT::Plugins::BezierSurfaceTools
     
     # @since 1.0.0
     def activate
+      Sketchup.active_model.active_view.lock_inference # Move to OperatorManager
       update_ui()
+    end
+
+    def deactivate( view )
+      if @ip_start.valid?
+        puts '> Deactivate Commit'
+        update_geometry()
+        view.model.commit_operation
+      end
+      super
     end
 
     # @since 1.0.0
     def onUserText( text, view )
       @length = text.to_l
       if @cache && @vector
-        tr = Geom::Transformation.new( translation_vector() )
-        @cache.transform_entities( tr )
+        unless @ip_start.valid?
+          view.model.start_operation( 'Move', true, false, true )
+        end
+        update_geometry()
+        view.model.commit_operation
         reset()
       end
     rescue
@@ -91,7 +111,7 @@ module TT::Plugins::BezierSurfaceTools
           @ip_mouse.pick( view, x, y )
         end
       end
-      view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
+      #view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
 
       # Move the entities.
       mouse_down = flags & MK_LBUTTON == MK_LBUTTON
@@ -100,11 +120,16 @@ module TT::Plugins::BezierSurfaceTools
         @vector = @ip_start.position.vector_to( @ip_mouse.position )
         @length = @vector.length
       end
-      view.tooltip = "mouse_down: #{mouse_down}\nis_moving: #{is_moving}\nvector: #{@vector.inspect}\ncache: #{@cache.inspect}"
+      #view.tooltip = "mouse_down: #{mouse_down}\nis_moving: #{is_moving}\nvector: #{@vector.inspect}\ncache: #{@cache.inspect}"
       if @cache && @vector && ( mouse_down || is_moving )
-        tr = Geom::Transformation.new( translation_vector() )
-        @cache.transform_entities( tr, true )
+        if @copy
+          # (!)  Draw copy cache
+        else
+          update_geometry( true )
+        end
       end
+
+      view.tooltip = "Axis Lock: #{@axis_lock.inspect}\nMouse: #{@ip_mouse.valid?} #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.valid?} #{@ip_start.degrees_of_freedom}\nInference Locked: #{view.inference_locked?}"
 
       update_ui()
       #view.invalidate
@@ -138,9 +163,7 @@ module TT::Plugins::BezierSurfaceTools
       if @vector
         # Click + Move + Click
         # Mousedown + Move + Mouseup
-        vector = translation_vector()
-        tr = Geom::Transformation.new( translation_vector() )
-        @cache.transform_entities( tr )
+        update_geometry()
         view.model.commit_operation
         reset()
       end
@@ -152,13 +175,27 @@ module TT::Plugins::BezierSurfaceTools
     def onKeyDown( key, repeat, flags, view )
       #puts "MoveOperator.onKeyDown()"
       super
-      if @key_shift
-        if @ip_mouse.valid? && @ip_start.valid?
-          view.lock_inference( @ip_mouse, @ip_start )
+      # Copy toggle.
+      if @key_ctrl
+        @copy = !@copy
+        cache_geometry() if @copy
+        if @cache && @vector && @ip_mouse.valid? && @ip_start.valid?
+          update_geometry( true )
         end
         view.invalidate
       end
-      view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
+      # Inference locking.
+      if @key_shift
+        if @ip_mouse.valid? && @ip_start.valid?
+          view.lock_inference( @ip_mouse, @ip_start )
+          @axis_lock = nil
+        end
+        view.invalidate
+      end
+      #view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
+      # Axis locking.
+      ip = ( @ip_start.valid? ) ? @ip_start : @ip_mouse
+      lock_axis( key, ip, view )
       false
     end
     
@@ -166,9 +203,9 @@ module TT::Plugins::BezierSurfaceTools
     def onKeyUp( key, repeat, flags, view )
       #puts "MoveOperator.onKeyUp()"
       super
-      view.lock_inference
+      view.lock_inference unless @axis_lock
       view.invalidate
-      view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
+      #view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
       false
     end
     
@@ -224,11 +261,28 @@ module TT::Plugins::BezierSurfaceTools
         #view.draw_points( @ip_start.position, 7, 3, [255,0,0] )
         view.draw_points( @ip_start.position, 7, 3, [128,255,0] )
       end
+
+      # Copy Cache
+      vector = translation_vector()
+      if vector && @copy && @copy_cache && !@copy_cache.empty?
+        tr = Geom::Transformation.new( vector )
+        view.drawing_color = CLR_MESH_GRID
+        view.line_width = MESH_GRID_LINE_WIDTH
+        view.line_stipple = ''
+        for segment in @copy_cache
+          points = segment.map { |pt| pt.transform( tr ) }
+          view.draw( GL_LINE_STRIP, points )
+        end
+      end
     end
     
     # @since 1.0.0
     def onSetCursor
-      cursor = (@entity_under_mouse) ? @cursor_vertex : @cursor
+      if @entity_under_mouse
+        cursor = @cursor_vertex
+      else
+        cursor = (@copy) ? @cursor_copy : @cursor
+      end
       UI.set_cursor( cursor )
     end
 
@@ -250,6 +304,8 @@ module TT::Plugins::BezierSurfaceTools
     # @return [Nil]
     # @since 1.0.0
     def reset
+      @copy = false
+      @copy_cache.clear
       @ip_start.clear     
       @ip_mouse.clear
       @quickpick_entity = nil
@@ -277,6 +333,74 @@ module TT::Plugins::BezierSurfaceTools
         vector.length = @length
       end
       vector
+    end
+
+    # @since 1.0.0
+    def update_geometry( preview = false )
+      return false unless @cache
+      if @copy
+        tr = Geom::Transformation.new()
+      else
+        tr = Geom::Transformation.new( translation_vector() )
+      end
+      @cache.transform_entities( tr, preview )
+    end
+
+    # @since 1.0.0
+    def cache_geometry
+      tr = Sketchup.active_model.edit_transform
+      @copy_cache = []
+      for patch in @editor.selection.patches
+        points = patch.mesh_points( SUBDIVS_PREVIEW, tr )
+        points.rows[0...points.width].each { |row|
+          #view.draw( GL_LINE_STRIP, row )
+          @copy_cache << row
+        }
+        points.columns[0...points.height].each { |col|
+          #view.draw( GL_LINE_STRIP, col )
+          @copy_cache << col
+        }
+      end
+      @copy_cache
+    end
+    
+    # Macro handling the inference lock from input points or axis locks.
+    #
+    # @param [Integer] key
+    # @param [Sketchup::InputPoint] ip
+    # @param [Sketchup::View] view
+    #
+    # @since 1.0.0
+    def lock_axis( key, ip, view )
+      # Determine what axis to process.
+      case key
+      when VK_RIGHT
+        axis = @axes.x
+      when VK_LEFT
+        axis = @axes.y
+      when VK_UP, VK_DOWN
+        axis = @axes.z
+      else
+        return false
+      end
+      # Determine if lock is set, changed or released.
+      if axis && @axis_lock && @axis_lock.parallel?( axis )
+        # Released
+        @axis_lock = nil
+      else
+        # Changed / Set
+        @axis_lock = axis
+      end
+      # Special handling of arrow keys that trigger axis lock. 
+      if @axis_lock
+        # For axis lock an InputPoint is generated in order to be able to
+        # lock the inference - it accept only InputPoint objects.
+        ip2 = Sketchup::InputPoint.new( ip.position.offset( @axis_lock ) )
+        view.lock_inference( ip, ip2 )
+      else
+        # Release lock.
+        view.lock_inference
+      end
     end
     
   end # class
