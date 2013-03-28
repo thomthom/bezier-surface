@@ -294,25 +294,16 @@ module TT::Plugins::BezierSurfaceTools
     # Returns a set of 3d points for this patch using the given sub-division.
     # 
     # @param [Integer] subdivs
-    # @param [Geom::Transformation] transformation
+    # @param [Geom::Transformation] transformation World space transformation.
     #
     # @return [TT::Dimension]
     # @since 1.0.0
     def mesh_points( subdiv, transformation )
       fail_if_invalid()
-      # Transform to active model space
-      cpoints = positions()
-      wpts = cpoints.map { |pt| pt.transform( transformation ) }
-      # Calculate Bezier mesh points.
-      pass1 = TT::Dimension.new( subdiv+1, 4 )
-      wpts.each_row { |row, index|
-        pass1.set_row( index, TT::Geom3d::Bezier.points(row, subdiv) )
-      }
-      points = TT::Dimension.new( subdiv+1, subdiv+1 )
-      pass1.each_column { |column, index|
-        points.set_column( index, TT::Geom3d::Bezier.points(column, subdiv) )
-      }
-      points
+      world_points = positions().map { |pt| pt.transform( transformation ) }
+      size = subdiv + 1
+      points = TT::Geom3d::Bezier.patch( world_points.to_a, subdiv )
+      TT::Dimension.new( points, size, size )
     end
     
     # Draws the patch's internal grid with the given sub-division.
