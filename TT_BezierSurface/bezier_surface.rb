@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
       return false if d.nil?
       string_version = d.get_attribute( ATTR_ID, ATTR_VERSION )
       version = TT::Version.new( string_version )
-      ( MESH_VERSION_MIN..MESH_VERSION ).include?( version )
+      version.between?( MESH_VERSION_MIN, MESH_VERSION )
     end
     
     # Loads the bezier surface data from the given instance.
@@ -980,8 +980,18 @@ module TT::Plugins::BezierSurfaceTools
     end
     
     private
-    
-    
+
+
+    # @return [Integer]
+    # @since 1.0.0
+    def nitems( array )
+      if array.respond_to?( :nitems )
+        array.nitems
+      else
+        array.count { |x| !x.nil? }
+      end
+    end
+
     # @return [Integer]
     # @since 1.0.0
     def final_subdivs
@@ -1346,8 +1356,8 @@ module TT::Plugins::BezierSurfaceTools
         # (!) Validate Point3d
         point.extend( TT::Point3d_Ex )
       end
-      Console.log "> positions: #{positions.size} (#{positions.nitems})"
-      unless positions.size == positions.nitems
+      Console.log "> positions: #{positions.size} (#{nitems( positions )})"
+      unless positions.size == nitems( positions )
         raise TypeError, 'Invalid Point3d data'
       end
       
@@ -1383,8 +1393,8 @@ module TT::Plugins::BezierSurfaceTools
       for index in ( 0...positions.size )
         cpoints << cp_index[ index ]
       end
-      Console.log "> controlpoints: #{cpoints.size} (#{cpoints.nitems})"
-      unless cpoints.size == cpoints.nitems
+      Console.log "> controlpoints: #{cpoints.size} (#{nitems( cpoints )})"
+      unless cpoints.size == nitems( cpoints )
         raise TypeError, 'Invalid Control Point data'
       end
       unless cpoints.size == positions.size
@@ -1396,14 +1406,14 @@ module TT::Plugins::BezierSurfaceTools
       edge_sets = []
       for indexes in edge_data
         points = indexes.map { |index| cpoints[index] }
-        unless points.nitems == 4
+        unless nitems( points ) == 4
           raise 'Invalid control points.'
         end
         edge = BezierEdge.new( self, points )
         edge_sets << edge
       end
-      Console.log "> edge_sets: #{edge_sets.size} (#{edge_sets.nitems})"
-      unless edge_sets.size == edge_sets.nitems
+      Console.log "> edge_sets: #{edge_sets.size} (#{nitems( edge_sets )})"
+      unless edge_sets.size == nitems( edge_sets )
         raise TypeError, 'Invalid Edge data'
       end
       
@@ -1429,7 +1439,7 @@ module TT::Plugins::BezierSurfaceTools
         
         # Interior Points
         interior_points.map! { |index| positions[index] }
-        unless interior_points.nitems == 4
+        unless nitems( interior_points ) == 4
           raise 'Invalid interior points'
         end
         
@@ -1444,8 +1454,8 @@ module TT::Plugins::BezierSurfaceTools
           edge = edge_sets[edge_index]
           edgeuses_set << BezierEdgeUse.new( nil, edge, edge_reversed ) # Temp
         end
-        Console.log "  > edgeuses_set: #{edgeuses_set.size} (#{edgeuses_set.nitems})"
-        unless edgeuses_set.size == edgeuses_set.nitems
+        Console.log "  > edgeuses_set: #{edgeuses_set.size} (#{nitems( edgeuses_set )})"
+        unless edgeuses_set.size == nitems( edgeuses_set )
           raise TypeError, 'Invalid EdgeUse data'
         end
         

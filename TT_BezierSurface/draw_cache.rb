@@ -46,7 +46,15 @@ module TT::Plugins::BezierSurfaceTools
       end
       view
     end
-    
+
+    # @return [Integer]
+    # @since 1.0.0
+    def cache_method( *args )
+      m = ( Kernel.respond_to?( :__callee__) ) ? __callee__ : this_method
+      @commands << args.unshift( m )
+      @commands.size
+    end
+
     # Cache drawing commands and data. These methods received the finsihed
     # processed drawing data that will be executed when #render is called.
     [
@@ -62,10 +70,17 @@ module TT::Plugins::BezierSurfaceTools
       :line_width=,
       :set_color_from_line
     ].each { |symbol|
-      define_method( symbol ) { |*args|
-        @commands << args.unshift( this_method )
-        @commands.size
-      }
+      #define_method( symbol ) { |*args|
+      #  m = ( Kernel.respond_to?( :__callee__) ) ? __callee__ : this_method
+      #  puts "CALL: #{m}"
+      #  @commands << args.unshift( this_method )
+      #  @commands.size
+      #}
+      # (i) `define_method` worked under Ruby 1.8, but not under 2.0 where it
+      #     appear to capture a block instead. (Parent block of #each ?)
+      #
+      #     Aliasing methods appear to work on both.
+      alias_method( symbol, :cache_method )
     }
     
     # Pass through methods to Sketchup::View so that the drawing cache object
