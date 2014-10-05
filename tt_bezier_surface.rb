@@ -22,7 +22,7 @@ module TT::Plugins::BezierSurfaceTools
   PLUGIN         = self # Namespace shortcut
   PLUGIN_ID      = 'TT_BezierSurface'.freeze
   PLUGIN_NAME    = 'Bezier Surface'.freeze
-  PLUGIN_VERSION = TT::Version.new( 1,0,0 ).freeze
+  PLUGIN_VERSION = TT::Version.new( 0,1,0 ).freeze
 
   # Attribute dictionary keys
   ATTR_ID             = 'TT_Mesh'.freeze
