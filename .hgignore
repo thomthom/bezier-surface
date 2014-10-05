@@ -4,4 +4,4 @@ Builds/
 Test Models/*
 Theory and Reading/*
 Project Files/*
-Bezier Surface.sublime-*
+*.sublime-workspace
