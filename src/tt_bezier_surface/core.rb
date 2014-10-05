@@ -142,7 +142,7 @@ module TT::Plugins::BezierSurfaceTools
     # Menus
     m = TT.menu( 'Draw' ).add_submenu( PLUGIN_NAME )
     m.add_item( Commands.create_quad_patch )
-    m.add_item( Commands.create_tri_patch )
+    m.add_item( Commands.create_tri_patch ) if DEBUG
 
     m = UI.menu( 'Window' )
     m.add_item( Commands.toggle_properties )
@@ -178,7 +178,7 @@ module TT::Plugins::BezierSurfaceTools
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
     toolbar.add_item( Commands.create_quad_patch )
-    toolbar.add_item( Commands.create_tri_patch )
+    toolbar.add_item( Commands.create_tri_patch ) if DEBUG
     if toolbar.get_last_state == TB_VISIBLE
       toolbar.restore
       UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
@@ -249,6 +249,7 @@ module TT::Plugins::BezierSurfaceTools
   # @return [String,Nil]
   # @since 1.0.0
   def self.get_instructor_path( path )
+    # TODO: Not needed in SU2014 and newer.
     path = File.expand_path( path )
     origin = Sketchup.get_resource_path( 'helpcontent' )
     # Check if drive matches
