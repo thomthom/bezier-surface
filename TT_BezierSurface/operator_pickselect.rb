@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class PickSelectOperator < Operator
 
@@ -29,7 +29,7 @@ module TT::Plugins::BezierSurfaceTools
 
       # Ignore mouse drags.
       return false if left_mouse_drag?
-      
+
       # Select entities by pick. The order of the type of entities picked is
       # important for the result as they would otherwise block each other.
       #

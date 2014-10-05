@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Delegates Tool events to Operator instances which can claim locks on the
   # events by setting their #active property to true.
   #
@@ -22,7 +22,7 @@ module TT::Plugins::BezierSurfaceTools
 
     # @note #initialize method of sub-class needs to call #super() since this
     #       method doesn't accept any arguments.
-    # 
+    #
     # @since 1.0.0
     def initialize
       @operators = []
@@ -101,7 +101,7 @@ module TT::Plugins::BezierSurfaceTools
       relay_event( :onSetCursor, [] )
       capture
     end
-    
+
     # @see #onKeyDown
     #
     # @since 1.0.0

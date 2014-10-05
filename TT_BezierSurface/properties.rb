@@ -7,12 +7,12 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   module PropertiesWindow
-    
+
     @window = nil
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def self.show
@@ -29,7 +29,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         @window = TT::GUI::ToolWindow.new( options )
         @window.theme = TT::GUI::Window::THEME_GRAPHITE
-        
+
         label = TT::GUI::Label.new( 'Entity Info' )
         @window.add_control( label )
         @lbl_info = label
@@ -38,14 +38,14 @@ module TT::Plugins::BezierSurfaceTools
       TT::SketchUp.activate_main_window
       true
     end
-    
+
     # @return [Nil]
     # @since 1.0.0
     def self.close
       @window.close if @window.visible?
       nil
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def self.toggle
@@ -57,14 +57,14 @@ module TT::Plugins::BezierSurfaceTools
         true
       end
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def self.visible?
       @window && @window.visible?
     end
-    
-    
+
+
     # @return [Boolean]
     # @since 1.0.0
     def self.info=( string )
@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
         @lbl_info.caption = string
       end
     end
-    
+
   end # module PropertiesWindow
 
 end # module

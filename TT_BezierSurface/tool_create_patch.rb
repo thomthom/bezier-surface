@@ -7,21 +7,21 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Tool creating Quad Patches.
   #
   # @since 1.0.0
   class CreatePatchTool
-    
+
     # @since 1.0.0
     def initialize
       @ip_start = Sketchup::InputPoint.new
       @ip_mouse = Sketchup::InputPoint.new
       @subdivs = SUBDIVS_DEFAULT
-      
+
       @cursor = TT::Cursor.get_id( :rectangle )
     end
-    
+
     # @since 1.0.0
     def getInstructorContentDirectory
       real_path = File.join( PLUGIN::PATH, 'InstructorContent', 'Test' )
@@ -29,7 +29,7 @@ module TT::Plugins::BezierSurfaceTools
       TT::debug( adjusted_path )
       adjusted_path
     end
-    
+
     # Reset the tool to the initial state.
     #
     # @since 1.0.0
@@ -37,7 +37,7 @@ module TT::Plugins::BezierSurfaceTools
       @ip_start = Sketchup::InputPoint.new
       @ip_mouse = Sketchup::InputPoint.new
     end
-    
+
     # Updates the UI with relevant information to the user.
     #
     # @since 1.0.0
@@ -48,23 +48,23 @@ module TT::Plugins::BezierSurfaceTools
         Sketchup.status_text = 'Pick Start Point.'
       end
     end
-    
+
     # @since 1.0.0
     def activate
       update_ui()
     end
-    
+
     # @since 1.0.0
     def deactivate(view)
       view.invalidate
     end
-    
+
     # @since 1.0.0
     def resume(view)
       view.invalidate
       update_ui()
     end
-    
+
     # @since 1.0.0
     def getExtents
       bb = Geom::BoundingBox.new
@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
       bb.add( points ) if points
       bb
     end
-    
+
     # @since 1.0.0
     def onCancel( reason, view )
       TT.debug( 'CreatePatchTool.onCancel' )
@@ -89,7 +89,7 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
       view.invalidate
     end
-    
+
     # @since 1.0.0
     def onUserText( text, view )
       # Ensure the subdivision is within sensible ranges. Prevents the user from
@@ -101,20 +101,20 @@ module TT::Plugins::BezierSurfaceTools
         UI.beep
       end
     end
-    
+
     # @since 1.0.0
     def onMouseMove( flags, x, y, view )
       view.invalidate if @ip_mouse.pick( view, x, y )
       view.tooltip = @ip_mouse.tooltip
     end
-    
+
     # @since 1.0.0
     def onLButtonUp( flags, x, y, view )
       if @ip_start.valid?
         # Validate input data.
         points = corner_points()
         return if points.nil?
-        
+
         # Calculate group transformation.
         origin = @ip_start.position
         x_point = points[1]
@@ -122,14 +122,14 @@ module TT::Plugins::BezierSurfaceTools
         x_axis = origin.vector_to( x_point )
         y_axis = origin.vector_to( y_point )
         return unless x_axis.valid? && y_axis.valid?
-        
+
         # Calculate control points.
         p1 = ORIGIN.clone
         p2 = p1.offset( X_AXIS, x_axis.length )
         p3 = p1.offset( Y_AXIS, y_axis.length )
         p4 = p3.offset( X_AXIS, x_axis.length )
         controlpoints = interpolate_points( [p1, p2, p3, p4] )
-        
+
         # Create Patch
         TT::Model.start_operation( 'Create Bezier Surface' )
         group = view.model.active_entities.add_group
@@ -143,7 +143,7 @@ module TT::Plugins::BezierSurfaceTools
         view.model.commit_operation
         view.model.selection.clear
         view.model.selection.add( group )
-        
+
         # Deactivate tool
         # Activate select tool as it is a plausible next step for the user.
         # Early implementation popped this tool off the stack, but this is
@@ -155,7 +155,7 @@ module TT::Plugins::BezierSurfaceTools
         update_ui()
       end
     end
-    
+
     # @since 1.0.0
     def draw( view )
       # InputPoints
@@ -188,11 +188,11 @@ module TT::Plugins::BezierSurfaceTools
         pts[8], pts[11]
       ] )
     end
-    
+
     def onSetCursor
       UI.set_cursor( @cursor )
     end
-    
+
     # Returns nil when input points are invalid.
     #
     # @since 1.0.0
@@ -201,7 +201,7 @@ module TT::Plugins::BezierSurfaceTools
       return nil unless points
       interpolate_points( points )
     end
-    
+
     # Returns nil when input points are invalid.
     #
     # @since 1.0.0
@@ -237,7 +237,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       [p1o, p2x, p3y, p4xy]
     end
-    
+
     # @since 1.0.0
     def interpolate_points( points )
       p1o, p2x, p3y, p4xy = points
@@ -252,7 +252,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       pts
     end
-    
+
   end # class CreatePatchTool
 
 end # module

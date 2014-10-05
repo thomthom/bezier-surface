@@ -7,39 +7,39 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   class SelectionRectangle
-    
+
     SUBDIVS = 6
-    
+
     attr_accessor( :start, :end )
-    
+
     # @since 1.0.0
     def initialize( surface )
       @surface = surface
       @start = nil  # Geom::Point3d
       @end = nil    # Geom::Point3d
     end
-    
+
     # @since 1.0.0
     def reset
       @start = nil
       @end = nil
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def valid?
       @start && @end
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def left_to_right?
       return false unless valid?
       @start.x < @end.x
     end
-    
+
     # @param [Sketchup::View] view
     #
     # @return [Boolean]
@@ -52,7 +52,7 @@ module TT::Plugins::BezierSurfaceTools
       view.draw2d( GL_LINE_LOOP, selection_polygon() )
       true
     end
-    
+
     # @param [Sketchup::View] view
     # @param [Mixed] point_or_segment
     #
@@ -64,7 +64,7 @@ module TT::Plugins::BezierSurfaceTools
       transformation = view.model.edit_transform
       is_selected?( view, entity, transformation, polygon )
     end
-    
+
     # @param [Sketchup::View] view
     # @param [Mixed] points_or_segments
     #
@@ -78,9 +78,9 @@ module TT::Plugins::BezierSurfaceTools
         is_selected?( view, entity, transformation, polygon )
       }
     end
-    
+
     private
-    
+
     # @param [Sketchup::View] view
     # @param [Mixed] point_or_segment
     #
@@ -100,7 +100,7 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Argument must be BezierControlPoint or a BezierEdge.'
       end
     end
-    
+
     # @param [Sketchup::View] view
     # @param [Array<Geom::Point3d>] points
     # @param [Array<Geom::Point3d>] polygon
@@ -121,7 +121,7 @@ module TT::Plugins::BezierSurfaceTools
         }
       end
     end
-    
+
     # Generate selection polygon
     #
     # @return [Array<Geom::Point3d>]
@@ -135,7 +135,7 @@ module TT::Plugins::BezierSurfaceTools
       pt4.y = pt3.y
       [ pt1, pt2, pt3, pt4 ]
     end
-    
+
   end # class SelectionRectangle
 
 end # module

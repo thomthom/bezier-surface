@@ -7,10 +7,10 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   module Commands
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.create_quad_patch
@@ -26,7 +26,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @create_quad_patch
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.create_tri_patch
@@ -43,7 +43,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @create_tri_patch
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.convert_to_mesh
@@ -71,7 +71,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @convert_to_quadmesh
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.clone
@@ -86,7 +86,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @clone
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.replace_clone
@@ -101,7 +101,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @replace_clone
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.select_clone
@@ -116,7 +116,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @select_clone
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.toggle_properties
@@ -130,7 +130,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @toggle_properties
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.update_selected
@@ -144,7 +144,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @update_selected
     end
-    
+
     # @return [UI::Command]
     # @since 1.0.0
     def self.extract_edges
@@ -159,7 +159,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @extract_edges
     end
-    
+
      # @return [UI::Command]
     # @since 1.0.0
     def self.extract_control_grid
@@ -174,7 +174,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @extract_control_grid
     end
-  
+
   end # module Commands
 
 end # module

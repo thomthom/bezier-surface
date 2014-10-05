@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class GizmoOperator < Operator
 
@@ -18,7 +18,7 @@ module TT::Plugins::BezierSurfaceTools
     end
 
     # @since 1.0.0
-    def activate    
+    def activate
       init_gizmo()
       false
     end
@@ -83,7 +83,7 @@ module TT::Plugins::BezierSurfaceTools
     end
 
     private
-    
+
     # @return [Nil]
     # @since 1.0.0
     def init_gizmo
@@ -91,28 +91,28 @@ module TT::Plugins::BezierSurfaceTools
       xaxis = X_AXIS.transform( tr )
       yaxis = Y_AXIS.transform( tr )
       zaxis = Z_AXIS.transform( tr )
-      
+
       @gizmo = TT::Gizmo::Manipulator.new( ORIGIN, xaxis, yaxis, zaxis )
       update_gizmo()
-      
+
       @gizmo.on_transform_start { |action_name|
         @editor.model.start_operation( "Gizmo #{action_name}" )
         @surface.preview
       }
-      
+
       @gizmo.on_transform { |t_increment, t_total, data|
         entities = @editor.selection.related_control_points
         @surface.transform_entities( t_increment, entities )
       }
-      
+
       @gizmo.on_transform_end { |action_name|
         @surface.update
         @editor.model.commit_operation
       }
-      
+
       nil
     end
-    
+
     # Called after geometry and selection change.
     #
     # (?) Make use of observers?

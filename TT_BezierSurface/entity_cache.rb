@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class EntityCache
 

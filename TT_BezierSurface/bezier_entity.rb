@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Base class of common methods for bezier related entities.
   #
   # == Linkable Entities
@@ -20,7 +20,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @example
   #   class MySubClass < BezierEntity
-  #   
+  #
   #     def initialize( parent )
   #       super()
   #       # Define linkable entities:
@@ -31,16 +31,16 @@ module TT::Plugins::BezierSurfaceTools
   #     def edges
   #       @links[ BezierEdge ].dup
   #     end
-  #   
+  #
   #   end # class
   #
   # @abstract Superclass used to base all bezier related entities.
   #
   # @since 1.0.0
   class BezierEntity
-    
+
     attr_reader( :parent, :links )
-    
+
     # @since 1.0.0
     def initialize
       @parent = nil
@@ -48,25 +48,25 @@ module TT::Plugins::BezierSurfaceTools
       @links = {} # Lookup table of related entities, grouped by type.
       @typename = self.class.name.split('::').last.freeze
     end
-    
+
     # @return [String]
     # @since 1.0.0
     def typename
       @typename.dup
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def valid?
       @valid == true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def deleted?
       @valid == false
     end
-    
+
     # Invalidates the entity and releases any references it had to other
     # entities. Use after erasing/removing/replacing an entity which result
     # in an entity not to be used any more
@@ -98,7 +98,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       @links.values.flatten
     end
-    
+
     # Assosiates an entity with the current BezierEntity. Use to keep track of
     # entities related to each other.
     #
@@ -112,7 +112,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def link( entity, is_back_reference = false )
       fail_if_invalid()
-      
+
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't link #{self.class.name} with #{entity.class.name}. Invalid entity type."
@@ -132,7 +132,7 @@ module TT::Plugins::BezierSurfaceTools
         return true
       end
     end
-    
+
     # De-assosiates an entity.
     #
     # @param [BezierEntity] entity
@@ -141,7 +141,7 @@ module TT::Plugins::BezierSurfaceTools
     # @since 1.0.0
     def unlink( entity )
       fail_if_invalid()
-      
+
       type = @links.keys.find { |acceptable| entity.is_a?( acceptable ) }
       unless type
         raise ArgumentError, "Can't unlink #{entity.class.name} from #{self.class.name}. Invalid entity type."
@@ -149,7 +149,7 @@ module TT::Plugins::BezierSurfaceTools
       # Look up the entity type in the hash table.
       @links[ type ] ||= []
       collection = @links[ type ]
-      
+
       if collection.include?( entity )
         collection.delete( entity )
       else
@@ -158,7 +158,7 @@ module TT::Plugins::BezierSurfaceTools
       # (?) Return boolean instead of ArgumentError or nil?
       nil
     end
-    
+
     # @param [BezierEntity] entity
     #
     # @return [Boolean]
@@ -170,7 +170,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       false
     end
-    
+
     # @param [BezierEntity] entity
     #
     # @return [Boolean]
@@ -182,7 +182,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       false
     end
-    
+
     # @return [String]
     # @since 1.0.0
     def inspect
@@ -194,9 +194,9 @@ module TT::Plugins::BezierSurfaceTools
         "#<Deleted:#{name}:#{hex_id}>"
       end
     end
-    
+
     private
-    
+
     # @return [Nil]
     # @since 1.0.
     def fail_if_invalid
@@ -205,7 +205,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
   end # class BezierEntity
 
 end # module

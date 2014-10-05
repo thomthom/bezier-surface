@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class HandleGripOperator < Operator
 
@@ -251,7 +251,7 @@ module TT::Plugins::BezierSurfaceTools
       radius_point = centre.offset( vector, radius )
       distance = radius_point.distance( mouse_point )
       threshold = view.pixels_to_model( RADIAL_SNAP_THRESHOLD, radius_point )
-      if distance <= threshold 
+      if distance <= threshold
         radius_point
       else
         nil

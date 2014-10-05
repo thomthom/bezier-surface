@@ -7,10 +7,10 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class MoveOperator < Operator
-    
+
     # @since 1.0.0
     def initialize( *args )
       super
@@ -22,8 +22,8 @@ module TT::Plugins::BezierSurfaceTools
       @vector = nil
       @length = nil
 
-      @ip_start = Sketchup::InputPoint.new      
-      @ip_mouse = Sketchup::InputPoint.new   
+      @ip_start = Sketchup::InputPoint.new
+      @ip_mouse = Sketchup::InputPoint.new
       @entity_under_mouse = nil
 
       @copy = false
@@ -33,12 +33,12 @@ module TT::Plugins::BezierSurfaceTools
       @cursor_copy    = TT::Cursor.get_id( :move_copy )
       @cursor_vertex  = TT::Cursor.get_id( :vertex )
     end
-    
+
     # @since 1.0.0
     def enableVCB?
       true
     end
-    
+
     # @since 1.0.0
     def activate
       Sketchup.active_model.active_view.lock_inference # Move to OperatorManager
@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
       true
     end
-    
+
     # @since 1.0.0
     def onCancel( reason, view )
       TT.debug( 'onCancel' )
@@ -91,7 +91,7 @@ module TT::Plugins::BezierSurfaceTools
       update_ui()
       true
     end
-    
+
     # @since 1.0.0
     def onMouseMove( flags, x, y, view )
       # Find entity under the mouse cursor. This is used for snapping and for
@@ -135,7 +135,7 @@ module TT::Plugins::BezierSurfaceTools
       #view.invalidate
       view.refresh # (!) Temp? Until better performance.
     end
-    
+
     # @since 1.0.0
     def onLButtonDown( flags, x, y, view )
       super
@@ -155,7 +155,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       true
     end
-    
+
     # @since 1.0.0
     def onLButtonUp( flags, x, y, view )
       super
@@ -170,7 +170,7 @@ module TT::Plugins::BezierSurfaceTools
       view.invalidate
       true
     end
-    
+
     # @since 1.0.0
     def onKeyDown( key, repeat, flags, view )
       #puts "MoveOperator.onKeyDown()"
@@ -198,7 +198,7 @@ module TT::Plugins::BezierSurfaceTools
       lock_axis( key, ip, view )
       false
     end
-    
+
     # @since 1.0.0
     def onKeyUp( key, repeat, flags, view )
       #puts "MoveOperator.onKeyUp()"
@@ -208,12 +208,12 @@ module TT::Plugins::BezierSurfaceTools
       #view.tooltip = "Mouse: #{@ip_mouse.degrees_of_freedom}\nStart: #{@ip_start.degrees_of_freedom}\nLocked: #{view.inference_locked?.inspect}"
       false
     end
-    
+
     # @since 1.0.0
     def draw( view )
       #TT.debug "MoveOperator.draw()"
       @editor.draw_cache.render
-      
+
       # Move direction indication.
       if @ip_mouse.valid? && @ip_start.valid? #&& !view.inference_locked?
         #TT.debug "> Move indication"
@@ -232,21 +232,21 @@ module TT::Plugins::BezierSurfaceTools
           view.draw( GL_LINES, pt1, pt2 ) #unless view.inference_locked?
         end
       end
-      
+
       view.line_width = 2
-      
+
       # Inference from mouse position.
       if @ip_mouse.valid? && @ip_mouse.display?
         #TT.debug "> Inference from mouse position (0)"
         #view.line_stipple = '.'
         view.line_stipple = '_'
-        @ip_mouse.draw( view ) 
+        @ip_mouse.draw( view )
       elsif @entity_under_mouse
         #TT.debug "> Inference from mouse position (1)"
         view.line_stipple = ''
         view.draw_points( @ip_mouse.position, 7, 3, [0,0,0] )
       end
-      
+
       # Inference from move origin.
       if @ip_start.valid? && @ip_start.display?
         #TT.debug "> Inference from move origin (0)"
@@ -254,7 +254,7 @@ module TT::Plugins::BezierSurfaceTools
         #view.line_stipple = '-'
         #view.line_stipple = '_'
         #view.line_stipple = ''
-        @ip_start.draw( view ) 
+        @ip_start.draw( view )
       elsif @quickpick_entity
         #TT.debug "> Inference from move origin (1)"
         view.line_stipple = ''
@@ -275,7 +275,7 @@ module TT::Plugins::BezierSurfaceTools
         end
       end
     end
-    
+
     # @since 1.0.0
     def onSetCursor
       if @entity_under_mouse
@@ -306,7 +306,7 @@ module TT::Plugins::BezierSurfaceTools
     def reset
       @copy = false
       @copy_cache.clear
-      @ip_start.clear     
+      @ip_start.clear
       @ip_mouse.clear
       @quickpick_entity = nil
       nil
@@ -363,7 +363,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       @copy_cache
     end
-    
+
     # Macro handling the inference lock from input points or axis locks.
     #
     # @param [Integer] key
@@ -391,7 +391,7 @@ module TT::Plugins::BezierSurfaceTools
         # Changed / Set
         @axis_lock = axis
       end
-      # Special handling of arrow keys that trigger axis lock. 
+      # Special handling of arrow keys that trigger axis lock.
       if @axis_lock
         # For axis lock an InputPoint is generated in order to be able to
         # lock the inference - it accept only InputPoint objects.
@@ -402,7 +402,7 @@ module TT::Plugins::BezierSurfaceTools
         view.lock_inference
       end
     end
-    
+
   end # class
 
 end # module

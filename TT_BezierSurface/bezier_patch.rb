@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @abstract Mix-in module with core methods used and required by all types of
   #   patches.
   #
@@ -19,36 +19,36 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   module BezierPatch
-    
+
     attr_accessor( :edgeuses, :interior_points )
-    
+
     def initialize( parent, points )
       #TT.debug 'BezierPatch.new'
-      
+
       super()
       @links[ BezierEntity ] = []
-      
+
       TT::Point3d.extend_all( points )
-      
+
       @parent = parent # BezierSurface
       @automatic = true
       @edgeuses = []
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def automatic?
       fail_if_invalid()
       @automatic ==  true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def automatic=( is_automatic )
       fail_if_invalid()
       @automatic = ( is_automatic == true )
     end
-    
+
     # Returns an array of +BezierEdge+ objects in clock-wise order.
     #
     # @return [Array<BezierEdge>]
@@ -57,7 +57,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       @edgeuses.map { |edgeuse| edgeuse.edge }
     end
-    
+
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def handles
@@ -67,7 +67,7 @@ module TT::Plugins::BezierSurfaceTools
       result.uniq!
       result
     end
-    
+
     # Subclasses must implement these methods:
     #
     # def typename
@@ -81,7 +81,7 @@ module TT::Plugins::BezierSurfaceTools
     # def draw_control_grid( points )
     # def draw_internal_grid( points )
     # def self.restore( surface, edgeuses, interior_points, reversed )
-    
+
     # Replace an edge in the patch with another edge. The old edge is deleted.
     #
     # @note The vertices in the two edges needs to be at the same positions.
@@ -139,7 +139,7 @@ module TT::Plugins::BezierSurfaceTools
       # Return the merged edge.
       new_edge
     end
-    
+
     # Pick-tests the patch with the given screen co-ordinates. Returns an array
     # of picked points.
     #
@@ -163,7 +163,7 @@ module TT::Plugins::BezierSurfaceTools
       #( picked.empty? ) ? nil : picked
       picked
     end
-    
+
     # (!) Move to BezierEdge
     #
     # Pick-tests the patch's edges with the given sub-division.  Returns an array
@@ -189,7 +189,7 @@ module TT::Plugins::BezierSurfaceTools
       #( picked.empty? ) ? nil : picked
       picked
     end
-    
+
     # @param [BezierEdge] edge
     #
     # @return [Integer]
@@ -201,7 +201,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       raise ArgumentError, 'Edge not connected to this patch.'
     end
-    
+
     # @param [BezierEdge] edge
     #
     # @return [BezierEdgeUse]
@@ -213,7 +213,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       raise ArgumentError, 'Edge not connected to this patch.'
     end
-    
+
     # Draws the patch's control grid.
     #
     # @param [Sketchup::View] view
@@ -235,7 +235,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
-  end # module BezierPatch  
+
+  end # module BezierPatch
 
 end # module

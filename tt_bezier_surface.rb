@@ -14,16 +14,16 @@ TT::Lib.compatible?('2.7.0', 'Bezier Surface')
 
 
 module TT::Plugins::BezierSurfaceTools
-  
-  
+
+
   ### CONSTANTS ### ------------------------------------------------------------
-  
+
   # Plugin information
   PLUGIN         = self # Namespace shortcut
   PLUGIN_ID      = 'TT_BezierSurface'.freeze
   PLUGIN_NAME    = 'Bezier Surface'.freeze
   PLUGIN_VERSION = TT::Version.new( 1,0,0 ).freeze
-  
+
   # Attribute dictionary keys
   ATTR_ID             = 'TT_Mesh'.freeze
   ATTR_TYPE           = 'Type'.freeze
@@ -38,26 +38,26 @@ module TT::Plugins::BezierSurfaceTools
   ATTR_EDGEUSES       = 'EdgeUses'.freeze
   ATTR_PATCHES        = 'Patches'.freeze
   ATTR_REVERSED       = 'Reversed'.freeze
-  
+
   # Attribute dictionary values
   MESH_TYPE         = 'BezierSurface'.freeze
   MESH_NAME         = 'Bezier Surface'.freeze
   MESH_VERSION_R0   = TT::Version.new( 1,0,3 ).freeze
   MESH_VERSION_MIN  = MESH_VERSION_R0
   MESH_VERSION      = MESH_VERSION_R0
-  
+
   # Subdivision range limit
   SUBDIVS_MIN     = 1
   SUBDIVS_MAX     = 48
   SUBDIVS_RANGE   = ( SUBDIVS_MIN..SUBDIVS_MAX ).freeze
   SUBDIVS_DEFAULT = 8
   SUBDIVS_PREVIEW = 4
-  
+
   # Resource paths
   PATH       = File.join( File.dirname( __FILE__ ), 'TT_BezierSurface' ).freeze
   PATH_UI    = File.join( PATH, 'UI' ).freeze
   PATH_ICONS = File.join( PATH_UI, 'Icons' ).freeze
-  
+
   # Inference
   LINEAR_SNAP_THRESHOLD = 6  # Pixels
   RADIAL_SNAP_THRESHOLD = 12 # Pixels
@@ -66,7 +66,7 @@ module TT::Plugins::BezierSurfaceTools
 
   # UI Constants
   VERTEX_SIZE = 8 # Pixels
-  
+
   MESH_GRID_LINE_WIDTH    = 1 # Pixels
   CTRL_GRID_LINE_WIDTH    = 3 # Pixels
   CTRL_GRID_BORDER_WIDTH  = 3 # Pixels
@@ -75,7 +75,7 @@ module TT::Plugins::BezierSurfaceTools
   CANCEL_ESC        = 0
   CANCEL_REACTIVATE = 1
   CANCEL_UNDO       = 2
-  
+
   # Colours
   CLR_VERTEX        = Sketchup::Color.new( 255,   0,   0 )
   CLR_HANDLE_POINT  = Sketchup::Color.new(   0, 128,   0 )
@@ -84,16 +84,16 @@ module TT::Plugins::BezierSurfaceTools
   CLR_EDGE          = Sketchup::Color.new(  64,  64, 128 )
   CLR_EDGE_SELECTED = Sketchup::Color.new( 255, 165,   0 )
   CLR_PATCH         = Sketchup::Color.new(   0,   0, 255, 64 )
-  
+
   CLR_MESH_GRID     = Sketchup::Color.new( 128, 128, 128 )
   CLR_CTRL_GRID     = Sketchup::Color.new( 255, 165,   0 )
-  
+
   CLR_SELECTION     = Sketchup::Color.new(  64,  64,  64 )
-  
+
   CLR_PREVIEW_FILL    = Sketchup::Color.new( 128, 0, 255, 32 )
   CLR_PREVIEW_BORDER  = Sketchup::Color.new( 128, 0, 255 )
-  
-  
+
+
   ### MODULES ### --------------------------------------------------------------
   # Ensure abstract classes are loaded and found when needed.
   autoload( :Observable,      File.join( PATH, 'observable.rb' ) )
@@ -106,25 +106,25 @@ module TT::Plugins::BezierSurfaceTools
     # (!) Strip extension and use Sketchup::require for production.
     require( file )
   }
-  
+
 
   ### DEBUGGING ### ------------------------------------------------------------
-  
+
   # TT::Plugins::BezierSurfaceTools::Console.output = true
   # TT::Plugins::BezierSurfaceTools::Console.external = true
-  
+
   DEBUG = false
   Console = DebugConsole.new( DEBUG, true )
-  
-  
+
+
   ### VARIABLES ### ------------------------------------------------------------
-  
+
   # Key is model.guid
   @editors ||= {}
-  
-  
+
+
   ### MENU & TOOLBARS ### ------------------------------------------------------
-  
+
   # This method must be here as it needs to be availible when the script loads
   # so it can attach the model observer to the current model.
   #
@@ -136,52 +136,52 @@ module TT::Plugins::BezierSurfaceTools
     model.add_observer( BST_ModelObserver.new )
     editor = BezierSurfaceEditor.new( model )
     @editors[model] = editor
-    
+
     Console.log( "Observe Model" )
     Console.log( "> Instance Variable:" )
     e = model.instance_variable_set( :@tt_bezier_surface_editor, editor )
     Console.log( "> #{e}" )
-    
+
     nil
   end
-  
+
   unless file_loaded?( File.basename(__FILE__) )
     # Menus
     m = TT.menu( 'Draw' ).add_submenu( PLUGIN_NAME )
     m.add_item( Commands.create_quad_patch )
     m.add_item( Commands.create_tri_patch )
-    
+
     m = UI.menu( 'Window' )
     m.add_item( Commands.toggle_properties )
-    
+
     # Context menu
     UI.add_context_menu_handler { |context_menu|
       model = Sketchup.active_model
       selection = model.selection
       if selection.length == 1 && BezierSurface.is?( selection[0] )
         menu = context_menu.add_submenu( PLUGIN_NAME )
-        
+
         menu.add_item( Commands.clone )
         menu.add_item( Commands.select_clone )
         menu.add_item( Commands.replace_clone )
-        
+
         menu.add_separator
-        
+
         menu.add_item( Commands.extract_edges )
         menu.add_item( Commands.extract_control_grid )
-        
+
         menu.add_separator
-        
+
         menu.add_item( Commands.convert_to_mesh )
         menu.add_item( Commands.convert_to_quadmesh )
-        
+
         menu.add_separator
-        
+
         menu.add_item( Commands.update_selected )
         menu.add_item( Commands.toggle_properties )
       end
     }
-    
+
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
     toolbar.add_item( Commands.create_quad_patch )
@@ -190,16 +190,16 @@ module TT::Plugins::BezierSurfaceTools
       toolbar.restore
       UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
     end
-    
+
     # Observers
     Sketchup.add_observer( BST_AppObserver.new )
     self.observe_model( Sketchup.active_model )
-  end 
-  
-  
+  end
+
+
   ### MAIN SCRIPT ### ----------------------------------------------------------
-  
-  # Returns the {BezierSurfaceEditor} for the current model. This ensures the 
+
+  # Returns the {BezierSurfaceEditor} for the current model. This ensures the
   # tool can be used for multiple models simultaneously - as is possible under
   # OSX.
   #
@@ -211,13 +211,13 @@ module TT::Plugins::BezierSurfaceTools
     Console.log( 'get_editor' )
     #Console.log( "  > #{current_model.inspect}" )
     #Console.log( "  > #{current_model.guid}" )
-    
+
     # Monitor if this work.
     #Console.log( "  > Instance Variable:" )
     e = current_model.instance_variable_get( :@tt_bezier_surface_editor )
     Console.log( "> #{e}" )
     Console.log( (e) ? '> Editor Variable: OK' : '> Editor Variable: LOST!' )
-    
+
     # (i) model.guid isn't always reliable - it can change so the model object
     # is also compared. Model is also not 100% reliable, which might be why
     # setting an instance variable doesn't seem to work. Combination of the
@@ -225,17 +225,17 @@ module TT::Plugins::BezierSurfaceTools
     #
     # This is far from an ideal thing to do and it's considered a hack until
     # a better reliable method is found.
-    
+
     #@editors[current_model]
     @editors.each { |model, editor|
       return editor if model == current_model
       return editor if model.guid == model.guid
     }
-    
+
     return nil
   end
-  
-  
+
+
   # Get Instructor Path
   #
   # +Tool.getInstructorContentDirectory+ expects a path relative to SketchUp's
@@ -278,9 +278,9 @@ module TT::Plugins::BezierSurfaceTools
     return relative_path
   end
 
-  
+
   ### DEBUG ### ----------------------------------------------------------------
-  
+
   # @note Debug method to reload the plugin.
   #
   # @example

@@ -7,19 +7,19 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Manages bezier quad-patches.
   #
   # @since 1.0.0
   class QuadPatch < BezierEntity
     include BezierPatch
-    
+
     # @param [Array<Geom::Point3d>] points Bezier control points
     #
     # @since 1.0.0
     def initialize( parent, points )
       Console.log 'QuadPatch.new'
-      
+
       # Validate arguments
       raise ArgumentError, 'points not an Array.' unless points.is_a?(Array)
       raise ArgumentError, 'points must have 16 Point3d' unless points.size == 16
@@ -28,11 +28,11 @@ module TT::Plugins::BezierSurfaceTools
       }
         raise ArgumentError, 'points must be Point3d objects.'
       end
-      
+
       # Init superclass. (Extends points into Point3d_Ex.)
       super
-      
-      # Create control points and assosiate them with this patch. 
+
+      # Create control points and assosiate them with this patch.
       #
       # 12--13--14--15
       # |   |   |   |
@@ -47,17 +47,17 @@ module TT::Plugins::BezierSurfaceTools
         BezierHandle.new( parent, points[1] ),
         BezierHandle.new( parent, points[2] ),
         BezierVertex.new( parent, points[3] ),
-        
+
         BezierHandle.new( parent, points[4] ),
         BezierInteriorPoint.new( parent, points[5] ),
         BezierInteriorPoint.new( parent, points[6] ),
         BezierHandle.new( parent, points[7] ),
-        
+
         BezierHandle.new( parent, points[8] ),
         BezierInteriorPoint.new( parent, points[9] ),
         BezierInteriorPoint.new( parent, points[10] ),
         BezierHandle.new( parent, points[11] ),
-        
+
         BezierVertex.new( parent, points[12] ),
         BezierHandle.new( parent, points[13] ),
         BezierHandle.new( parent, points[14] ),
@@ -78,11 +78,11 @@ module TT::Plugins::BezierSurfaceTools
       grid[ 6].link( grid[ 3] )
       grid[ 9].link( grid[12] )
       grid[10].link( grid[15] )
-      
+
       interiorpoints = [ grid[5], grid[6], grid[9], grid[10] ]
       @interior_points = TT::Dimension.new( interiorpoints, 2, 2 )
-      
-      # Create edges and assosiate them with this patch.     
+
+      # Create edges and assosiate them with this patch.
       # Order of edges and direction of their control points.
       #
       #  Y - Columns
@@ -97,7 +97,7 @@ module TT::Plugins::BezierSurfaceTools
       # ^3     1^
       # |   0   |
       # +--->---+
-      #   
+      #
       # Edge 2 and 3 is initially reversed.
       #
       # +---<---+
@@ -112,23 +112,23 @@ module TT::Plugins::BezierSurfaceTools
       edge.link( self )
       edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
-      
+
       edge = BezierEdge.new( parent, grid.column(3) )
       edge.link( self )
       edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
-      
+
       edge = BezierEdge.new( parent, grid.row(3).reverse )
       edge.link( self )
       edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
-      
+
       edge = BezierEdge.new( parent, grid.column(0).reverse )
       edge.link( self )
       edgeuse = BezierEdgeUse.new( self, edge )
       @edgeuses << edgeuse
     end
-    
+
     # @return [QuadPatch]
     # @since 1.0.0
     def self.restore( surface, edgeuses, interior_points )
@@ -143,7 +143,7 @@ module TT::Plugins::BezierSurfaceTools
       unless interior_points.size == 4
         raise ArgumentError, "Invalid number of interior points (#{interior_points.size})."
       end
-      
+
       dummy_points = Array.new( 16, Geom::Point3d.new(0,0,0) )
       dummy_points[5]  = interior_points[0]
       dummy_points[6]  = interior_points[1]
@@ -164,7 +164,7 @@ module TT::Plugins::BezierSurfaceTools
       # </temp>
       patch
     end
-    
+
     # Returns the control points for this BezierPatch.
     #
     # @example:
@@ -230,7 +230,7 @@ module TT::Plugins::BezierSurfaceTools
       points
       TT::Dimension.new( points, 4, 4 )
     end
-    
+
     # Returns an array of +BezierEdge+ objects in clock-wise order.
     #
     # @return [Array<BezierVertex>]
@@ -245,7 +245,7 @@ module TT::Plugins::BezierSurfaceTools
       v2.reverse! if edge2.reversed_in?( self )
       v1 + v2.reverse
     end
-    
+
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def positions
@@ -254,7 +254,7 @@ module TT::Plugins::BezierSurfaceTools
         control_point.position
       }
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def refresh_interior
@@ -265,7 +265,7 @@ module TT::Plugins::BezierSurfaceTools
         false
       end
     end
-    
+
     # Accurate calculation of the number of vertices in the mesh.
     #
     # @param [Integer] subdivs
@@ -276,7 +276,7 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       ( subdiv + 1 ) * ( subdiv + 1 )
     end
-    
+
     # Maximum number of polygons in a patch. If the patch tries to maintain
     # quad-faces when possible the actual number of polygons might be less.
     #
@@ -288,11 +288,11 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       subdiv * subdiv * 2
     end
-    
+
     # @note Slow performance. Improve!
     #
     # Returns a set of 3d points for this patch using the given sub-division.
-    # 
+    #
     # @param [Integer] subdivs
     # @param [Geom::Transformation] transformation World space transformation.
     #
@@ -305,7 +305,7 @@ module TT::Plugins::BezierSurfaceTools
       points = TT::Geom3d::Bezier.patch( world_points.to_a, subdiv )
       TT::Dimension.new( points, size, size )
     end
-    
+
     # Draws the patch's internal grid with the given sub-division.
     #
     # @param [Integer] subdivs
@@ -318,7 +318,7 @@ module TT::Plugins::BezierSurfaceTools
       # Transform to active model space
       t = view.model.edit_transform
       pts = mesh_points( subdivs, t )
-      
+
       if pts.size > 2
         # Set up viewport
         view.drawing_color = CLR_MESH_GRID
@@ -333,7 +333,7 @@ module TT::Plugins::BezierSurfaceTools
         }
       end
     end
-    
+
     # Draws the patch's control grid.
     #
     # @param [Sketchup::View] view
@@ -348,27 +348,27 @@ module TT::Plugins::BezierSurfaceTools
         fill = TT::Color.clone( CLR_CTRL_GRID )
         fill.alpha = 32
         view.drawing_color = fill
-        
-        pts3d = positions().map { |pt| pt.transform(tr) }       
+
+        pts3d = positions().map { |pt| pt.transform(tr) }
         quads = pts3d.to_a.values_at(
            0, 1, 5, 4,
            1, 2, 6, 5,
            2, 3, 7, 6,
-           
+
            4, 5, 9, 8,
            5, 6,10, 9,
            6, 7,11,10,
-           
+
            8, 9,13,12,
            9,10,14,13,
           10,11,15,14
         )
-        
+
         view.draw( GL_QUADS, quads )
       end
       nil
     end
-    
+
     # Assume a quadratic set of points
     #
     # Example using a 4x4 set of points:
@@ -389,13 +389,13 @@ module TT::Plugins::BezierSurfaceTools
     # 4--5
     #
     # ... otherwise triangulate.
-    # 
+    #
     # 0--1    1
     # | /   / |
     # 4    4--5
     #
     # Continue to the next set...
-    # 
+    #
     #  1  2
     #  5  6
     #
@@ -413,14 +413,14 @@ module TT::Plugins::BezierSurfaceTools
       inversed = false
 
       pts = mesh_points( subdiv, transformation )
-      
+
       # Increase speed by pre-populating the points that will be used and keep
       # a cache of the point indexes.
       point_index = []
       for pt in pts
         point_index << mesh.add_point( pt )
       end
-      
+
       for y in (0...pts.height-1)
         for x in (0...pts.width-1)
           row = y * pts.width # Current row
@@ -431,13 +431,13 @@ module TT::Plugins::BezierSurfaceTools
           indexes.reverse! if inversed
 
           next unless indexes.length > 2
-          
+
           if indexes.length == 3
             mesh.add_polygon( indexes )
           else
             # When triangulate is false, try to make quadfaces. Find out if all the points
             # fit on the same plane.
-            if triangulate 
+            if triangulate
               mesh.add_polygon([ indexes[0], indexes[1], indexes[2] ])
               mesh.add_polygon([ indexes[0], indexes[2], indexes[3] ])
             else
@@ -482,9 +482,9 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
     private
-    
+
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def ordered_edge_control_points
@@ -498,7 +498,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       points
     end
-    
+
     # Returns an array of segments for the interior grid - exluding the edge
     # segments.
     #
@@ -515,7 +515,7 @@ module TT::Plugins::BezierSurfaceTools
         points.column(2)
       ]
     end
-    
+
     # @param [BezierVertex] vertex
     # @param [BezierHandle] handle_x
     # @param [BezierHandle] handle_y
@@ -532,7 +532,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       intersect
     end
-    
+
     # @since 1.0.0
     def interpolate_interior
       # 12 13 14 15
@@ -540,7 +540,7 @@ module TT::Plugins::BezierSurfaceTools
 			#  4  5  6  7
 			#  0  1  2  3
       cpts = control_points
-      
+
       # INTERIOR POINTS:
       #
       # X---X---X---X
@@ -554,10 +554,10 @@ module TT::Plugins::BezierSurfaceTools
       @interior_points[ 1 ].position = interpolate_points( cpts[ 3], cpts[ 2], cpts[ 7] )
       @interior_points[ 2 ].position = interpolate_points( cpts[12], cpts[13], cpts[ 8] )
       @interior_points[ 3 ].position = interpolate_points( cpts[15], cpts[14], cpts[11] )
-      
+
       @interior_points.dup
 		end
-    
+
   end # class QuadPatch
 
 end # module

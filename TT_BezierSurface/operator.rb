@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class Operator
 
@@ -72,7 +72,7 @@ module TT::Plugins::BezierSurfaceTools
       @key_shift = true if key == CONSTRAIN_MODIFIER_KEY
       false
     end
-    
+
     # @since 1.0.0
     def onKeyUp( key, repeat, flags, view )
       @key_ctrl  = false if key == COPY_MODIFIER_KEY

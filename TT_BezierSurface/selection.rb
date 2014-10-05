@@ -7,19 +7,19 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @note Supports SketchUp's native +SelectionObserver+.
   # @see http://code.google.com/apis/sketchup/docs/ourdoc/selectionobserver.html
   #
   # @since 1.0.0
   class Selection
-    
+
     include Enumerable
     include Observable
-    
+
     attr_reader( :model )
     attr_reader( :editor )
-    
+
     # @param [BezierSurfaceEditor,Sketchup::Model] parent
     #
     # @since 1.0.0
@@ -35,19 +35,19 @@ module TT::Plugins::BezierSurfaceTools
         raise ArgumentError, 'Parent must be BezierSurfaceEditor or Model.'
       end
     end
-    
+
     # @since 1.0.0
     def each
       @items.each { |i| yield(i) }
     end
-    
+
     # @return [BezierEntity]
     # @since 1.0.0
     def [](index)
       @items[index]
     end
     alias :at :[]
-    
+
     # @param [Array<BezierEntity>] entities
     #
     # @return [Integer]
@@ -59,7 +59,7 @@ module TT::Plugins::BezierSurfaceTools
       trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
       ents.size
     end
-    
+
     # @param [Array<BezierEntity>] entities
     #
     # @return [Integer]
@@ -70,7 +70,7 @@ module TT::Plugins::BezierSurfaceTools
       trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
       ents.size
     end
-    
+
     # @param [Array<BezierEntity>] entities
     #
     # @return [Integer]
@@ -87,7 +87,7 @@ module TT::Plugins::BezierSurfaceTools
       trigger_observer( :onSelectionBulkChange, self ) unless ents.empty?
       ents.size
     end
-    
+
     # @return [Nil]
     # @since 1.0.0
     def clear
@@ -97,7 +97,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
     # @param [BezierEntity] entity
     #
     # @return [Boolean]
@@ -106,19 +106,19 @@ module TT::Plugins::BezierSurfaceTools
       @items.include?( entity )
     end
     alias :include? :contains?
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def empty?
       @items.empty?
     end
-    
+
     # @return [BezierEntity]
     # @since 1.0.0
     def first
       @items.first
     end
-    
+
     # @return [Integer]
     # @since 1.0.0
     def length
@@ -127,7 +127,7 @@ module TT::Plugins::BezierSurfaceTools
     alias :size :length
     alias :count :length
     alias :nitems :length
-    
+
     # @return [BezierEntity]
     # @since 1.0.0
     def shift
@@ -137,13 +137,13 @@ module TT::Plugins::BezierSurfaceTools
       end
       result
     end
-    
+
     # @return [Array<BezierEntity>]
     # @since 1.0.0
     def to_a
       @items.to_a
     end
-    
+
     # @return [Geom::BoundingBox]
     # @since 1.0.0
     def bounds
@@ -153,49 +153,49 @@ module TT::Plugins::BezierSurfaceTools
       bb.add( positions ) unless empty?
       bb
     end
-    
+
     # @return [Array<BezierControlPoint>]
     # @since 1.0.0
     def control_points
       @items.select { |cpt| cpt.is_a?( BezierControlPoint ) }
     end
-    
+
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
       @items.select { |cpt| cpt.is_a?( BezierEdge ) }
     end
-    
+
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def handles
       @items.select { |cpt| cpt.is_a?( BezierHandle ) }
     end
-    
+
     # @return [Array<BezierInteriorPoint>]
     # @since 1.0.0
     def interior_points
       @items.select { |cpt| cpt.is_a?( BezierInteriorPoint ) }
     end
-    
+
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
       @items.select { |cpt| cpt.is_a?( BezierPatch ) }
     end
-    
+
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def positions
       control_points.map { |cpt| cpt.position }
     end
-    
+
     # @return [Array<BezierVertex>]
     # @since 1.0.0
     def vertices
       @items.select { |cpt| cpt.is_a?( BezierVertex ) }
     end
-    
+
     # @return [Array<BezierControlPoint>]
     # @since 1.0.0
     def to_control_points
@@ -212,7 +212,7 @@ module TT::Plugins::BezierSurfaceTools
       result.uniq!
       result
     end
-    
+
     # @return [Array<BezierVertex>]
     # @since 1.0.0
     def to_vertices
@@ -229,7 +229,7 @@ module TT::Plugins::BezierSurfaceTools
       result.uniq!
       result
     end
-    
+
     # (?) Move to Editor?
     #
     # @return [Array<BezierControlPoint>]
@@ -254,9 +254,9 @@ module TT::Plugins::BezierSurfaceTools
       result.uniq!
       result
     end
-    
+
     private
-    
+
     # @param [BezierEntity,Array<BezierEntity>,#to_a] entity
     #
     # @return [Array<BezierVertex>]
@@ -270,8 +270,8 @@ module TT::Plugins::BezierSurfaceTools
         [ entities ]
       end
     end
-    
+
   end # class Selection
-  
+
 
 end # module

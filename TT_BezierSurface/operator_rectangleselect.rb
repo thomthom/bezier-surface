@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class RectangleSelectOperator < Operator
 
@@ -39,7 +39,7 @@ module TT::Plugins::BezierSurfaceTools
 
       # Ignore if mouse was not dragged.
       return false unless left_mouse_drag?
-      
+
       # Select entities within the selection rectangle.
       s = @surface
       availible = s.vertices + s.manual_interior_points + s.edges + s.patches

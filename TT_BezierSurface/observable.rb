@@ -7,12 +7,12 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @abstract Include in a class to enable observing mechanism.
   #
   # @since 1.0.0
   module Observable
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def add_observer( observer )
@@ -20,7 +20,7 @@ module TT::Plugins::BezierSurfaceTools
       @observers << observer
       true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def remove_observer( observer )
@@ -28,7 +28,7 @@ module TT::Plugins::BezierSurfaceTools
       result = @observers.delete( observer )
       ( result ) ? true : false
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def clear_observers!
@@ -40,9 +40,9 @@ module TT::Plugins::BezierSurfaceTools
         true
       end
     end
-    
+
     private
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def trigger_observer( symbol, *args )
@@ -54,7 +54,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       true
     end
-  
+
   end # module Observable
 
 end # module

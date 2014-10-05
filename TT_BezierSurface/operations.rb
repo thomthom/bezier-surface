@@ -7,10 +7,10 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   module Operations
-  
+
     # Adds a new QuadPatch to the selected BezierEdge.
     #
     # @todo Smarter extrusion of connected edges. Merge entities where possible.
@@ -26,7 +26,7 @@ module TT::Plugins::BezierSurfaceTools
       edges = editor.selection.edges.select { |edge| edge.patches.size == 1 }
       return false if edges.empty?
       model.start_operation( 'Add Quad Patch', true )
-      # Extrude edges and merge with other selected edges or newly created 
+      # Extrude edges and merge with other selected edges or newly created
       # patch edges.
       #puts "\nadd_quadpatch"
       #puts "Edges: #{edges.inspect}"
@@ -105,7 +105,7 @@ module TT::Plugins::BezierSurfaceTools
       true
     end
 
-    
+
     # Activates the tool to draw a new QuadPatch.
     #
     # @return [Boolean]
@@ -114,8 +114,8 @@ module TT::Plugins::BezierSurfaceTools
       Sketchup.active_model.select_tool( nil )
       Sketchup.active_model.tools.push_tool( CreatePatchTool.new )
     end
-    
-    
+
+
     # @return [Boolean]
     # @since 1.0.0
     def self.convert_selected_to_mesh
@@ -189,8 +189,8 @@ module TT::Plugins::BezierSurfaceTools
       model.selection.clear
       true
     end
-    
-    
+
+
     # @return [Boolean]
     # @since 1.0.0
     def self.update_selected_surface
@@ -210,7 +210,7 @@ module TT::Plugins::BezierSurfaceTools
       model.commit_operation
       true
     end
-  
+
   end # module Operations
 
 end # module

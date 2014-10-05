@@ -8,19 +8,19 @@
 
 module TT::Plugins::BezierSurfaceTools
 
-  
+
   # Detect new models and attach a model observer to monitor when the user
   # opens a Bezier Surface for editing.
   #
   # @since 1.0.0
   class BST_AppObserver < Sketchup::AppObserver
-    
+
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onNewModel( model )
       PLUGIN.observe_model( model )
     end
-    
+
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onOpenModel( model )
@@ -28,8 +28,8 @@ module TT::Plugins::BezierSurfaceTools
     end
 
   end # class BST_AppObserver
-  
-  
+
+
   # When the user opens a Group/ComponentInstance containing a Bezier Surface
   # for editing - activate the Bezier editing tools.
   #
@@ -38,7 +38,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BST_ModelObserver < Sketchup::ModelObserver
-    
+
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onActivePathChanged( model )
@@ -49,27 +49,27 @@ module TT::Plugins::BezierSurfaceTools
       # 2011-03-22
       # Not noticed this again. Maybe the issue is gone. Or it was an observer
       # reload issue.
-      
+
       #Console.log( 'BST_ModelObserver.onActivePathChanged' )
       check_active_path( model )
     end
-    
+
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionUndo( model )
       Console.log( 'BST_ModelObserver.onTransactionUndo' )
       check_active_path( model, true )
     end
-    
+
     # @param [Sketchup::Model] model
     # @since 1.0.0
     def onTransactionRedo( model )
       Console.log( 'BST_ModelObserver.onTransactionRedo' )
       check_active_path( model, true )
     end
-    
+
     # If it's a valid bezier surface context, ensure that an editor is
-    # active. This must be checked in the undo events because 
+    # active. This must be checked in the undo events because
     # onActivePathChanged does not trigger when undo/redo cause the
     # active context to change.
     #
@@ -103,10 +103,10 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
   end # class BST_ModelObserver
-  
-  
+
+
   # Monitors the model selection for changes. The selection can be
   # Sketchup::Selection or {Selection}.
   #
@@ -115,7 +115,7 @@ module TT::Plugins::BezierSurfaceTools
   #
   # @since 1.0.0
   class BST_SelectionObserver < Sketchup::SelectionObserver
-    
+
     # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionBulkChange( selection )
@@ -125,7 +125,7 @@ module TT::Plugins::BezierSurfaceTools
         editor.refresh_viewport
       end
     end
-    
+
     # @param [Sketchup::Selection] selection
     # @since 1.0.0
     def onSelectionCleared( selection )
@@ -135,22 +135,22 @@ module TT::Plugins::BezierSurfaceTools
         editor.refresh_viewport
       end
     end
-    
+
     # @return [BST_SelectionObserver]
     # @since 1.0.0
     def self.factory
       @@observer ||= self.new
       @@observer
     end
-    
+
   end # class BST_SelectionObserver
-  
-  
+
+
   # Monitors a surface for changes - ensuring things are kept up to date.
   #
   # @since 1.0.0
   class BST_SurfaceObserver
-    
+
     # @param [BezierSurface] surface
     # @since 1.0.0
     def onContentModified( surface )
@@ -165,15 +165,15 @@ module TT::Plugins::BezierSurfaceTools
         editor.refresh_viewport if erased.empty?
       end
     end
-    
+
     # @return [BST_SurfaceObserver]
     # @since 1.0.0
     def self.factory
       @@observer ||= self.new
       @@observer
     end
-    
+
   end # class BST_SurfaceObserver
 
-  
+
 end # TT::Plugins::BezierSurfaceTools

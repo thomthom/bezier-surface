@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Caches drawing instructions so complex calculations for generating the
   # GL data can be reused.
   #
@@ -17,7 +17,7 @@ module TT::Plugins::BezierSurfaceTools
   # @since 1.0.0
   class DrawCache
     # (?) Move to TT_Lib ?
-    
+
     # @param [Sketchup::View]
     #
     # @since 1.0.0
@@ -25,7 +25,7 @@ module TT::Plugins::BezierSurfaceTools
       @view = view
       @commands = []
     end
-    
+
     # Clears the cache. All drawing instructions are removed.
     #
     # @return [Nil]
@@ -34,7 +34,7 @@ module TT::Plugins::BezierSurfaceTools
       @commands.clear
       nil
     end
-    
+
     # Draws the cached drawing instructions.
     #
     # @return [Sketchup::View]
@@ -82,7 +82,7 @@ module TT::Plugins::BezierSurfaceTools
       #     Aliasing methods appear to work on both.
       alias_method( symbol, :cache_method )
     }
-    
+
     # Pass through methods to Sketchup::View so that the drawing cache object
     # can easily replace Sketchup::View objects in existing codes.
     #
@@ -96,22 +96,22 @@ module TT::Plugins::BezierSurfaceTools
         raise NoMethodError, "undefined method `#{method}' for #{self.class.name}"
       end
     end
-    
+
     # @return [String]
     # @since 1.0.0
     def inspect
       hex_id = TT.object_id_hex( self )
       "#<#{self.class.name}:#{hex_id} Commands:#{@commands.size}>"
     end
-    
+
     private
-    
+
     # http://www.ruby-forum.com/topic/75258#895569
     def this_method
       ( caller[0] =~ /`([^']*)'/ and $1 ).intern
     end
-    
+
   end # class DrawCache
-  
+
 
 end # module

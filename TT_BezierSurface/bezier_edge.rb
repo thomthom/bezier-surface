@@ -9,13 +9,13 @@ require File.join( TT::Plugins::BezierSurfaceTools::PATH, 'bezier_entity.rb' )
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Collection of methods for managing the bezier patch edges and their
   # relationship to connected entities.
   #
   # @since 1.0.0
   class BezierEdge < BezierEntity
-    
+
     # @param [BezierSurface] parent
     # @param [Array<Geom::Point3d>,Array<BezierControlPoint>] points
     #
@@ -56,35 +56,35 @@ module TT::Plugins::BezierSurfaceTools
       self.start_handle.link( self.start )
       self.end_handle.link( self.end )
     end
-    
+
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
       fail_if_invalid()
       @links[ BezierPatch ].dup
     end
-    
+
     # @return [Array<BezierVertex>]
     # @since 1.0.0
     def vertices
       fail_if_invalid()
       [ @control_points.first, @control_points.last ]
     end
-    
+
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def handles
       fail_if_invalid()
       @control_points[1,2]
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def start
       fail_if_invalid()
       @control_points.first
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def start=( new_vertex )
@@ -94,14 +94,14 @@ module TT::Plugins::BezierSurfaceTools
       replace_vertex( @control_points[0], new_vertex )
       new_vertex
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def end
       fail_if_invalid()
       @control_points.last
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def end=( new_vertex )
@@ -121,7 +121,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       vertices.find { |v| v != vertex }
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def replace_vertex( old_vertex, new_vertex )
@@ -155,21 +155,21 @@ module TT::Plugins::BezierSurfaceTools
       # Return the merged vertex.
       new_vertex
     end
-    
+
     # @return [BezierHandle]
     # @since 1.0.0
     def start_handle
       fail_if_invalid()
       @control_points[1]
     end
-    
+
     # @return [BezierHandle]
     # @since 1.0.0
     def end_handle
       fail_if_invalid()
       @control_points[2]
     end
-    
+
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def direction
@@ -178,7 +178,7 @@ module TT::Plugins::BezierSurfaceTools
       p2 = @control_points.last.position
       p1.vector_to( p2 )
     end
-    
+
     # @return [Length]
     # @since 1.0.0
     def length( subdivs )
@@ -192,7 +192,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       total.to_l
     end
-    
+
     # @param [BezierPatch] subdivs
     #
     # @return [Boolean]
@@ -203,7 +203,7 @@ module TT::Plugins::BezierSurfaceTools
       # (?) Take into account reversed patch?
       edgeuse.reversed?
     end
-    
+
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def control_points
@@ -211,7 +211,7 @@ module TT::Plugins::BezierSurfaceTools
       @control_points.dup
     end
     alias :to_a :control_points
-    
+
     # (?) Should this be positions= ?
     #
     # @param [Array<Geom::Point3d>] new_control_points
@@ -228,7 +228,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       @control_points.dup
     end
-    
+
     # @return [Array<Geom::Point3d>]
     # @since 1.0.0
     def positions
@@ -238,7 +238,7 @@ module TT::Plugins::BezierSurfaceTools
       }
     end
     #alias :to_a :positions
-    
+
     # Returns an array of 3d points representing the bezier curve with the given
     # sub-division.
     #
@@ -254,7 +254,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       points
     end
-    
+
     # @return [QuadPatch]
     # @since 1.0.0
     def extrude_quad_patch
@@ -262,12 +262,12 @@ module TT::Plugins::BezierSurfaceTools
       if self.patches.size > 1
         raise ArgumentError, 'Can not extrude edge connected to more than one patch.'
       end
-      
+
       surface = self.parent
       patch = self.patches[0]
       edgeuse = patch.get_edgeuse( self )
       edge_reversed = self.reversed_in?( patch )
-      
+
       # <debug>
       index = patch.edge_index( self )
       #TT.debug( " " )
@@ -275,31 +275,31 @@ module TT::Plugins::BezierSurfaceTools
       #TT.debug( "> Length: #{self.length(surface.subdivs).to_s}" )
       #TT.debug( "> Reversed: #{edge_reversed}" )
       # </debug>
-      
+
       # Use the connected edges to determine the direction of the extruded
       # bezier patch.
       prev_edge = edgeuse.previous.edge
       next_edge = edgeuse.next.edge
-      
+
       # <debug>
       #TT.debug( "> Prev Edge: #{prev_edge}" )
       #TT.debug( "> Next Edge: #{next_edge}" )
       # </debug>
-      
+
       # Cache the point for quicker access.
       pts = self.positions
       pts_prev = prev_edge.positions
       pts_next = next_edge.positions
-      
+
       # Sort the points in a continuous predictable order.
       pts.reverse! if edge_reversed
       pts_prev.reverse! if prev_edge.reversed_in?( patch )
       pts_next.reverse! if next_edge.reversed_in?( patch )
-      
+
       # Calculate the extrusion direction for the control points in the new patch.
       v1 = pts_prev[3].vector_to( pts_prev[2] ).reverse
       v2 = pts_next[0].vector_to( pts_next[1] ).reverse
-      
+
       # (!) Unfinished - this is a quick hack. Need better Bezier Entity control
       # first.
       # The start and end control point vectors is used for the interior points.
@@ -313,7 +313,7 @@ module TT::Plugins::BezierSurfaceTools
       # edge extruded.
       prev_length = prev_edge.length( surface.subdivs ) / 3.0
       next_length = next_edge.length( surface.subdivs ) / 3.0
-      
+
       # Generate the control points for the new patch.
       points = []
       pts.each_with_index { |point, index|
@@ -329,20 +329,20 @@ module TT::Plugins::BezierSurfaceTools
       merge_edge = new_patch.edges.last
 
       new_patch.replace_edge( merge_edge, self )
-      
+
       # Add the patch to the surface. Calling method should be calling
       # Surface.update after this to refresh the mesh.
       surface.add_patch( new_patch )
 
       # (?) Merge edges that match 100%?
-      
+
       new_patch
     end
 
     protected
 
     # Swaps one vertex reference with another.
-    # 
+    #
     # @return [BezierVertex]
     # @since 1.0.0
     def set_vertex!( old_vertex, new_vertex )

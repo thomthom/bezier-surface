@@ -7,10 +7,10 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class SelectionTool < OperatorManager
-    
+
     # @since 1.0.0
     def initialize( editor )
       super()
@@ -53,7 +53,7 @@ module TT::Plugins::BezierSurfaceTools
     end
 
     # @since 1.0.0
-    def activate    
+    def activate
       super
       update_ui()
       @editor.refresh_viewport
@@ -101,12 +101,12 @@ module TT::Plugins::BezierSurfaceTools
       # <debug>
       elapsed = Time.now - t_start
       view.draw_text( [20,20,0], sprintf( 'Last Frame: %.4fs', elapsed ) )
-      
+
       view.draw_text( [20,50,0], sprintf( 'Last Refresh Time: %.4fs', view.last_refresh_time ) )
       view.draw_text( [20,65,0], sprintf( 'Average Refresh Time: %.4fs', view.average_refresh_time ) )
       # </debug>
     end
-    
+
   end # class SelectionTool
 
 end # module

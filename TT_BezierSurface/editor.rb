@@ -7,7 +7,7 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # Manages the editing environment for bezier patches.
   #
   # The class is a Tool class, used as the root for the editing tools. This
@@ -17,27 +17,27 @@ module TT::Plugins::BezierSurfaceTools
   # Keep this class to managing the editing environment and general UI.
   #
   # @since 1.0.0
-  class BezierSurfaceEditor    
-    
+  class BezierSurfaceEditor
+
     # @since 1.0.0
     attr_reader( :model, :surface, :selection, :draw_cache )
-    
+
     # @since 1.0.0
     def initialize( model )
       # References the context the editor works in when active.
       @model = model
       @selection = Selection.new( self )
       @surface = nil
-      
+
       # State of the session.
       @active = false
-      
+
       # References the currently active sub-tool on the stack.
       @active_tool = nil
-      
+
       # Observers
       @selection.add_observer( BST_SelectionObserver.factory )
-      
+
       # Drawing Performance Test ( 23.05.2011 )
       #   14 Patches - 12 Subdivisions
       #
@@ -48,7 +48,7 @@ module TT::Plugins::BezierSurfaceTools
       # with the cache.
       @draw_cache = DrawCache.new( @model.active_view )
     end
-    
+
     # Indicates if there is an active edit session.
     #
     # @return [Boolean]
@@ -56,7 +56,7 @@ module TT::Plugins::BezierSurfaceTools
     def active?
       @active == true
     end
-    
+
     # Activates Bezier Surface editing mode.
     # Used when a bezier surface group or component is opened for editing.
     #
@@ -92,7 +92,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       true
     end
-    
+
     # Adds standard context menu items.
     #
     # @param [Sketchup::Menu] instance
@@ -103,69 +103,69 @@ module TT::Plugins::BezierSurfaceTools
       patches_selected = @selection.any?{ |e|
         e.is_a?( BezierPatch )
       }
-      
+
       # Patches
       if patches_selected
         m = menu.add_item( 'Automatic Interior' ) { toggle_automatic_patch() }
         menu.set_validation_proc( m ) { validate_automatic_patch() }
-        
+
         menu.add_separator
       end
-      
+
       m = menu.add_item( 'Select All' ) {
         @selection.add( @surface.manipulable_entities )
       }
       menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
-      
+
       m = menu.add_item( 'Select None' ) {
         @selection.clear
       }
       menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
-      
+
       m = menu.add_item( 'Invert Selection' ) {
         @selection.toggle( @surface.manipulable_entities )
       }
       menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
-      
+
       menu.add_separator
-      
+
       submenu = menu.add_submenu( 'Manipulate' )
-      
+
         m = submenu.add_item( 'Vertices' ) { puts 'Vertices' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
-        
+
         m = submenu.add_item( 'Handles' ) { puts 'Handles' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_UNCHECKED }
-        
+
         m = submenu.add_item( 'Edges' ) { puts 'Patches' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
-        
+
         m = submenu.add_item( 'Patches' ) { puts 'Patches' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
-      
-      
+
+
       submenu = menu.add_submenu( 'Display' )
-        
+
         m = submenu.add_item( 'Automatic Interior' ) { puts 'n01' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
-        
+
         m = submenu.add_item( 'Interior Grid' ) { puts 'n02' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
-      
-      
+
+
       menu.add_separator
-      
+
       m = menu.add_item( Commands.toggle_properties )
-      
-      
+
+
       menu.add_separator
-      
+
       m = menu.add_item( 'Close Instance' ) { end_session() }
       menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
-      
+
       menu
     end
-    
+
     # Activates a bezier editing tool - pushing it into SketchUp's tool stack
     # after ending the existing one.
     #
@@ -177,10 +177,10 @@ module TT::Plugins::BezierSurfaceTools
       Console.log( 'BezierSurfaceEditor.select_tool' )
       tools = @model.tools
       # (i) Some times other tools, for instance viewport tools, push other
-      #     tools into the stack. This should be accounted for so we get a 
+      #     tools into the stack. This should be accounted for so we get a
       #     correctly working tool stack.
       #
-      # (i) Pop all tools until we have a RubyTool. This is incase one of the 
+      # (i) Pop all tools until we have a RubyTool. This is incase one of the
       #     native camera tools had been activated during the session. They
       #     push themselves into the stack.
       #
@@ -223,7 +223,7 @@ module TT::Plugins::BezierSurfaceTools
       @active_tool = tool
       tools.push_tool( tool )
     end
-    
+
     # Ends the active editing session. Called when the bezier surface instance
     # is closed or when the user activates another tool.
     #
@@ -243,7 +243,7 @@ module TT::Plugins::BezierSurfaceTools
         @model.select_tool( nil )
       end
     end
-    
+
     # Forwards message to active_tool.
     #
     # @return [Nil]
@@ -256,7 +256,7 @@ module TT::Plugins::BezierSurfaceTools
       update_properties()
       nil
     end
-    
+
     # @since 1.0.0
     def update_properties
       types = {}
@@ -275,16 +275,16 @@ module TT::Plugins::BezierSurfaceTools
       types.each { |type, entities|
         info += "#{entities.size} #{names[type]}\n"
       }
-      if types[ PLUGIN::BezierEdge ] 
+      if types[ PLUGIN::BezierEdge ]
         length = 0.mm
-        for edge in types[ PLUGIN::BezierEdge ] 
+        for edge in types[ PLUGIN::BezierEdge ]
           length += edge.length( @surface.subdivs )
         end
         info += "\nLength: #{length.to_l.to_s}"
       end
       PLUGIN::PropertiesWindow.info = info
     end
-    
+
     # Changes the subdivision of the active surface and commits it.
     #
     # @param [Integer] subdivs
@@ -317,7 +317,7 @@ module TT::Plugins::BezierSurfaceTools
       # Using standard SketchUp selection modifier keys.
       key_ctrl  = key_flags & COPY_MODIFIER_MASK      == COPY_MODIFIER_MASK
       key_shift = key_flags & CONSTRAIN_MODIFIER_MASK == CONSTRAIN_MODIFIER_MASK
-      
+
       # Update selection.
       if key_ctrl && key_shift
         @selection.remove( entities )
@@ -329,10 +329,10 @@ module TT::Plugins::BezierSurfaceTools
         @selection.clear
         @selection.add( entities )
       end
-      
+
       @selection
     end
-    
+
     # Checks if the current model context is a bezier surface.
     #
     # @return [Boolean]
@@ -340,11 +340,11 @@ module TT::Plugins::BezierSurfaceTools
     def valid_context?
       (@model.active_path.nil?) ? false : @model.active_path.last == @surface.instance
     end
-    
+
     # Called by the BST_ModelObserver observer when something is undone or
     # redone.
     #
-    # When editing is active the mesh is refreshed, otherwise the active 
+    # When editing is active the mesh is refreshed, otherwise the active
     # editing session is ended.
     #
     # @return [Nil]
@@ -368,13 +368,13 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
     # @return [String]
     # @since 1.0.0
     def inspect
       "#<#{self.class.name}:#{TT.object_id_hex( self )}>"
     end
-    
+
     # Creates and displays the bezier surface editing toolbar.
     #
     # @return [Boolean]
@@ -395,7 +395,7 @@ module TT::Plugins::BezierSurfaceTools
         @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE # (!) Add as option
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
-        
+
         # Select
         button = TT::GUI::ToolbarButton.new('Select') {
           Console.log 'Tool: Select'
@@ -405,7 +405,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'Select_24.png' )
         @toolbar.add_control( button )
-        
+
         # Move
         button = TT::GUI::ToolbarButton.new('Move') {
           Console.log 'Tool: Move'
@@ -415,7 +415,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'Move_24.png' )
         @toolbar.add_control( button )
-        
+
         # Add QuadPatch
         button = TT::GUI::ToolbarButton.new('Add QuadPatch') {
           Console.log 'Add QuadPatch'
@@ -424,7 +424,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
         @toolbar.add_control( button )
-        
+
         # Add TriPatch
         button = TT::GUI::ToolbarButton.new('Add TriPatch') {
           Console.log 'Add TriPatch'
@@ -443,7 +443,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'Merge_24.png' )
         @toolbar.add_control( button )
-        
+
         # Axis
         container = TT::GUI::Container.new
         list = TT::GUI::Listbox.new( [
@@ -462,13 +462,13 @@ module TT::Plugins::BezierSurfaceTools
         container.add_control( label )
         container.add_control( list )
         @toolbar.add_control( container )
-        
+
       end
       @toolbar.show_window
-      
+
       TT::SketchUp.activate_main_window
     end
-    
+
     # Closes the bezier surface editing toolbar.
     #
     # @return [Nil]
@@ -477,9 +477,9 @@ module TT::Plugins::BezierSurfaceTools
       @toolbar.close if @toolbar.visible?
       nil
     end
-    
+
     ### Tool Events
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#activate
     #
     # @since 1.0.0
@@ -488,11 +488,11 @@ module TT::Plugins::BezierSurfaceTools
       @active = true
       @active_tool = nil
       @selection.clear
-      
+
       # UI
       show_toolbar()
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#deactivate
     #
     # @since 1.0.0
@@ -500,9 +500,9 @@ module TT::Plugins::BezierSurfaceTools
       Console.log( 'BezierSurfaceEditor.deactivate' )
       @active = false
       @active_tool = nil
-      
+
       close_toolbar()
-      
+
       # (!) SketchUp bug!
       #     Sketchup.close_active
       #     Normally, closing a group/component appears in the undo stack.
@@ -513,18 +513,18 @@ module TT::Plugins::BezierSurfaceTools
         Console.log( '> Closing active context' )
         view.model.close_active
       end
-      
+
       # Clean up any observers used during the editing session.
       @surface.clear_observers!
-      
+
       # Clean up any object references so they can be garbage collected.
       @selection.clear
       @surface = nil
       @draw_cache.clear
     end
-    
+
     private
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def toggle_automatic_patch
@@ -544,7 +544,7 @@ module TT::Plugins::BezierSurfaceTools
       model.commit_operation
       automatic
     end
-    
+
     # Returns MF_CHECKED if any patch in selection has automatic interior.
     #
     # @return [MF_CHECKED,MF_UNCHECKED]
@@ -555,29 +555,29 @@ module TT::Plugins::BezierSurfaceTools
       end
       MF_UNCHECKED
     end
-    
+
     # @return [Nil]
     # @since 1.0.0
     def update_viewport_cache
       # (?) Make public so sub-tools can force an update?
       @draw_cache.clear
       view = @draw_cache
-      
+
       tr = view.model.edit_transform
-      
+
       selected_vertices = @selection.vertices
       selected_interior = @selection.interior_points
       selected_edges = @selection.edges
       selected_patches = @selection.patches
-      
+
       unselected_vertices = @surface.vertices - selected_vertices
       unselected_interior = @surface.manual_interior_points - selected_interior
       unselected_edges = @surface.edges - selected_edges
-      
+
       # Get selected vertices and selected entities' vertices. Display handles
       # for each vertex.
       active_vertices = @selection.to_vertices
-      
+
       # Draw patches last because it uses transparent colour. SketchUp seem to
       # cull out any opaque drawing that happens after transparent drawing.
       @surface.draw_internal_grid( view )
@@ -592,7 +592,7 @@ module TT::Plugins::BezierSurfaceTools
       @surface.draw_patches( view, selected_patches )
       nil
     end
-    
+
   end # class BezierSurfaceEditor
-  
+
 end # module TT::Plugins::BezierSurfaceTools

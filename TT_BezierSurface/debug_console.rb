@@ -7,12 +7,12 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class DebugConsole
-    
+
     attr_accessor( :output, :external )
-    
+
     # @param [Boolean] output
     # @param [Boolean] external
     #
@@ -21,7 +21,7 @@ module TT::Plugins::BezierSurfaceTools
       @output = output
       @external = external
     end
-    
+
     # @since 1.0.0
     def log( *args )
       if output
@@ -34,7 +34,7 @@ module TT::Plugins::BezierSurfaceTools
         return false
       end
     end
-    
+
   end # class DebugConsole
 
 end # TT::Plugins::BezierSurfaceTools

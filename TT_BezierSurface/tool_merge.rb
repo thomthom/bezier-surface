@@ -7,10 +7,10 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
+
   # @since 1.0.0
   class MergeTool
-    
+
     # @since 1.0.0
     def initialize( editor )
       @editor = editor
@@ -23,10 +23,10 @@ module TT::Plugins::BezierSurfaceTools
 
       @editor.selection.clear
       @editor.selection.add( @source_edge ) if @source_edge
-      
+
       @mouse_edge = nil
     end
-    
+
     # Updates the statusbar and VCB.
     #
     # @return [Nil]
@@ -39,7 +39,7 @@ module TT::Plugins::BezierSurfaceTools
       end
       nil
     end
-    
+
     # Called by BezierEditor when the selection or geometry has updated.
     # The viewport graphics then needs updating.
     #
@@ -50,22 +50,22 @@ module TT::Plugins::BezierSurfaceTools
       #update_gizmo()
       nil
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#activate
     #
     # @since 1.0.0
-    def activate    
+    def activate
       update_ui()
       @editor.refresh_viewport
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#deactivate
     #
     # @since 1.0.0
     def deactivate( view )
       view.invalidate
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#resume
     #
     # @since 1.0.0
@@ -74,7 +74,7 @@ module TT::Plugins::BezierSurfaceTools
       @editor.refresh_viewport
       view.invalidate
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#getMenu
     #
     # @since 1.0.0
@@ -93,19 +93,19 @@ module TT::Plugins::BezierSurfaceTools
       @editor.selection.clear
       view.invalidate
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onMouseMove
     #
     # @since 1.0.0
     def onMouseMove( flags, x, y, view )
-      picked_edges = @surface.pick_edges( @surface.subdivs, x, y, view ) 
+      picked_edges = @surface.pick_edges( @surface.subdivs, x, y, view )
       @mouse_edge = picked_edges.find { |edge|
         source_edges = ( @source_edge ) ? @source_edge.patches.first.edges : []
         edge.patches.size == 1 && !source_edges.include?( edge )
       }
       view.invalidate
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#onLButtonUp
     #
     # @since 1.0.0
@@ -129,7 +129,7 @@ module TT::Plugins::BezierSurfaceTools
       @editor.refresh_viewport
       view.invalidate
     end
-    
+
     # @see http://code.google.com/apis/sketchup/docs/ourdoc/tool.html#draw
     #
     # @since 1.0.0
@@ -174,7 +174,7 @@ module TT::Plugins::BezierSurfaceTools
       @editor.model.commit_operation
       @editor.refresh_viewport
     end
-    
+
   end # class SelectionTool
 
 end # module

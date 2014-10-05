@@ -7,13 +7,13 @@
 
 
 module TT::Plugins::BezierSurfaceTools
-  
-  
+
+
   # @since 1.0.0
   class BezierControlPoint < BezierEntity
-    
+
     attr_reader( :position )
-    
+
     def initialize( parent, *args )
       super()
       @parent = parent
@@ -21,7 +21,7 @@ module TT::Plugins::BezierSurfaceTools
       @links[ BezierPatch ] = []
       set( *args )
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?
@@ -29,7 +29,7 @@ module TT::Plugins::BezierSurfaceTools
       # Subclass BezierInteriorPoint returns true
       false
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def is_handle?
@@ -37,21 +37,21 @@ module TT::Plugins::BezierSurfaceTools
       # Subclass BezierHandle returns true
       false
     end
-    
+
     # @return [Array<BezierEdge>]
     # @since 1.0.0
     def edges
       fail_if_invalid()
       @links[ BezierEdge ].dup
     end
-    
+
     # @return [Array<BezierPatch>]
     # @since 1.0.0
     def patches
       fail_if_invalid()
       @links[ BezierPatch ].dup
     end
-    
+
     # Sets a new position for the controlpoint.
     #
     # (?) alias position= ?
@@ -86,36 +86,36 @@ module TT::Plugins::BezierSurfaceTools
       @position.extend( TT::Point3d_Ex ) # Needed?
       @position
     end
-    
+
     # @return [Geom::Point3d]
     # @since 1.0.0
     def position=( new_pt )
       fail_if_invalid()
       set( new_pt )
     end
-    
+
   end # class BezierVertex
-  
-  
+
+
   # BezierPatch & BezierEdge vertex.
   #
   # @since 1.0.0
   class BezierVertex < BezierControlPoint
-    
+
     # @since 1.0.0
     def initialize( *args )
       super
       @links[ BezierHandle ] = []
       @links[ BezierInteriorPoint ] = []
     end
-    
+
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def handles
       fail_if_invalid()
       @links[ BezierHandle ].dup
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def linked_control_points
@@ -145,43 +145,43 @@ module TT::Plugins::BezierSurfaceTools
         control_point.position = control_point.position.offset( vector )
       end
     end
-  
+
   end # class BezierInteriorPoint
-  
-  
+
+
   # BezierEdge control handle points.
   #
   # @since 1.0.0
   class BezierHandle < BezierControlPoint
-    
+
     # @since 1.0.0
     def initialize( *args )
       super
       @links[ BezierVertex ] = []
       @linked = true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def is_handle?
       fail_if_invalid()
       true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def linked?
       fail_if_invalid()
       @linked == true
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def linked=( is_linked )
       fail_if_invalid()
       @linked = ( is_linked == true )
     end
-    
+
     # @return [Array<BezierHandle>]
     # @since 1.0.0
     def linked_handles
@@ -202,14 +202,14 @@ module TT::Plugins::BezierSurfaceTools
       new_point = vertex.position.offset( vector, new_length )
       set( new_point )
     end
-    
+
     # @return [BezierVertex]
     # @since 1.0.0
     def vertex
       fail_if_invalid()
       @links[ BezierVertex ].first
     end
-    
+
     # @return [Geom::Vector3d]
     # @since 1.0.0
     def vector
@@ -223,29 +223,29 @@ module TT::Plugins::BezierSurfaceTools
       fail_if_invalid()
       position = vertex.position.offset( new_vector )
     end
-  
+
   end # class BezierHandle
-  
-  
+
+
   # BezierPatch interior control points.
   #
   # @since 1.0.0
   class BezierInteriorPoint < BezierControlPoint
-    
+
     # @since 1.0.0
     def initialize( *args )
       super
       @links[ BezierVertex ] = []
       @links[ BezierHandle ] = []
     end
-    
+
     # @return [Boolean]
     # @since 1.0.0
     def is_interior?
       fail_if_invalid()
       true
     end
-  
+
   end # class BezierInteriorPoint
 
 end # module
