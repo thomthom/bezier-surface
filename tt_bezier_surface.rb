@@ -34,7 +34,7 @@ module TT
   unless file_loaded?(__FILE__)
     loader = File.join(PATH, 'core.rb')
     ex = SketchupExtension.new(PLUGIN_NAME, loader)
-    ex.description = 'Bezier Surface modelling for SketchUp.'
+    ex.description = 'Bezier Surface modeling for SketchUp.'
     ex.version     = PLUGIN_VERSION
     ex.copyright   = 'Thomas Thomassen © 2010–2014'
     ex.creator     = 'Thomas Thomassen (thomas@thomthom.net)'
