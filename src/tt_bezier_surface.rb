@@ -20,7 +20,7 @@ module TT
   PLUGIN          = self
   PLUGIN_ID       = 'TT_BezierSurface'.freeze
   PLUGIN_NAME     = 'Bezier Surface'.freeze
-  PLUGIN_VERSION  = '0.1.0'.freeze
+  PLUGIN_VERSION  = '0.1.1'.freeze
 
   # Resource paths
   file = __FILE__.dup.force_encoding("UTF-8")
