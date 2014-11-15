@@ -62,7 +62,10 @@ module TT::Plugins::BezierSurfaceTools
     end
 
     # @since 1.0.0
-    def getMenu( menu )
+    def getMenu( menu, *args )
+      # The *args is needed for SU2015's change to this method where it passes
+      # more arguments if the arity isn't 1. Because OperatorManager relays
+      # events using the splat operator the arity is -1.
       @editor.context_menu( menu )
     end
 
