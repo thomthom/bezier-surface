@@ -6,12 +6,29 @@
 #-------------------------------------------------------------------------------
 
 require 'sketchup.rb'
-require 'TT_Lib2/core.rb'
+begin
+  require 'TT_Lib2/core.rb'
+rescue LoadError => e
+  module TT
+    if @lib2_update.nil?
+      url = 'http://www.thomthom.net/software/sketchup/tt_lib2/errors/not-installed'
+      options = {
+        :dialog_title => 'TT_Lib² Not Installed',
+        :scrollable => false, :resizable => false, :left => 200, :top => 200
+      }
+      w = UI::WebDialog.new( options )
+      w.set_size( 500, 300 )
+      w.set_url( "#{url}?plugin=#{File.basename( __FILE__ )}" )
+      w.show
+      @lib2_update = w
+    end
+  end
+end
 
-TT::Lib.compatible?('2.7.0', 'Bezier Surface')
 
 #-------------------------------------------------------------------------------
 
+if defined?( TT::Lib ) && TT::Lib.compatible?( '2.7.0', 'Bezier Surface' )
 
 module TT::Plugins::BezierSurfaceTools
 
@@ -300,6 +317,8 @@ module TT::Plugins::BezierSurfaceTools
   end
 
 end if Sketchup.version.to_i > 6
+
+end # if TT_Lib
 
 #-------------------------------------------------------------------------------
 
