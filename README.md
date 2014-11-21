@@ -1,4 +1,4 @@
-# README #
+# Bezier Surface Modelling for SketchUp #
 
 It was supposed to be my second commercial extension, but I've not been able to maintain it. Recently I've focused open my subdivision extension.
 
