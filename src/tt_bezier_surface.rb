@@ -20,10 +20,11 @@ module TT
   PLUGIN          = self
   PLUGIN_ID       = 'TT_BezierSurface'.freeze
   PLUGIN_NAME     = 'Bezier Surface'.freeze
-  PLUGIN_VERSION  = '0.1.1'.freeze
+  PLUGIN_VERSION  = '0.1.2'.freeze
 
   # Resource paths
-  file = __FILE__.dup.force_encoding("UTF-8")
+  file = __FILE__.dup
+  file.force_encoding("UTF-8") if file.respond_to?(:force_encoding)
   FILENAMESPACE = File.basename(file, '.*').freeze
   PATH_ROOT     = File.dirname(file).freeze
   PATH          = File.join(PATH_ROOT, FILENAMESPACE).freeze
