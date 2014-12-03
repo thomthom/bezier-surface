@@ -155,7 +155,7 @@ module TT::Plugins::BezierSurfaceTools
     nil
   end
 
-  unless file_loaded?( File.basename(__FILE__) )
+  unless file_loaded?( __FILE__ )
     # Menus
     m = TT.menu( 'Draw' ).add_submenu( PLUGIN_NAME )
     m.add_item( Commands.create_quad_patch )
@@ -204,6 +204,8 @@ module TT::Plugins::BezierSurfaceTools
     # Observers
     Sketchup.add_observer( BST_AppObserver.new )
     self.observe_model( Sketchup.active_model )
+
+    file_loaded( __FILE__ )
   end
 
 
@@ -319,9 +321,3 @@ module TT::Plugins::BezierSurfaceTools
 end if Sketchup.version.to_i > 6
 
 end # if TT_Lib
-
-#-------------------------------------------------------------------------------
-
-file_loaded( File.basename(__FILE__) )
-
-#-------------------------------------------------------------------------------
