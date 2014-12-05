@@ -401,12 +401,13 @@ module TT::Plugins::BezierSurfaceTools
           :pref_key => "#{PLUGIN_ID}_Toolbar",
           :left => 200,
           :top => 200,
-          :width => 280,
+          :width => 140,
           :height => 50,
           :resizable => false,
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
+        @toolbar.set_client_size(140, 50)
         @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE # (!) Add as option
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
@@ -440,6 +441,7 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'QuadPatch_24.png' )
         @toolbar.add_control( button )
 
+=begin
         # Add TriPatch
         button = TT::GUI::ToolbarButton.new('Add TriPatch') {
           Console.log 'Add TriPatch'
@@ -448,6 +450,7 @@ module TT::Plugins::BezierSurfaceTools
         }
         button.icon = File.join( PATH_ICONS, 'TriPatch_24.png' )
         @toolbar.add_control( button )
+=end
 
         # Merge
         button = TT::GUI::ToolbarButton.new('Merge') {
@@ -459,6 +462,7 @@ module TT::Plugins::BezierSurfaceTools
         button.icon = File.join( PATH_ICONS, 'Merge_24.png' )
         @toolbar.add_control( button )
 
+=begin
         # Axis
         container = TT::GUI::Container.new
         list = TT::GUI::Listbox.new( [
@@ -477,6 +481,7 @@ module TT::Plugins::BezierSurfaceTools
         container.add_control( label )
         container.add_control( list )
         @toolbar.add_control( container )
+=end
 
       end
       @toolbar.show_window
