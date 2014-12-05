@@ -122,8 +122,9 @@ module TT::Plugins::BezierSurfaceTools
 
   # TT::Plugins::BezierSurfaceTools::Console.output = true
   # TT::Plugins::BezierSurfaceTools::Console.external = true
+  # Sketchup.write_default("TT_BezierSurface", "Debug", true)
 
-  DEBUG = false
+  DEBUG = Sketchup.read_default(PLUGIN_ID, "Debug", false)
   Console = DebugConsole.new( DEBUG, true )
 
 
@@ -195,7 +196,7 @@ module TT::Plugins::BezierSurfaceTools
     # Toolbar
     toolbar = UI::Toolbar.new( PLUGIN_NAME )
     toolbar.add_item( Commands.create_quad_patch )
-    toolbar.add_item( Commands.create_tri_patch ) if DEBUG
+    #toolbar.add_item( Commands.create_tri_patch )
     if toolbar.get_last_state == TB_VISIBLE
       toolbar.restore
       UI.start_timer( 0.1, false ) { toolbar.restore } # SU bug 2902434
