@@ -77,7 +77,9 @@ module TT::Plugins::BezierSurfaceTools
         # tools performing actions on the selection. (Such as the Delete key.)
         @model.selection.clear
         # Activate Bezier Surface editing mode.
+        Console.log( "> Tool ID before select_tool: #{@model.tools.active_tool_id}" )
         @model.select_tool( self )
+        Console.log( "> Tool ID after select_tool: #{@model.tools.active_tool_id}" )
         # Start observing the surface for changes.
         @surface.clear_observers! # Just to be safe.
         @surface.add_observer( BST_SurfaceObserver.factory )
@@ -187,7 +189,7 @@ module TT::Plugins::BezierSurfaceTools
       # (i) If another RubyTool pushed itself into the stack then this won't
       #     work properly. But it's an edge case which hopefully doesn't need
       #     to be addressed. At least it's considered low priority for now.
-      until tools.active_tool_id == 0 || tools.active_tool_id >= 50000
+      until tools.active_tool_id == 0 || ruby_tool_active?(tools)
         # tools.active_tool_id might be zero if the entire tool stack has been
         # popped. This is catched just in case to prevent infinite loop. But
         # it should not happen.
@@ -202,7 +204,11 @@ module TT::Plugins::BezierSurfaceTools
         tools.pop_tool
       end
       # Catch tools.active_tool_id == 0 - in case unexpected oddites.
-      if tools.active_tool_id == 0
+      #
+      # Need to also check Tools.active_tool_name because in SU2014 and SU2015
+      # there is a bug where the id is rturned as zero even if a Ruby tool is
+      # active.
+      if tools.active_tool_id == 0 && !ruby_tool_active?(tools)
         # This would mean something wrong has happened. At any time during
         # editing, the BezierSurfaceEditor Tool should be present and active.
         # If the stack is empty it means it's been removed and no sub-tools
@@ -222,6 +228,15 @@ module TT::Plugins::BezierSurfaceTools
       Console.log( '> Push new tool...' )
       @active_tool = tool
       tools.push_tool( tool )
+    end
+
+    # Need to also check Tools.active_tool_name because in SU2014 and SU2015
+    # there is a bug where the id is rturned as zero even if a Ruby tool is
+    # active.
+    #
+    # @return [Boolean]
+    def ruby_tool_active?(tools)
+      tools.active_tool_id >= 50000 || tools.active_tool_name == "RubyTool"
     end
 
     # Ends the active editing session. Called when the bezier surface instance
