@@ -129,6 +129,7 @@ module TT::Plugins::BezierSurfaceTools
       }
       menu.set_validation_proc( m ) { MF_ENABLED | MF_UNCHECKED }
 
+=begin
       menu.add_separator
 
       submenu = menu.add_submenu( 'Manipulate' )
@@ -153,6 +154,7 @@ module TT::Plugins::BezierSurfaceTools
 
         m = submenu.add_item( 'Interior Grid' ) { puts 'n02' }
         submenu.set_validation_proc( m ) { MF_GRAYED | MF_CHECKED }
+=end
 
 
       menu.add_separator
