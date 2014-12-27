@@ -409,7 +409,7 @@ module TT::Plugins::BezierSurfaceTools
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
-        @toolbar.set_client_size(140, 50)
+        #@toolbar.set_client_size(140, 50) # Won't work here.
         @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE # (!) Add as option
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
