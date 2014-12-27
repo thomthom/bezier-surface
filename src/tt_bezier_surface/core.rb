@@ -106,11 +106,18 @@ module TT::Plugins::BezierSurfaceTools
 
   ### MODULES ### --------------------------------------------------------------
   # Ensure abstract classes are loaded and found when needed.
-  autoload( :Observable,      File.join( PATH, 'observable.rb' ) )
-  autoload( :BezierEntity,    File.join( PATH, 'bezier_entity.rb' ) )
-  autoload( :BezierPatch,     File.join( PATH, 'bezier_patch.rb' ) )
-  autoload( :Operator,        File.join( PATH, 'operator.rb' ) )
-  autoload( :OperatorManager, File.join( PATH, 'operator_manager.rb' ) )
+  #autoload( :Observable,      File.join( PATH, 'observable.rb' ) )
+  #autoload( :BezierEntity,    File.join( PATH, 'bezier_entity.rb' ) )
+  #autoload( :BezierPatch,     File.join( PATH, 'bezier_patch.rb' ) )
+  #autoload( :Operator,        File.join( PATH, 'operator.rb' ) )
+  #autoload( :OperatorManager, File.join( PATH, 'operator_manager.rb' ) )
+  # autoload will fail under Windows due to poor encoding support for file
+  # functions in Ruby. As a workaround the files are simply required explicitly.
+  require File.join( PATH, 'observable.rb' )
+  require File.join( PATH, 'bezier_entity.rb' )
+  require File.join( PATH, 'bezier_patch.rb' )
+  require File.join( PATH, 'operator.rb' )
+  require File.join( PATH, 'operator_manager.rb' )
   # Load all ruby files.
   Dir.glob( File.join( PATH, '*.{rb,rbs}' ) ).each { |file|
     # (!) Strip extension and use Sketchup::require for production.
