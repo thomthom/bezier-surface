@@ -20,7 +20,7 @@ module TT
   PLUGIN          = self
   PLUGIN_ID       = 'TT_BezierSurface'.freeze
   PLUGIN_NAME     = 'Bezier Surface'.freeze
-  PLUGIN_VERSION  = '0.1.2'.freeze
+  PLUGIN_VERSION  = '0.1.3'.freeze
 
   # Resource paths
   file = __FILE__.dup
@@ -37,7 +37,7 @@ module TT
     ex = SketchupExtension.new(PLUGIN_NAME, loader)
     ex.description = 'Bezier Surface modeling for SketchUp.'
     ex.version     = PLUGIN_VERSION
-    ex.copyright   = 'Thomas Thomassen © 2010–2014'
+    ex.copyright   = 'Thomas Thomassen © 2010–2015'
     ex.creator     = 'Thomas Thomassen (thomas@thomthom.net)'
     Sketchup.register_extension(ex, true)
   end
