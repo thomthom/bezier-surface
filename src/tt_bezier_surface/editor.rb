@@ -238,6 +238,9 @@ module TT::Plugins::BezierSurfaceTools
     #
     # @return [Boolean]
     def ruby_tool_active?(tools)
+      Console.log( 'BezierSurfaceEditor.ruby_tool_active?' )
+      Console.log( ">   Tool Id: #{tools.active_tool_id}" )
+      Console.log( "> Tool Name: #{tools.active_tool_name}" )
       tools.active_tool_id >= 50000 || tools.active_tool_name == "RubyTool"
     end
 
@@ -404,13 +407,15 @@ module TT::Plugins::BezierSurfaceTools
           :left => 200,
           :top => 200,
           :width => 140,
-          :height => 50,
+          :height => 60,
           :resizable => false,
           :scrollable => false
         }
         @toolbar = TT::GUI::ToolWindow.new( options )
-        #@toolbar.set_client_size(140, 50) # Won't work here.
-        @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE # (!) Add as option
+        @toolbar.on_ready { |toolbar|
+          toolbar.set_client_size(140, 32)
+        }
+        @toolbar.theme = TT::GUI::Window::THEME_GRAPHITE
         #@toolbar.add_script( File.join(PATH_UI, 'js', 'wnd_toolbar.js') )
         @toolbar.add_style( File.join(PATH_UI, 'css', 'wnd_toolbar.css') )
 
