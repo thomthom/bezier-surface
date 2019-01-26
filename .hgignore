@@ -1,9 +1,0 @@
-syntax: glob
-Documentation/
-Builds/
-Test Models/*
-Theory and Reading/*
-Project Files/*
-*.sublime-workspace
-Thumbs.db
-*.rbz
