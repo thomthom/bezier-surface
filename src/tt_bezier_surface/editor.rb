@@ -536,6 +536,7 @@ module TT::Plugins::BezierSurfaceTools
       #     But when close_active is used in SU8-M1 and older the action does
       #     not appear in the stack - so when you then trigger undo/redo after
       #     using this method all the modified geometry is offset.
+      #     This was fixed in SketchUp 2014.
       if valid_context?
         Console.log( '> Closing active context' )
         view.model.close_active
